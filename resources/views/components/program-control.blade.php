@@ -43,24 +43,24 @@
                             <strong>Input</strong>
                         </div>
                         <div class="col-12 d-flex justify-content-between mt-2" style="width: 100%;">
-                            <div class="col-4 d-flex justify-content-start">
+                            <div class="col-4 d-flex justify-content-start inputVariable" data-value="int">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Integer</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-center">
+                            <div class="col-4 d-flex justify-content-center inputVariable" data-value="long">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Long</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-end">
+                            <div class="col-4 d-flex justify-content-end inputVariable" data-value="float">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Float</div>
                             </div>
                         </div>
                         <div class="col-12 d-flex justify-content-between mt-2" style="width: 100%;">
-                            <div class="col-4 d-flex justify-content-start">
+                            <div class="col-4 d-flex justify-content-start inputVariable" data-value="double">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Double</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-center">
+                            <div class="col-4 d-flex justify-content-center inputVariable" data-value="char">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Char</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-end">
+                            <div class="col-4 d-flex justify-content-end inputVariable" data-value="string">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">String</div>
                             </div>
                         </div>

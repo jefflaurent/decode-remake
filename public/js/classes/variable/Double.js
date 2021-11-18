@@ -12,7 +12,9 @@ class Double extends Variable {
             return new Return(false, 'Double value cannot be empty!')
         else if(this.value.includes('.')) {
             if(this.value.split('.')[1].length > 15)
-                return new Return(false, 'Double value cannot store more than 15 decimal digits!')       
+                return new Return(false, 'Double value cannot store more than 15 decimal digits!')  
+            else 
+                return new Return(true, '')     
         }
         else 
             return new Return(true, '')

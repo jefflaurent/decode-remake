@@ -16,8 +16,11 @@
             </div>
         </div>
     </div>
-    <div class="col-lg-12">
-        
+    <div class="col-lg-12 mt-4">
+        @include('components.block-code')
+    </div>
+    <div class="col-lg-12 mt-4">
+        @include('components.result')
     </div>
 </div>
 

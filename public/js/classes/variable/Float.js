@@ -12,7 +12,9 @@ class Float extends Variable {
             return new Return(false, 'Float value cannot be empty!')
         else if(this.value.includes('.')) {
             if(this.value.split('.')[1].length > 7)
-                return new Return(false, 'Float value cannot store more than 7 decimal digits!')       
+                return new Return(false, 'Float value cannot store more than 7 decimal digits!')     
+            else
+                return new Return(true, '')
         }
         else 
             return new Return(true, '')
