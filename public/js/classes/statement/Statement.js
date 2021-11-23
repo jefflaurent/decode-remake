@@ -1,7 +1,7 @@
 
 class Statement {
     
-    writeToCanvas() {
+    writeToCanvas(canvas) {
 
     }
     

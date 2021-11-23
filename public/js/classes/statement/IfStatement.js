@@ -1,5 +1,3 @@
-import If from "./helper/If.js"
-import Else from './helper/Else.js'
 import Statement from "./Statement.js"
 
 class IfStatement extends Statement {
@@ -9,25 +7,39 @@ class IfStatement extends Statement {
         this.level = level
         this.statementId = this.generateId(statementId)
         this.ifOperations = ifOperations
+        this.init()
     }
 
     generateId(number) {
         return 'if-statement-' + number
     }
 
+    updateIfOperations(ifOperations) {
+        this.ifOperations = ifOperations
+        this.init()
+    }
+
+    init() {
+        if(this.ifOperations != null)
+            for(let i = 0; i < this.ifOperations.length; i++)
+                this.ifOperations[i].parent = this
+    }
+
     writeToCanvas(canvas) {
         for(let i = 0; i < this.ifOperations.length; i++) {
-            let ifOperation = this.ifOperations[i]
-            
-            if(ifOperation instanceof If) {
-                if(i == 0) ifOperation.writeToCanvas(canvas, false)
-                else ifOperation.writeToCanvas(canvas, true)
-            }
-            else if(ifOperation instanceof Else)
-                console.log(this.ifOperations[i].statementId)
+            if(i != this.ifOperations.length - 1)
+                this.ifOperations[i].writeToCanvas(canvas, false)
+            else 
+                this.ifOperations[i].writeToCanvas(canvas, true)
         }
     }
 
+    callClickEvent(x, y) {
+        this.option.clickOption(x, y)
+        if(this.ifOperations != null)
+            for(let i = 0; i < this.ifOperations.length; i++)
+                this.ifOperations[i].callClickEvent(x, y)
+    }
 }
 
 export default IfStatement

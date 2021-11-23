@@ -1,8 +1,8 @@
+
 import Statement from "../Statement.js"
-import Coordinate from "./Coordinate.js"
 import Option from "./Option.js"
 
-class If extends Statement {
+class Elif extends Statement {
     
     constructor(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
         super()
@@ -17,7 +17,7 @@ class If extends Statement {
     }
 
     generateId(number) {
-        return 'if-' + number
+        return 'elif-' + number
     }
 
     init() {
@@ -33,7 +33,7 @@ class If extends Statement {
 
     writeToCanvas(canvas, isClose) {
         let upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE
-        let text = 'IF '
+        let text = 'ELSE IF'
         
         if(this.logicalOperator != null)
             text += '( ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' ' 
@@ -41,15 +41,12 @@ class If extends Statement {
         else
             text += '( ' + this.firstCondition.generateBlockCodeText() + ' )' 
 
-        // IF( condition )
+        // ELSE IF( condition )
         let coordinate = canvas.writeText(this.level, text)
-        // Create option button for IfStatement
-        this.parent.option = new Option(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        this.parent.option.parent = this.parent
-        this.parent.option.draw(canvas)
 
-        // Create option button for If
-        this.createOption(this.statementId, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE, this)
+        // Create option button
+        this.option = new Option(this.statementId, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
+        this.option.draw(canvas)
         canvas.updateLastPosition()
 
         // Body
@@ -58,21 +55,15 @@ class If extends Statement {
                 this.childStatement[i].writeToCanvas(canvas)
         }
 
-        // Create bridge 
+        // Create bridge
         canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION)
 
         // Optional close block
         if(isClose) {
-            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE
+            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE * (this.level-1)
             let coorY = canvas.LAST_POSITION + canvas.SPACE
             canvas.createBackground('#00A9E2', text, coorX, coorY)
         }
-    }
-
-    createOption(canvas, coorX, coorY) {
-        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        this.option.parent = this
-        this.option.draw(canvas)
     }
 
     callClickEvent(x, y) {
@@ -83,4 +74,4 @@ class If extends Statement {
     }
 }
 
-export default If
+export default Elif

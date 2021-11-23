@@ -24,7 +24,7 @@ class Canvas {
     }
 
     writeText(level, text) {
-        let coorX = this.PADDING * level
+        let coorX = this.PADDING + this.LINE_HEIGHT * (level-1) + this.SPACE * (level-1)
         let coorY = this.LAST_POSITION + this.SPACE
         let coor = this.createBackground('#00A9E2', text, coorX, coorY)
 
@@ -36,11 +36,12 @@ class Canvas {
     }
 
     createBackground(color, text, coorX, coorY) {
-        let width = this.ctx.measureText(text).width * 2
+        let width = 0
+        width = this.ctx.measureText(text).width * 1.5
         this.ctx.beginPath()
         this.ctx.fillStyle = color
         this.ctx.fillRect(coorX, coorY, width, this.LINE_HEIGHT)
-        this.LAST_POSITION += this.LINE_HEIGHT + this.SPACE
+        this.updateLastPosition()
 
         return new Coordinate(coorX + width, this.LAST_POSITION)
     }
@@ -48,7 +49,7 @@ class Canvas {
     createBridge(color, level, upper, lower) {
         this.ctx.beginPath()
         this.ctx.fillStyle = color
-        this.ctx.fillRect(this.PADDING, upper, this.LINE_HEIGHT, lower - upper)
+        this.ctx.fillRect(this.PADDING + this.SPACE * (level-1) + this.LINE_HEIGHT * (level-1), upper, this.LINE_HEIGHT, (lower - upper)) 
     }
 
     createOption(coorX, coorY) {
@@ -57,6 +58,10 @@ class Canvas {
         this.ctx.fillRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT)
         this.ctx.fillStyle = '#FFFFFF'
         this.ctx.fillText('>>', coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7)
+    }
+
+    updateLastPosition() {
+        this.LAST_POSITION += this.LINE_HEIGHT + this.SPACE
     }
 }
 

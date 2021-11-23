@@ -49,8 +49,17 @@ class DeclareStatement extends Statement {
             text = 'STRING ' + this.variable.name + ' = ' +  `"` + this.variable.value + `"`
 
         let coordinate = canvas.writeText(this.level, text)
-        this.option = new Option(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        canvas.createOption(this.option.coorX, this.option.coorY)
+        this.createOption(canvas, coordinate.x + canvas.SPACE,  coordinate.y - canvas.LINE_HEIGHT)
+    }
+
+    createOption(canvas, coorX, coorY) {
+        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
+        this.option.parent = this
+        this.option.draw(canvas)
+    }
+    
+    callClickEvent(x, y) {
+        this.option.clickOption(x, y)
     }
 }
 

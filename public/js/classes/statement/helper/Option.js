@@ -1,9 +1,10 @@
+import Canvas from "../../canvas/Canvas.js"
 
 class Option {
 
     constructor(optionId, coorX, coorY, width, height) {
         this.optionId = this.generateId(optionId)
-        this.coorX = coorX 
+        this.coorX = coorX
         this.coorY = coorY
         this.width = width
         this.height = height
@@ -14,16 +15,17 @@ class Option {
     }
 
     draw(canvas) {
-        canvas.createOption(this.coorX, this.coorY, this.width, this.height)
+        canvas.createOption(this.coorX, this.coorY)
     }
 
     clickOption(x, y) {
         if(x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
-            console.log(this.optionId)
+            
         }
-        else {
-            console.log('out of bounds')
-        }
+    }
+
+    createSelection() {
+
     }
 }
 

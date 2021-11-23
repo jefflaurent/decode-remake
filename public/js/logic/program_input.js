@@ -7,6 +7,7 @@ import String from '../classes/variable/String.js'
 import DeclareStatement from '../classes/statement/DeclareStatement.js'
 import IfStatement from '../classes/statement/IfStatement.js'
 import If from '../classes/statement/helper/If.js'
+import Elif from '../classes/statement/helper/Elif.js'
 import Condition from '../classes/statement/helper/Condition.js'
 import Canvas from '../classes/canvas/Canvas.js'
 
@@ -305,16 +306,10 @@ $(document).ready(function() {
 
 
     // Canvas logic
-
     initializeCanvas()
-    resizeCanvas()
 
     var blockCanvasInstance // instance of Class Canvas
     var canvas
-    var ctx
-    var SPACE = 5
-    var PADDING = 30
-    var LINE_HEIGHT = 40
 
     // Initialize Canvas
     function initializeCanvas() {
@@ -322,6 +317,11 @@ $(document).ready(function() {
         resizeCanvas()
         handleCanvasClick()
         blockCanvasInstance = new Canvas(canvas, canvas.getContext('2d'), 40, 30, 5)
+        
+        setTimeout(function() {
+            blockCanvasInstance.createOption(30, 30)
+            blockCanvasInstance.updateLastPosition()
+        }, 50)
     }
 
     // Resize Canvas
@@ -342,12 +342,12 @@ $(document).ready(function() {
             const rect = canvas.getBoundingClientRect()
             let x = event.clientX - rect.left
             let y = event.clientY - rect.top
+            let statement 
 
             for(let i = 0; i < listStatement.length; i++) {
-                listStatement[i].option.clickOption(x, y)
+                statement = listStatement[i]
+                statement.callClickEvent(x, y)
             }
-
-            console.log('x: ' + x + ' y: ' + y)
         })
     }
 
@@ -361,19 +361,31 @@ $(document).ready(function() {
         }
     }
 
-    // function testing() {
-    //     let ifStatement = new IfStatement(1, statementCount++, null)
-    //     let ifs = []
-    //     let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt', 5), '==', new Integer('testInt2', 10), true), null, null, null)
-    //     let secondIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt3', 10), '!=', new Integer('testInt4', 200), false), null, null, null)
-
-    //     ifs.push(firstIf)
-    //     ifs.push(secondIf)
+    function testing() {
         
-    //     ifStatement.ifOperations = ifs
+        let ifStatement = new IfStatement(1, statementCount++, null)
+        let ifs = []
+        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt', 5), '==', new Integer('testInt2', 10), true), null, null, null)
+        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger', 10))
+        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger', 25))
+        let childStatements = []
+        childStatements.push(child1)
+        childStatements.push(child2)
+        firstIf.updateChildStatement(childStatements)
 
-    //     ifStatement.writeToCanvas(blockCanvasInstance)
-    // }
+        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt3', 10), '!=', new Integer('testInt4', 200), false), null, null, null)
+        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt4', 10), '!=', new Integer('testInt6', 200), false), null, null, null)
+
+        ifs.push(firstIf)
+        ifs.push(secondIf)
+        ifs.push(thirdIf)
+        
+        ifStatement.updateIfOperations(ifs)
+
+        ifStatement.writeToCanvas(blockCanvasInstance)
+
+        listStatement.push(ifStatement)
+    }
 })
 
 

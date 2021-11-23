@@ -10,7 +10,7 @@
                 <div class="container-fluid">
                     <!-- Block of Code -->
                     <div class="col-sm-12 p-2">
-                        <div class="col-sm-12" id="block-code-container" style="">
+                        <div class="col-sm-12" id="block-code-container" style="overflow: auto">
                             <canvas id="block-code-canvas"></canvas>
                         </div>
                     </div>
