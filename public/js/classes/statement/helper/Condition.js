@@ -1,28 +1,29 @@
-import Char from "../../variable/Char.js"
-import String from "../../variable/String.js"
-
-class Condition {
-
-    constructor(firstVariable, operator, secondVariable, isCustomValue) {
-        this.firstVariable = firstVariable
-        this.operator = operator
-        this.secondVariable = secondVariable
-        this.isCustomValue = isCustomValue
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Char_1 = __importDefault(require("../../variable/Char"));
+var String_1 = __importDefault(require("../../variable/String"));
+var Condition = /** @class */ (function () {
+    function Condition(firstVariable, operator, secondVariable, isCustomValue) {
+        this.firstVariable = firstVariable;
+        this.operator = operator;
+        this.secondVariable = secondVariable;
+        this.isCustomValue = isCustomValue;
     }
-
-    generateBlockCodeText() {
-        if(this.isCustomValue) {
-            if(this.secondVariable instanceof Char)
-                return this.firstVariable.name + ' ' + this.operator + ` '` + this.secondVariable.value + `'`
-            else if(this.secondVariable instanceof String)
-                return this.firstVariable.name + ' ' + this.operator + ` "` + this.secondVariable.value + `"`
-            else 
-                return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value
+    Condition.prototype.generateBlockCodeText = function () {
+        if (this.isCustomValue) {
+            if (this.secondVariable instanceof Char_1.default)
+                return this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+            else if (this.secondVariable instanceof String_1.default)
+                return this.firstVariable.name + ' ' + this.operator + " \"" + this.secondVariable.value + "\"";
+            else
+                return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
         }
-        else 
-            return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name
-    }
-    
-}
-
-export default Condition
+        else
+            return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+    };
+    return Condition;
+}());
+exports.default = Condition;

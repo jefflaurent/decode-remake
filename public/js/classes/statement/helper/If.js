@@ -1,86 +1,90 @@
-import Statement from "../Statement.js"
-import Coordinate from "./Coordinate.js"
-import Option from "./Option.js"
-
-class If extends Statement {
-    
-    constructor(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
-        super()
-        this.level = level
-        this.statementId = this.generateId(statementId)
-        this.firstCondition = firstCondition
-        this.logicalOperator = logicalOperator
-        this.secondCondition = secondCondition
-        this.childStatement = childStatement
-        this.option = null
-        this.init()
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Statement_1 = __importDefault(require("../Statement"));
+var Option_1 = __importDefault(require("./Option"));
+var If = /** @class */ (function (_super) {
+    __extends(If, _super);
+    function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
+        var _this = _super.call(this, level) || this;
+        _this.statementId = _this.generateId(statementId);
+        _this.firstCondition = firstCondition;
+        _this.logicalOperator = logicalOperator;
+        _this.secondCondition = secondCondition;
+        _this.childStatement = childStatement;
+        _this.option = undefined;
+        _this.init();
+        return _this;
     }
-
-    generateId(number) {
-        return 'if-' + number
-    }
-
-    init() {
-        if(this.childStatement != null)
-            for(let i = 0; i < this.childStatement.length; i++)
-                this.childStatement[i].parent = this
-    }
-
-    updateChildStatement(childStatement) {
-        this.childStatement = childStatement
-        this.init()
-    }
-
-    writeToCanvas(canvas, isClose) {
-        let upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE
-        let text = 'IF '
-        
-        if(this.logicalOperator != null)
-            text += '( ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' ' 
-                    + this.secondCondition.generateBlockCodeText() + ' )'
+    If.prototype.generateId = function (number) {
+        return 'if-' + number;
+    };
+    If.prototype.init = function () {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].parent = this;
+    };
+    If.prototype.updateChildStatement = function (childStatement) {
+        this.childStatement = childStatement;
+        this.init();
+    };
+    If.prototype.writeToCanvas = function (canvas, isClose) {
+        var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
+        var text = 'IF ';
+        if (this.logicalOperator != undefined && this.secondCondition != undefined)
+            text += '( ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' '
+                + this.secondCondition.generateBlockCodeText() + ' )';
         else
-            text += '( ' + this.firstCondition.generateBlockCodeText() + ' )' 
-
+            text += '( ' + this.firstCondition.generateBlockCodeText() + ' )';
         // IF( condition )
-        let coordinate = canvas.writeText(this.level, text)
+        var coordinate = canvas.writeText(this.level, text);
         // Create option button for IfStatement
-        this.parent.option = new Option(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        this.parent.option.parent = this.parent
-        this.parent.option.draw(canvas)
-
+        this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
+        this.parent.option.parent = this.parent;
+        this.parent.option.draw(canvas);
         // Create option button for If
-        this.createOption(this.statementId, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE, this)
-        canvas.updateLastPosition()
-
+        this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
+        canvas.updateLastPosition();
         // Body
-        if(this.childStatement != null) {
-            for(let i = 0; i < this.childStatement.length; i++)
-                this.childStatement[i].writeToCanvas(canvas)
+        if (this.childStatement != null) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].writeToCanvas(canvas);
         }
-
         // Create bridge 
-        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION)
-
+        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
         // Optional close block
-        if(isClose) {
-            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE
-            let coorY = canvas.LAST_POSITION + canvas.SPACE
-            canvas.createBackground('#00A9E2', text, coorX, coorY)
+        if (isClose) {
+            var coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level - 1) + canvas.SPACE;
+            var coorY = canvas.LAST_POSITION + canvas.SPACE;
+            canvas.createBackground('#00A9E2', text, coorX, coorY);
         }
-    }
-
-    createOption(canvas, coorX, coorY) {
-        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        this.option.parent = this
-        this.option.draw(canvas)
-    }
-
-    callClickEvent(x, y) {
-        this.option.clickOption(x, y)
-        if(this.childStatement != null)
-            for(let i = 0; i < this.childStatement.length; i++)
-                this.childStatement[i].option.clickOption(x, y)
-    }
-}
-
-export default If
+    };
+    If.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
+        this.option.parent = this;
+        this.option.draw(canvas);
+    };
+    If.prototype.callClickEvent = function (x, y) {
+        this.option.clickOption(x, y);
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].option.clickOption(x, y);
+    };
+    return If;
+}(Statement_1.default));
+exports.default = If;
