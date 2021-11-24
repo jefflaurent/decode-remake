@@ -5,9 +5,10 @@ import Integer from '../variable/Integer'
 import Long from '../variable/Long'
 import String from '../variable/String'
 import Statement from './Statement'
-import Option from './helper/Option'
+import Option from './helper/options/Option'
 import Variable from '../variable/Variable'
 import Canvas from '../canvas/Canvas'
+import ReturnClick from '../../utilities/ReturnClick'
 
 class DeclareStatement extends Statement {
 
@@ -17,7 +18,6 @@ class DeclareStatement extends Statement {
         super(level)
         this.variable = variable
         this.statementId = this.generateId(statementId)
-        this.option = undefined
     }
 
     generateId(number: number): string {
@@ -56,14 +56,13 @@ class DeclareStatement extends Statement {
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number): void {
-        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
+        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this)
         this.option.parent = this
         this.option.draw(canvas)
     }
     
-    callClickEvent(x: number, y: number): void {
-        this.option.clickOption(x, y)
-        console.log('im here')
+    callClickEvent(canvas: Canvas, x: number, y: number): ReturnClick | undefined {
+        return this.option.clickOption(canvas, x, y)
     }
 }
 

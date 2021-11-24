@@ -17,7 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement_1 = __importDefault(require("../Statement"));
-var Option_1 = __importDefault(require("./Option"));
+var Option_1 = __importDefault(require("./options/Option"));
 var If = /** @class */ (function (_super) {
     __extends(If, _super);
     function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
@@ -54,8 +54,7 @@ var If = /** @class */ (function (_super) {
         // IF( condition )
         var coordinate = canvas.writeText(this.level, text);
         // Create option button for IfStatement
-        this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
-        this.parent.option.parent = this.parent;
+        this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this.parent);
         this.parent.option.draw(canvas);
         // Create option button for If
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
@@ -75,15 +74,20 @@ var If = /** @class */ (function (_super) {
         }
     };
     If.prototype.createOption = function (canvas, coorX, coorY) {
-        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
-        this.option.parent = this;
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
     };
-    If.prototype.callClickEvent = function (x, y) {
-        this.option.clickOption(x, y);
-        if (this.childStatement != undefined)
-            for (var i = 0; i < this.childStatement.length; i++)
-                this.childStatement[i].option.clickOption(x, y);
+    If.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                tempChild = this.childStatement[i].option.clickOption(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        }
+        return temp ? temp : tempChild;
     };
     return If;
 }(Statement_1.default));

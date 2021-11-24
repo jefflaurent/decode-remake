@@ -48,11 +48,17 @@ var IfStatement = /** @class */ (function (_super) {
             }
         }
     };
-    IfStatement.prototype.callClickEvent = function (x, y) {
-        this.option.clickOption(x, y);
-        if (this.ifOperations != null)
-            for (var i = 0; i < this.ifOperations.length; i++)
-                this.ifOperations[i].callClickEvent(x, y);
+    IfStatement.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.ifOperations != undefined) {
+            for (var i = 0; i < this.ifOperations.length; i++) {
+                tempChild = this.ifOperations[i].callClickEvent(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        }
+        return temp ? temp : tempChild;
     };
     return IfStatement;
 }(Statement_1.default));

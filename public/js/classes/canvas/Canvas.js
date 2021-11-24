@@ -53,6 +53,21 @@ var Canvas = /** @class */ (function () {
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText('>>', coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
     };
+    Canvas.prototype.createSelection = function (coorX, coorY, text, color) {
+        this.ctx.beginPath();
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT);
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 6, coorY + this.LINE_HEIGHT / 1.7);
+    };
+    Canvas.prototype.clearOptions = function (coorX, coorY, length) {
+        this.ctx.beginPath();
+        this.ctx.clearRect(coorX, coorY, length * this.LINE_HEIGHT + length * this.SPACE, this.LINE_HEIGHT);
+    };
+    Canvas.prototype.clearSelection = function (coorX, coorY) {
+        this.ctx.beginPath();
+        this.ctx.clearRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT);
+    };
     Canvas.prototype.updateLastPosition = function () {
         this.LAST_POSITION += this.LINE_HEIGHT + this.SPACE;
     };

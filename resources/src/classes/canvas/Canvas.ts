@@ -67,6 +67,24 @@ class Canvas {
         this.ctx.fillText('>>', coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7)
     }
 
+    createSelection(coorX: number, coorY: number, text: string, color: string): void {
+        this.ctx.beginPath()
+        this.ctx.fillStyle = color
+        this.ctx.fillRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT)
+        this.ctx.fillStyle = '#FFFFFF'
+        this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 6, coorY + this.LINE_HEIGHT / 1.7)
+    }
+
+    clearOptions(coorX: number, coorY: number, length: number) {
+        this.ctx.beginPath()
+        this.ctx.clearRect(coorX, coorY, length * this.LINE_HEIGHT + length * this.SPACE, this.LINE_HEIGHT)
+    }
+
+    clearSelection(coorX: number, coorY: number) {
+        this.ctx.beginPath()
+        this.ctx.clearRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT)
+    }
+
     updateLastPosition(): void {
         this.LAST_POSITION += this.LINE_HEIGHT + this.SPACE
     }

@@ -297,11 +297,14 @@ $(document).ready(function () {
             var x = event.clientX - rect.left;
             var y = event.clientY - rect.top;
             var statement;
+            var temp = undefined;
             for (var i = 0; i < listStatement.length; i++) {
                 statement = listStatement[i];
-                statement.callClickEvent(x, y);
+                temp = statement.callClickEvent(blockCanvasInstance, x, y);
+                if (temp != undefined)
+                    break;
             }
-            console.log('called');
+            console.log(temp);
         });
     }
     function pushStatement() {

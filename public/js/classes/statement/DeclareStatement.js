@@ -23,14 +23,13 @@ var Integer_1 = __importDefault(require("../variable/Integer"));
 var Long_1 = __importDefault(require("../variable/Long"));
 var String_1 = __importDefault(require("../variable/String"));
 var Statement_1 = __importDefault(require("./Statement"));
-var Option_1 = __importDefault(require("./helper/Option"));
+var Option_1 = __importDefault(require("./helper/options/Option"));
 var DeclareStatement = /** @class */ (function (_super) {
     __extends(DeclareStatement, _super);
     function DeclareStatement(statementId, level, variable) {
         var _this = _super.call(this, level) || this;
         _this.variable = variable;
         _this.statementId = _this.generateId(statementId);
-        _this.option = undefined;
         return _this;
     }
     DeclareStatement.prototype.generateId = function (number) {
@@ -65,13 +64,12 @@ var DeclareStatement = /** @class */ (function (_super) {
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
     };
     DeclareStatement.prototype.createOption = function (canvas, coorX, coorY) {
-        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.parent = this;
         this.option.draw(canvas);
     };
-    DeclareStatement.prototype.callClickEvent = function (x, y) {
-        this.option.clickOption(x, y);
-        console.log('im here');
+    DeclareStatement.prototype.callClickEvent = function (canvas, x, y) {
+        return this.option.clickOption(canvas, x, y);
     };
     return DeclareStatement;
 }(Statement_1.default));

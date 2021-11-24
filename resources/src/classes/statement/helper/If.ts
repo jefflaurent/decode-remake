@@ -1,7 +1,8 @@
+import ReturnClick from "../../../utilities/ReturnClick"
 import Canvas from "../../canvas/Canvas"
 import Statement from "../Statement"
 import Condition from "./Condition"
-import Option from "./Option"
+import Option from "./options/Option"
 
 class If extends Statement {
     
@@ -51,8 +52,7 @@ class If extends Statement {
         // IF( condition )
         let coordinate = canvas.writeText(this.level, text)
         // Create option button for IfStatement
-        this.parent.option = new Option(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        this.parent.option.parent = this.parent
+        this.parent.option = new Option(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this.parent)
         this.parent.option.draw(canvas)
 
         // Create option button for If
@@ -77,16 +77,22 @@ class If extends Statement {
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number) {
-        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT)
-        this.option.parent = this
+        this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this)
         this.option.draw(canvas)
     }
 
-    callClickEvent(x: number, y: number) {
-        this.option.clickOption(x, y)
-        if(this.childStatement != undefined)
-            for(let i = 0; i < this.childStatement.length; i++)
-                this.childStatement[i].option.clickOption(x, y)
+    callClickEvent(canvas: Canvas, x: number, y: number): ReturnClick | undefined {
+        let temp = this.option.clickOption(canvas, x, y)
+        let tempChild: any = undefined
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                tempChild = this.childStatement[i].option.clickOption(canvas, x, y)
+                if(tempChild != undefined)
+                    break
+            }
+        }
+
+        return temp ? temp : tempChild
     }
 }
 

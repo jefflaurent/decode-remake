@@ -347,13 +347,15 @@ $(document).ready(function() {
             let x = event.clientX - rect.left
             let y = event.clientY - rect.top
             let statement 
+            let temp: any = undefined
 
             for(let i = 0; i < listStatement.length; i++) {
                 statement = listStatement[i]
-                statement.callClickEvent(x, y)
+                temp = statement.callClickEvent(blockCanvasInstance, x, y)
+                if(temp != undefined)
+                    break
             }
-
-            console.log('called')
+            console.log(temp)
         })
     }
 

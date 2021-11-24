@@ -1,3 +1,4 @@
+import ReturnClick from "../../utilities/ReturnClick"
 import Canvas from "../canvas/Canvas"
 import Statement from "./Statement"
 
@@ -38,11 +39,17 @@ class IfStatement extends Statement {
         }
     }
 
-    callClickEvent(x: number, y: number): void {
-        this.option.clickOption(x, y)
-        if(this.ifOperations != null)
-            for(let i = 0; i < this.ifOperations.length; i++)
-                this.ifOperations[i].callClickEvent(x, y)
+    callClickEvent(canvas: Canvas, x: number, y: number): ReturnClick | undefined {
+        let temp = this.option.clickOption(canvas, x, y)
+        let tempChild: any = undefined
+        if(this.ifOperations != undefined) {
+            for(let i = 0; i < this.ifOperations.length; i++) {
+                tempChild = this.ifOperations[i].callClickEvent(canvas, x, y)
+                if(tempChild != undefined)
+                    break
+            }
+        }
+        return temp ? temp : tempChild
     }
 }
 

@@ -54,6 +54,21 @@ var Canvas = /** @class */ (function () {
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText('>>', coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
     };
+    Canvas.prototype.createSelection = function (coorX, coorY, text, color) {
+        this.ctx.beginPath();
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT);
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 6, coorY + this.LINE_HEIGHT / 1.7);
+    };
+    Canvas.prototype.clearOptions = function (coorX, coorY, length) {
+        this.ctx.beginPath();
+        this.ctx.clearRect(coorX, coorY, length * this.LINE_HEIGHT + length * this.SPACE, this.LINE_HEIGHT);
+    };
+    Canvas.prototype.clearSelection = function (coorX, coorY) {
+        this.ctx.beginPath();
+        this.ctx.clearRect(coorX, coorY, this.LINE_HEIGHT, this.LINE_HEIGHT);
+    };
     Canvas.prototype.updateLastPosition = function () {
         this.LAST_POSITION += this.LINE_HEIGHT + this.SPACE;
     };
@@ -87,14 +102,13 @@ var Integer_1 = __importDefault(require("../variable/Integer"));
 var Long_1 = __importDefault(require("../variable/Long"));
 var String_1 = __importDefault(require("../variable/String"));
 var Statement_1 = __importDefault(require("./Statement"));
-var Option_1 = __importDefault(require("./helper/Option"));
+var Option_1 = __importDefault(require("./helper/options/Option"));
 var DeclareStatement = /** @class */ (function (_super) {
     __extends(DeclareStatement, _super);
     function DeclareStatement(statementId, level, variable) {
         var _this = _super.call(this, level) || this;
         _this.variable = variable;
         _this.statementId = _this.generateId(statementId);
-        _this.option = undefined;
         return _this;
     }
     DeclareStatement.prototype.generateId = function (number) {
@@ -129,19 +143,18 @@ var DeclareStatement = /** @class */ (function (_super) {
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
     };
     DeclareStatement.prototype.createOption = function (canvas, coorX, coorY) {
-        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.parent = this;
         this.option.draw(canvas);
     };
-    DeclareStatement.prototype.callClickEvent = function (x, y) {
-        this.option.clickOption(x, y);
-        console.log('im here');
+    DeclareStatement.prototype.callClickEvent = function (canvas, x, y) {
+        return this.option.clickOption(canvas, x, y);
     };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../variable/Char":10,"../variable/Double":11,"../variable/Float":12,"../variable/Integer":13,"../variable/Long":14,"../variable/String":15,"./Statement":4,"./helper/Option":9}],3:[function(require,module,exports){
+},{"../variable/Char":11,"../variable/Double":12,"../variable/Float":13,"../variable/Integer":14,"../variable/Long":15,"../variable/String":16,"./Statement":4,"./helper/options/Option":9}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -192,11 +205,17 @@ var IfStatement = /** @class */ (function (_super) {
             }
         }
     };
-    IfStatement.prototype.callClickEvent = function (x, y) {
-        this.option.clickOption(x, y);
-        if (this.ifOperations != null)
-            for (var i = 0; i < this.ifOperations.length; i++)
-                this.ifOperations[i].callClickEvent(x, y);
+    IfStatement.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.ifOperations != undefined) {
+            for (var i = 0; i < this.ifOperations.length; i++) {
+                tempChild = this.ifOperations[i].callClickEvent(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        }
+        return temp ? temp : tempChild;
     };
     return IfStatement;
 }(Statement_1.default));
@@ -247,7 +266,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../variable/Char":10,"../../variable/String":15}],6:[function(require,module,exports){
+},{"../../variable/Char":11,"../../variable/String":16}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -341,7 +360,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement_1 = __importDefault(require("../Statement"));
-var Option_1 = __importDefault(require("./Option"));
+var Option_1 = __importDefault(require("./options/Option"));
 var If = /** @class */ (function (_super) {
     __extends(If, _super);
     function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
@@ -378,8 +397,7 @@ var If = /** @class */ (function (_super) {
         // IF( condition )
         var coordinate = canvas.writeText(this.level, text);
         // Create option button for IfStatement
-        this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
-        this.parent.option.parent = this.parent;
+        this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this.parent);
         this.parent.option.draw(canvas);
         // Create option button for If
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
@@ -399,49 +417,150 @@ var If = /** @class */ (function (_super) {
         }
     };
     If.prototype.createOption = function (canvas, coorX, coorY) {
-        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT);
-        this.option.parent = this;
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
     };
-    If.prototype.callClickEvent = function (x, y) {
-        this.option.clickOption(x, y);
-        if (this.childStatement != undefined)
-            for (var i = 0; i < this.childStatement.length; i++)
-                this.childStatement[i].option.clickOption(x, y);
+    If.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                tempChild = this.childStatement[i].option.clickOption(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        }
+        return temp ? temp : tempChild;
     };
     return If;
 }(Statement_1.default));
 exports.default = If;
 
-},{"../Statement":4,"./Option":9}],9:[function(require,module,exports){
+},{"../Statement":4,"./options/Option":9}],9:[function(require,module,exports){
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
+var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
+var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
-    function Option(optionId, coorX, coorY, width, height) {
+    function Option(optionId, coorX, coorY, width, height, parent) {
         this.optionId = this.generateId(optionId);
         this.coorX = coorX;
         this.coorY = coorY;
         this.width = width;
         this.height = height;
+        this.isSelectionActive = false;
+        this.parent = parent;
+        this.optionSelection = this.generateOptions();
     }
     Option.prototype.generateId = function (optionId) {
         return 'opt-' + optionId;
     };
+    Option.prototype.generateOptions = function () {
+        var temp = [];
+        if (this.parent instanceof DeclareStatement_1.default) {
+            temp.push(new OptionSelection_1.default('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
+            temp.push(new OptionSelection_1.default('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
+            temp.push(new OptionSelection_1.default('MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent));
+            temp.push(new OptionSelection_1.default('CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent));
+            temp.push(new OptionSelection_1.default('DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent));
+            temp.push(new OptionSelection_1.default('EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent));
+        }
+        else {
+            temp.push(new OptionSelection_1.default('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
+            temp.push(new OptionSelection_1.default('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
+        }
+        return temp;
+    };
     Option.prototype.draw = function (canvas) {
         canvas.createOption(this.coorX, this.coorY);
     };
-    Option.prototype.clickOption = function (x, y) {
+    Option.prototype.clickOption = function (canvas, x, y) {
+        var temp = undefined;
         if (x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
-            console.log(this.optionId);
+            temp = new ReturnClick_1.default(this.parent, 'ARR');
+            if (!this.isSelectionActive) {
+                this.showOptionSelections(canvas);
+            }
+            else {
+                this.clearSelection(canvas, this.optionSelection.length + 1);
+                this.findChildOptionClick(x, y);
+            }
+            this.isSelectionActive = !this.isSelectionActive;
         }
+        else if (this.isSelectionActive) {
+            temp = this.findChildOptionClick(x, y);
+        }
+        return temp;
     };
-    Option.prototype.createSelection = function () {
+    Option.prototype.clearSelection = function (canvas, length) {
+        canvas.clearOptions(this.coorX + canvas.LINE_HEIGHT, this.coorY, length);
+    };
+    Option.prototype.findChildOptionClick = function (x, y) {
+        var temp = undefined;
+        for (var i = 0; i < this.optionSelection.length; i++) {
+            temp = this.optionSelection[i].clickOption(x, y);
+            if (temp != undefined)
+                break;
+        }
+        return temp;
+    };
+    Option.prototype.showOptionSelections = function (canvas) {
+        for (var i = 0; i < this.optionSelection.length; i++) {
+            this.optionSelection[i].draw(canvas);
+        }
     };
     return Option;
 }());
 exports.default = Option;
 
-},{}],10:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":20,"../../DeclareStatement":2,"./OptionSelection":10}],10:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
+var OptionSelection = /** @class */ (function () {
+    function OptionSelection(optionName, optionColor, coorX, currentX, coorY, width, height, parent) {
+        this.optionName = optionName;
+        this.optionColor = optionColor;
+        this.coorX = coorX;
+        this.currentX = currentX;
+        this.coorY = coorY;
+        this.width = width;
+        this.height = height;
+        this.parent = parent;
+    }
+    OptionSelection.prototype.draw = function (canvas) {
+        canvas.createSelection(this.coorX, this.coorY, this.optionName, this.optionColor);
+    };
+    OptionSelection.prototype.clickOption = function (x, y) {
+        if (x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
+            return new ReturnClick_1.default(this.parent, this.optionName);
+        }
+        return undefined;
+    };
+    OptionSelection.prototype.showSelection = function () {
+        // console.log('start clearing')
+        // console.log(canvas)
+        // this.canvas.clearSelection(this.currentX, this.coorY)
+        // console.log('stop clearing')
+        // this.draw(this.canvas, this.currentX, this.coorY)
+        // this.currentX += 1;
+        // if(coorX + this.width <  this.coorX + this.width) {
+        // requestAnimationFrame(this.showSelection.bind(this))
+        // (window as any).requestAnimationFrame(this.showSelection.bind(this))
+        // }
+    };
+    return OptionSelection;
+}());
+exports.default = OptionSelection;
+
+},{"../../../../utilities/ReturnClick":20}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -477,7 +596,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":18,"./Variable":16}],11:[function(require,module,exports){
+},{"../../utilities/Return":19,"./Variable":17}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -519,7 +638,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":18,"./Variable":16}],12:[function(require,module,exports){
+},{"../../utilities/Return":19,"./Variable":17}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -561,7 +680,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":18,"./Variable":16}],13:[function(require,module,exports){
+},{"../../utilities/Return":19,"./Variable":17}],14:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -603,7 +722,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":18,"./Variable":16}],14:[function(require,module,exports){
+},{"../../utilities/Return":19,"./Variable":17}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -643,7 +762,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":18,"./Variable":16}],15:[function(require,module,exports){
+},{"../../utilities/Return":19,"./Variable":17}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -676,7 +795,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":18,"./Variable":16}],16:[function(require,module,exports){
+},{"../../utilities/Return":19,"./Variable":17}],17:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -705,7 +824,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":18}],17:[function(require,module,exports){
+},{"../../utilities/Return":19}],18:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1005,11 +1124,14 @@ $(document).ready(function () {
             var x = event.clientX - rect.left;
             var y = event.clientY - rect.top;
             var statement;
+            var temp = undefined;
             for (var i = 0; i < listStatement.length; i++) {
                 statement = listStatement[i];
-                statement.callClickEvent(x, y);
+                temp = statement.callClickEvent(blockCanvasInstance, x, y);
+                if (temp != undefined)
+                    break;
             }
-            console.log('called');
+            console.log(temp);
         });
     }
     function pushStatement() {
@@ -1041,7 +1163,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/IfStatement":3,"../classes/statement/helper/Condition":5,"../classes/statement/helper/Elif":7,"../classes/statement/helper/If":8,"../classes/variable/Char":10,"../classes/variable/Double":11,"../classes/variable/Float":12,"../classes/variable/Integer":13,"../classes/variable/Long":14,"../classes/variable/String":15}],18:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/IfStatement":3,"../classes/statement/helper/Condition":5,"../classes/statement/helper/Elif":7,"../classes/statement/helper/If":8,"../classes/variable/Char":11,"../classes/variable/Double":12,"../classes/variable/Float":13,"../classes/variable/Integer":14,"../classes/variable/Long":15,"../classes/variable/String":16}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -1053,4 +1175,16 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}]},{},[17]);
+},{}],20:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClick = /** @class */ (function () {
+    function ReturnClick(statement, optionType) {
+        this.statement = statement;
+        this.optionType = optionType;
+    }
+    return ReturnClick;
+}());
+exports.default = ReturnClick;
+
+},{}]},{},[18]);

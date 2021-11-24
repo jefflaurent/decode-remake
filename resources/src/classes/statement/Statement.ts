@@ -1,5 +1,5 @@
 import Canvas from "../canvas/Canvas"
-import Option from "./helper/Option"
+import Option from "./helper/options/Option"
 
 class Statement {
 
