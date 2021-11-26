@@ -44,11 +44,12 @@
         }
 
         #block-code-container {
-            min-height: 30vh;
+            min-height: 40vh;
         }
 
         canvas {
             background-color: #C4C4C4;
+            overflow-x: scroll;
         }
 
         @media (max-width: 991px) {

@@ -205,7 +205,7 @@ $(document).ready(function () {
         // Insert every declared variable and declare statement instance to list
         insertToVariableList();
         // Push statement to canvas
-        pushStatement();
+        drawCanvas();
     });
     $('.declareVariable').on('click', function () {
         var isNumericValue;
@@ -253,8 +253,10 @@ $(document).ready(function () {
             initInputDeclare('Declare Integer');
             testing();
         }
-        else if ($(this).data('value') == 'long')
+        else if ($(this).data('value') == 'long') {
             initInputDeclare('Declare Long');
+            testing2();
+        }
         else if ($(this).data('value') == 'float')
             initInputDeclare('Declare Float');
         else if ($(this).data('value') == 'double')
@@ -268,6 +270,10 @@ $(document).ready(function () {
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
     var canvas;
+    // Variables to handle move and copy
+    var originStatement;
+    var clipboard = undefined;
+    var lastSelectedOption = undefined;
     // Initialize Canvas
     function initializeCanvas() {
         canvas = document.getElementById('block-code-canvas');
@@ -290,6 +296,14 @@ $(document).ready(function () {
         canvas.width = width;
         canvas.height = Math.round(width * aspect);
     }
+    function drawCanvas() {
+        blockCanvasInstance.clearCanvas();
+        var statement;
+        for (var i = 0; i < listStatement.length; i++) {
+            statement = listStatement[i];
+            statement.writeToCanvas(blockCanvasInstance);
+        }
+    }
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', function (event) {
@@ -298,22 +312,44 @@ $(document).ready(function () {
             var y = event.clientY - rect.top;
             var statement;
             var temp = undefined;
+            var returnPaste;
             for (var i = 0; i < listStatement.length; i++) {
                 statement = listStatement[i];
                 temp = statement.callClickEvent(blockCanvasInstance, x, y);
                 if (temp != undefined)
                     break;
             }
-            console.log(temp);
+            if (temp != undefined) {
+                if (temp.option.optionName == 'ARR') {
+                }
+                else if (temp.option.optionName == 'ADD') {
+                }
+                else if (temp.option.optionName == 'PST') {
+                    if (clipboard == undefined) {
+                        alert('Clipboard is empty!');
+                    }
+                    else {
+                        returnPaste = temp.option.handlePaste(temp.statement, clipboard, originStatement, listStatement, lastSelectedOption);
+                        listStatement = returnPaste.listStatement;
+                        if (returnPaste.result == true) {
+                            drawCanvas();
+                            clipboard = undefined;
+                            originStatement = undefined;
+                        }
+                        lastSelectedOption = 'PST';
+                    }
+                }
+                else if (temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
+                    clipboard = temp.statement;
+                    lastSelectedOption = temp.option.optionName;
+                    originStatement = temp.statement.parent;
+                }
+                else if (temp.option.optionName == 'DEL') {
+                }
+                else if (temp.option.optionName == 'EDT') {
+                }
+            }
         });
-    }
-    function pushStatement() {
-        blockCanvasInstance.clearCanvas();
-        var statement;
-        for (var i = 0; i < listStatement.length; i++) {
-            statement = listStatement[i];
-            statement.writeToCanvas(blockCanvasInstance);
-        }
     }
     function testing() {
         var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
@@ -328,8 +364,27 @@ $(document).ready(function () {
         var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
         var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
         ifs.push(firstIf);
-        ifs.push(secondIf);
-        ifs.push(thirdIf);
+        // ifs.push(secondIf)
+        // ifs.push(thirdIf)
+        ifStatement.updateIfOperations(ifs);
+        ifStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(ifStatement);
+    }
+    function testing2() {
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var ifs = [];
+        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
+        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
+        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
+        var childStatements = [];
+        childStatements.push(child1);
+        childStatements.push(child2);
+        firstIf.updateChildStatement(childStatements);
+        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
+        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
+        ifs.push(firstIf);
+        // ifs.push(secondIf)
+        // ifs.push(thirdIf)
         ifStatement.updateIfOperations(ifs);
         ifStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(ifStatement);

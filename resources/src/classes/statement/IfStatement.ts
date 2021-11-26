@@ -13,6 +13,14 @@ class IfStatement extends Statement {
         this.init()
     }
 
+    updateChildLevel(): void {
+        if(this.ifOperations != undefined)
+            for(let i = 0; i < this.ifOperations.length; i++) {
+                this.ifOperations[i].level = this.level
+                this.ifOperations[i].updateChildLevel()
+            }
+    }
+
     generateId(number: number): string {
         return 'if-statement-' + number
     }

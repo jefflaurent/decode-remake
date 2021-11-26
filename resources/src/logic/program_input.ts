@@ -10,6 +10,10 @@ import If from '../classes/statement/helper/If'
 import Elif from '../classes/statement/helper/Elif'
 import Condition from '../classes/statement/helper/Condition'
 import Canvas from '../classes/canvas/Canvas'
+import ReturnClick from '../utilities/ReturnClick'
+import Statement from '../classes/statement/Statement'
+import Else from '../classes/statement/helper/Else'
+import ReturnPaste from '../utilities/ReturnPaste'
 
 $(document).ready(function() {
 
@@ -238,7 +242,7 @@ $(document).ready(function() {
         // Insert every declared variable and declare statement instance to list
         insertToVariableList()
         // Push statement to canvas
-        pushStatement()
+        drawCanvas()
     })
 
     $('.declareVariable').on('click', function() {
@@ -295,8 +299,10 @@ $(document).ready(function() {
             initInputDeclare('Declare Integer')
             testing()
         }
-        else if($(this).data('value') == 'long')
+        else if($(this).data('value') == 'long') {
             initInputDeclare('Declare Long')
+            testing2()
+        }
         else if($(this).data('value') == 'float')
             initInputDeclare('Declare Float')
         else if($(this).data('value') == 'double')
@@ -313,6 +319,11 @@ $(document).ready(function() {
 
     var blockCanvasInstance: Canvas // instance of Class Canvas
     var canvas: any
+
+    // Variables to handle move and copy
+    var originStatement: Statement | undefined
+    var clipboard: Statement | undefined = undefined
+    var lastSelectedOption: string | undefined = undefined 
 
     // Initialize Canvas
     function initializeCanvas() {
@@ -340,26 +351,7 @@ $(document).ready(function() {
         canvas.height = Math.round(width * aspect);
     }
 
-    // Handle Event
-    function handleCanvasClick() {
-        canvas.addEventListener('click', (event: any) => {
-            const rect = canvas.getBoundingClientRect()
-            let x = event.clientX - rect.left
-            let y = event.clientY - rect.top
-            let statement 
-            let temp: any = undefined
-
-            for(let i = 0; i < listStatement.length; i++) {
-                statement = listStatement[i]
-                temp = statement.callClickEvent(blockCanvasInstance, x, y)
-                if(temp != undefined)
-                    break
-            }
-            console.log(temp)
-        })
-    }
-
-    function pushStatement() {
+    function drawCanvas() {
         blockCanvasInstance.clearCanvas()
         let statement
 
@@ -367,6 +359,60 @@ $(document).ready(function() {
             statement = listStatement[i]
             statement.writeToCanvas(blockCanvasInstance)
         }
+    }
+
+    // Handle Event
+    function handleCanvasClick() {
+        canvas.addEventListener('click', (event: any) => {
+            const rect = canvas.getBoundingClientRect()
+            let x = event.clientX - rect.left
+            let y = event.clientY - rect.top
+            let statement 
+            let temp: ReturnClick | undefined = undefined
+            let returnPaste: ReturnPaste
+
+            for(let i = 0; i < listStatement.length; i++) {
+                statement = listStatement[i]
+                temp = statement.callClickEvent(blockCanvasInstance, x, y)
+                if(temp != undefined)
+                    break
+            }
+
+            if(temp != undefined) {
+                if(temp.option.optionName == 'ARR') {
+
+                }
+                else if(temp.option.optionName == 'ADD') {
+                    
+                }
+                else if(temp.option.optionName == 'PST') {
+                    if(clipboard == undefined) {
+                        alert('Clipboard is empty!')
+                    }
+                    else {
+                        returnPaste = temp.option.handlePaste(temp.statement, clipboard, originStatement, listStatement, lastSelectedOption)
+                        listStatement = returnPaste.listStatement
+                        if(returnPaste.result == true) {
+                            drawCanvas()
+                            clipboard = undefined
+                            originStatement = undefined
+                        }
+                        lastSelectedOption = 'PST'
+                    }
+                }
+                else if(temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
+                    clipboard = temp.statement
+                    lastSelectedOption = temp.option.optionName
+                    originStatement = temp.statement.parent
+                }
+                else if(temp.option.optionName == 'DEL') {
+                    
+                }
+                else if(temp.option.optionName == 'EDT') {
+                    
+                }
+            }
+        })
     }
 
     function testing() {
@@ -384,8 +430,33 @@ $(document).ready(function() {
         let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt4', 10), '!=', new Integer('testInt6', 200), false), undefined, undefined, undefined)
 
         ifs.push(firstIf)
-        ifs.push(secondIf)
-        ifs.push(thirdIf)
+        // ifs.push(secondIf)
+        // ifs.push(thirdIf)
+        
+        ifStatement.updateIfOperations(ifs)
+
+        ifStatement.writeToCanvas(blockCanvasInstance)
+
+        listStatement.push(ifStatement)
+    }
+
+    function testing2() {
+        let ifStatement = new IfStatement(1, statementCount++, undefined)
+        let ifs = []
+        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt5', 5), '==', new Integer('testInt10', 10), true), undefined, undefined, undefined)
+        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger2', 10))
+        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger2', 25))
+        let childStatements = []
+        childStatements.push(child1)
+        childStatements.push(child2)
+        firstIf.updateChildStatement(childStatements)
+
+        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt6', 10), '!=', new Integer('testInt8', 200), false), undefined, undefined, undefined)
+        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt7', 10), '!=', new Integer('testInt9', 200), false), undefined, undefined, undefined)
+
+        ifs.push(firstIf)
+        // ifs.push(secondIf)
+        // ifs.push(thirdIf)
         
         ifStatement.updateIfOperations(ifs)
 

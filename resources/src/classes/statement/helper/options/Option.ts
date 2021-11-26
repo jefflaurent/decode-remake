@@ -1,6 +1,7 @@
 import ReturnClick from "../../../../utilities/ReturnClick"
 import Canvas from "../../../canvas/Canvas"
 import DeclareStatement from "../../DeclareStatement"
+import IfStatement from "../../IfStatement"
 import Statement from "../../Statement"
 import OptionSelection from "./OptionSelection"
 
@@ -33,7 +34,7 @@ class Option {
     generateOptions() {
         let temp: OptionSelection[] = []
 
-        if(this.parent instanceof DeclareStatement) {
+        if(this.parent instanceof DeclareStatement || this.parent instanceof IfStatement) {
             temp.push(new OptionSelection('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent))
             temp.push(new OptionSelection('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent))
             temp.push(new OptionSelection('MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent))
@@ -57,7 +58,6 @@ class Option {
         let temp: any = undefined
         
         if(x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
-            temp = new ReturnClick(this.parent, 'ARR')
             if(!this.isSelectionActive) {
                 this.showOptionSelections(canvas)
             }

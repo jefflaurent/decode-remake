@@ -26,6 +26,13 @@ var IfStatement = /** @class */ (function (_super) {
         _this.init();
         return _this;
     }
+    IfStatement.prototype.updateChildLevel = function () {
+        if (this.ifOperations != undefined)
+            for (var i = 0; i < this.ifOperations.length; i++) {
+                this.ifOperations[i].level = this.level;
+                this.ifOperations[i].updateChildLevel();
+            }
+    };
     IfStatement.prototype.generateId = function (number) {
         return 'if-statement-' + number;
     };

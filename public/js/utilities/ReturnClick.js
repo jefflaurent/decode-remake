@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
-    function ReturnClick(statement, optionType) {
+    function ReturnClick(statement, option) {
         this.statement = statement;
-        this.optionType = optionType;
+        this.option = option;
     }
     return ReturnClick;
 }());

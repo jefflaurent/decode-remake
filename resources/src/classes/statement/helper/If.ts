@@ -29,9 +29,11 @@ class If extends Statement {
     }
 
     init(): void {
-        if(this.childStatement != undefined)
-            for(let i = 0; i < this.childStatement.length; i++)
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
                 this.childStatement[i].parent = this
+            }
+        }
     }
 
     updateChildStatement(childStatement: Statement[]): void {
@@ -70,7 +72,7 @@ class If extends Statement {
 
         // Optional close block
         if(isClose) {
-            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE
+            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE * (this.level-1)
             let coorY = canvas.LAST_POSITION + canvas.SPACE
             canvas.createBackground('#00A9E2', text, coorX, coorY)
         }
@@ -86,7 +88,7 @@ class If extends Statement {
         let tempChild: any = undefined
         if(this.childStatement != undefined) {
             for(let i = 0; i < this.childStatement.length; i++) {
-                tempChild = this.childStatement[i].option.clickOption(canvas, x, y)
+                tempChild = this.childStatement[i].callClickEvent(canvas, x, y)
                 if(tempChild != undefined)
                     break
             }

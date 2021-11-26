@@ -154,7 +154,7 @@ var DeclareStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../variable/Char":11,"../variable/Double":12,"../variable/Float":13,"../variable/Integer":14,"../variable/Long":15,"../variable/String":16,"./Statement":4,"./helper/options/Option":9}],3:[function(require,module,exports){
+},{"../variable/Char":12,"../variable/Double":13,"../variable/Float":14,"../variable/Integer":15,"../variable/Long":16,"../variable/String":17,"./Statement":4,"./helper/options/Option":10}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -183,6 +183,13 @@ var IfStatement = /** @class */ (function (_super) {
         _this.init();
         return _this;
     }
+    IfStatement.prototype.updateChildLevel = function () {
+        if (this.ifOperations != undefined)
+            for (var i = 0; i < this.ifOperations.length; i++) {
+                this.ifOperations[i].level = this.level;
+                this.ifOperations[i].updateChildLevel();
+            }
+    };
     IfStatement.prototype.generateId = function (number) {
         return 'if-statement-' + number;
     };
@@ -228,9 +235,20 @@ var Statement = /** @class */ (function () {
     function Statement(level) {
         this.statementId = '';
         this.level = level;
+        this.childStatement = undefined;
     }
+    Statement.prototype.updateChildLevel = function () {
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                this.childStatement[i].level = this.level + 1;
+                this.childStatement[i].updateChildLevel();
+            }
+        }
+    };
     Statement.prototype.generateId = function (number) { };
     Statement.prototype.writeToCanvas = function (canvas, isClose) { };
+    Statement.prototype.updateChildStatement = function (childStatement) { };
+    Statement.prototype.callClickEvent = function (canvas, x, y) { };
     return Statement;
 }());
 exports.default = Statement;
@@ -266,7 +284,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../variable/Char":11,"../../variable/String":16}],6:[function(require,module,exports){
+},{"../../variable/Char":12,"../../variable/String":17}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -340,7 +358,44 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"./If":8}],8:[function(require,module,exports){
+},{"./If":9}],8:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Statement_1 = __importDefault(require("../Statement"));
+var Else = /** @class */ (function (_super) {
+    __extends(Else, _super);
+    function Else(level, statementId, childStatement) {
+        var _this = _super.call(this, level) || this;
+        _this.statementId = _this.generateId(statementId);
+        _this.childStatement = childStatement;
+        return _this;
+    }
+    Else.prototype.updateChildStatement = function (childStatement) {
+    };
+    Else.prototype.generateId = function (number) {
+        return 'else-' + number;
+    };
+    return Else;
+}(Statement_1.default));
+exports.default = Else;
+
+},{"../Statement":4}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -378,9 +433,11 @@ var If = /** @class */ (function (_super) {
         return 'if-' + number;
     };
     If.prototype.init = function () {
-        if (this.childStatement != undefined)
-            for (var i = 0; i < this.childStatement.length; i++)
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
                 this.childStatement[i].parent = this;
+            }
+        }
     };
     If.prototype.updateChildStatement = function (childStatement) {
         this.childStatement = childStatement;
@@ -411,7 +468,7 @@ var If = /** @class */ (function (_super) {
         canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
         // Optional close block
         if (isClose) {
-            var coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level - 1) + canvas.SPACE;
+            var coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level - 1) + canvas.SPACE * (this.level - 1);
             var coorY = canvas.LAST_POSITION + canvas.SPACE;
             canvas.createBackground('#00A9E2', text, coorX, coorY);
         }
@@ -425,7 +482,7 @@ var If = /** @class */ (function (_super) {
         var tempChild = undefined;
         if (this.childStatement != undefined) {
             for (var i = 0; i < this.childStatement.length; i++) {
-                tempChild = this.childStatement[i].option.clickOption(canvas, x, y);
+                tempChild = this.childStatement[i].callClickEvent(canvas, x, y);
                 if (tempChild != undefined)
                     break;
             }
@@ -436,14 +493,14 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../Statement":4,"./options/Option":9}],9:[function(require,module,exports){
+},{"../Statement":4,"./options/Option":10}],10:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
+var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
     function Option(optionId, coorX, coorY, width, height, parent) {
@@ -461,7 +518,7 @@ var Option = /** @class */ (function () {
     };
     Option.prototype.generateOptions = function () {
         var temp = [];
-        if (this.parent instanceof DeclareStatement_1.default) {
+        if (this.parent instanceof DeclareStatement_1.default || this.parent instanceof IfStatement_1.default) {
             temp.push(new OptionSelection_1.default('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
             temp.push(new OptionSelection_1.default('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
             temp.push(new OptionSelection_1.default('MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent));
@@ -481,7 +538,6 @@ var Option = /** @class */ (function () {
     Option.prototype.clickOption = function (canvas, x, y) {
         var temp = undefined;
         if (x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
-            temp = new ReturnClick_1.default(this.parent, 'ARR');
             if (!this.isSelectionActive) {
                 this.showOptionSelections(canvas);
             }
@@ -517,13 +573,19 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":20,"../../DeclareStatement":2,"./OptionSelection":10}],10:[function(require,module,exports){
+},{"../../DeclareStatement":2,"../../IfStatement":3,"./OptionSelection":11}],11:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
+var ReturnPaste_1 = __importDefault(require("../../../../utilities/ReturnPaste"));
+var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
+var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var Elif_1 = __importDefault(require("../Elif"));
+var Else_1 = __importDefault(require("../Else"));
+var If_1 = __importDefault(require("../If"));
 var OptionSelection = /** @class */ (function () {
     function OptionSelection(optionName, optionColor, coorX, currentX, coorY, width, height, parent) {
         this.optionName = optionName;
@@ -540,27 +602,100 @@ var OptionSelection = /** @class */ (function () {
     };
     OptionSelection.prototype.clickOption = function (x, y) {
         if (x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
-            return new ReturnClick_1.default(this.parent, this.optionName);
+            return new ReturnClick_1.default(this.parent, this);
         }
         return undefined;
     };
-    OptionSelection.prototype.showSelection = function () {
-        // console.log('start clearing')
-        // console.log(canvas)
-        // this.canvas.clearSelection(this.currentX, this.coorY)
-        // console.log('stop clearing')
-        // this.draw(this.canvas, this.currentX, this.coorY)
-        // this.currentX += 1;
-        // if(coorX + this.width <  this.coorX + this.width) {
-        // requestAnimationFrame(this.showSelection.bind(this))
-        // (window as any).requestAnimationFrame(this.showSelection.bind(this))
-        // }
+    OptionSelection.prototype.handlePaste = function (destinationStatement, clipboard, originStatement, listStatement, lastSelectedOption) {
+        if (lastSelectedOption != 'MOV' && lastSelectedOption != 'CPY') {
+            alert('Clipboard is empty!');
+            return new ReturnPaste_1.default(false, listStatement);
+        }
+        var targetStatementIdx = -1;
+        var toBeMovedStatementIdx = -1;
+        if (lastSelectedOption == 'CPY' && clipboard instanceof DeclareStatement_1.default) {
+            alert('Could not copy declare statement!');
+            return new ReturnPaste_1.default(false, listStatement);
+        }
+        // Paste after statement
+        if (destinationStatement instanceof DeclareStatement_1.default || destinationStatement instanceof IfStatement_1.default) {
+            var parentStatement = destinationStatement.level == 1 ? undefined : destinationStatement.parent;
+            // Statement is located on level 1
+            if (parentStatement == undefined) {
+                targetStatementIdx = listStatement.indexOf(destinationStatement);
+                if (targetStatementIdx != -1) {
+                    listStatement.splice(targetStatementIdx + 1, 0, clipboard);
+                    if (lastSelectedOption == 'MOV') {
+                        if (originStatement != undefined) {
+                            toBeMovedStatementIdx = originStatement.childStatement.indexOf(clipboard, 0);
+                            originStatement.childStatement.splice(toBeMovedStatementIdx, 1);
+                        }
+                        else {
+                            toBeMovedStatementIdx = listStatement.indexOf(clipboard, 0);
+                            listStatement.splice(toBeMovedStatementIdx, 1);
+                        }
+                    }
+                    return new ReturnPaste_1.default(true, listStatement);
+                }
+            }
+            // Statement is a child of another statement
+            else {
+                if (parentStatement instanceof If_1.default || parentStatement instanceof Elif_1.default || parentStatement instanceof Else_1.default) {
+                    var targetChildStatementList = parentStatement.childStatement;
+                    targetStatementIdx = targetChildStatementList.indexOf(destinationStatement, 0);
+                    if (targetStatementIdx != -1) {
+                        targetChildStatementList.splice(targetStatementIdx + 1, 0, clipboard);
+                        if (lastSelectedOption == 'MOV') {
+                            if (originStatement != undefined) {
+                                toBeMovedStatementIdx = originStatement.childStatement.indexOf(clipboard, 0);
+                                originStatement.childStatement.splice(toBeMovedStatementIdx, 1);
+                                originStatement.updateChildStatement(originStatement.childStatement);
+                            }
+                            else {
+                                toBeMovedStatementIdx = listStatement.indexOf(clipboard, 0);
+                                listStatement.splice(toBeMovedStatementIdx, 1);
+                            }
+                        }
+                        parentStatement.updateChildStatement(targetChildStatementList);
+                        parentStatement.updateChildLevel();
+                        return new ReturnPaste_1.default(true, listStatement);
+                    }
+                }
+            }
+        }
+        // Paste inside statement
+        else if (destinationStatement instanceof If_1.default || destinationStatement instanceof Elif_1.default || destinationStatement instanceof Else_1.default) {
+            var childStatement = destinationStatement.childStatement;
+            console.log('masuk ke sini');
+            if (childStatement == undefined) {
+                var tempChildStatement = [];
+                tempChildStatement.push(clipboard);
+                childStatement = tempChildStatement;
+            }
+            else {
+                childStatement.unshift(clipboard);
+            }
+            destinationStatement.updateChildStatement(childStatement);
+            destinationStatement.updateChildLevel();
+            if (lastSelectedOption == 'MOV') {
+                if (originStatement != undefined) {
+                    toBeMovedStatementIdx = originStatement.childStatement.indexOf(clipboard, 0);
+                    originStatement.childStatement.splice(toBeMovedStatementIdx, 1);
+                    originStatement.updateChildStatement(originStatement.childStatement);
+                }
+                else {
+                    toBeMovedStatementIdx = listStatement.indexOf(clipboard, 0);
+                    listStatement.splice(toBeMovedStatementIdx, 1);
+                }
+            }
+            return new ReturnPaste_1.default(true, listStatement);
+        }
     };
     return OptionSelection;
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":20}],11:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":21,"../../../../utilities/ReturnPaste":22,"../../DeclareStatement":2,"../../IfStatement":3,"../Elif":7,"../Else":8,"../If":9}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -596,7 +731,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":19,"./Variable":17}],12:[function(require,module,exports){
+},{"../../utilities/Return":20,"./Variable":18}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -638,7 +773,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":19,"./Variable":17}],13:[function(require,module,exports){
+},{"../../utilities/Return":20,"./Variable":18}],14:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -680,7 +815,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":19,"./Variable":17}],14:[function(require,module,exports){
+},{"../../utilities/Return":20,"./Variable":18}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -722,7 +857,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":19,"./Variable":17}],15:[function(require,module,exports){
+},{"../../utilities/Return":20,"./Variable":18}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -762,7 +897,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":19,"./Variable":17}],16:[function(require,module,exports){
+},{"../../utilities/Return":20,"./Variable":18}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -795,7 +930,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":19,"./Variable":17}],17:[function(require,module,exports){
+},{"../../utilities/Return":20,"./Variable":18}],18:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -824,7 +959,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":19}],18:[function(require,module,exports){
+},{"../../utilities/Return":20}],19:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1032,7 +1167,7 @@ $(document).ready(function () {
         // Insert every declared variable and declare statement instance to list
         insertToVariableList();
         // Push statement to canvas
-        pushStatement();
+        drawCanvas();
     });
     $('.declareVariable').on('click', function () {
         var isNumericValue;
@@ -1080,8 +1215,10 @@ $(document).ready(function () {
             initInputDeclare('Declare Integer');
             testing();
         }
-        else if ($(this).data('value') == 'long')
+        else if ($(this).data('value') == 'long') {
             initInputDeclare('Declare Long');
+            testing2();
+        }
         else if ($(this).data('value') == 'float')
             initInputDeclare('Declare Float');
         else if ($(this).data('value') == 'double')
@@ -1095,6 +1232,10 @@ $(document).ready(function () {
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
     var canvas;
+    // Variables to handle move and copy
+    var originStatement;
+    var clipboard = undefined;
+    var lastSelectedOption = undefined;
     // Initialize Canvas
     function initializeCanvas() {
         canvas = document.getElementById('block-code-canvas');
@@ -1117,6 +1258,14 @@ $(document).ready(function () {
         canvas.width = width;
         canvas.height = Math.round(width * aspect);
     }
+    function drawCanvas() {
+        blockCanvasInstance.clearCanvas();
+        var statement;
+        for (var i = 0; i < listStatement.length; i++) {
+            statement = listStatement[i];
+            statement.writeToCanvas(blockCanvasInstance);
+        }
+    }
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', function (event) {
@@ -1125,22 +1274,44 @@ $(document).ready(function () {
             var y = event.clientY - rect.top;
             var statement;
             var temp = undefined;
+            var returnPaste;
             for (var i = 0; i < listStatement.length; i++) {
                 statement = listStatement[i];
                 temp = statement.callClickEvent(blockCanvasInstance, x, y);
                 if (temp != undefined)
                     break;
             }
-            console.log(temp);
+            if (temp != undefined) {
+                if (temp.option.optionName == 'ARR') {
+                }
+                else if (temp.option.optionName == 'ADD') {
+                }
+                else if (temp.option.optionName == 'PST') {
+                    if (clipboard == undefined) {
+                        alert('Clipboard is empty!');
+                    }
+                    else {
+                        returnPaste = temp.option.handlePaste(temp.statement, clipboard, originStatement, listStatement, lastSelectedOption);
+                        listStatement = returnPaste.listStatement;
+                        if (returnPaste.result == true) {
+                            drawCanvas();
+                            clipboard = undefined;
+                            originStatement = undefined;
+                        }
+                        lastSelectedOption = 'PST';
+                    }
+                }
+                else if (temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
+                    clipboard = temp.statement;
+                    lastSelectedOption = temp.option.optionName;
+                    originStatement = temp.statement.parent;
+                }
+                else if (temp.option.optionName == 'DEL') {
+                }
+                else if (temp.option.optionName == 'EDT') {
+                }
+            }
         });
-    }
-    function pushStatement() {
-        blockCanvasInstance.clearCanvas();
-        var statement;
-        for (var i = 0; i < listStatement.length; i++) {
-            statement = listStatement[i];
-            statement.writeToCanvas(blockCanvasInstance);
-        }
     }
     function testing() {
         var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
@@ -1155,15 +1326,34 @@ $(document).ready(function () {
         var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
         var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
         ifs.push(firstIf);
-        ifs.push(secondIf);
-        ifs.push(thirdIf);
+        // ifs.push(secondIf)
+        // ifs.push(thirdIf)
+        ifStatement.updateIfOperations(ifs);
+        ifStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(ifStatement);
+    }
+    function testing2() {
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var ifs = [];
+        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
+        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
+        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
+        var childStatements = [];
+        childStatements.push(child1);
+        childStatements.push(child2);
+        firstIf.updateChildStatement(childStatements);
+        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
+        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
+        ifs.push(firstIf);
+        // ifs.push(secondIf)
+        // ifs.push(thirdIf)
         ifStatement.updateIfOperations(ifs);
         ifStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(ifStatement);
     }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/IfStatement":3,"../classes/statement/helper/Condition":5,"../classes/statement/helper/Elif":7,"../classes/statement/helper/If":8,"../classes/variable/Char":11,"../classes/variable/Double":12,"../classes/variable/Float":13,"../classes/variable/Integer":14,"../classes/variable/Long":15,"../classes/variable/String":16}],19:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/IfStatement":3,"../classes/statement/helper/Condition":5,"../classes/statement/helper/Elif":7,"../classes/statement/helper/If":9,"../classes/variable/Char":12,"../classes/variable/Double":13,"../classes/variable/Float":14,"../classes/variable/Integer":15,"../classes/variable/Long":16,"../classes/variable/String":17}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -1175,16 +1365,28 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
-    function ReturnClick(statement, optionType) {
+    function ReturnClick(statement, option) {
         this.statement = statement;
-        this.optionType = optionType;
+        this.option = option;
     }
     return ReturnClick;
 }());
 exports.default = ReturnClick;
 
-},{}]},{},[18]);
+},{}],22:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnPaste = /** @class */ (function () {
+    function ReturnPaste(result, listStatement) {
+        this.result = result;
+        this.listStatement = listStatement;
+    }
+    return ReturnPaste;
+}());
+exports.default = ReturnPaste;
+
+},{}]},{},[19]);

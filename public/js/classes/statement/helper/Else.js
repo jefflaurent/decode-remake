@@ -25,6 +25,8 @@ var Else = /** @class */ (function (_super) {
         _this.childStatement = childStatement;
         return _this;
     }
+    Else.prototype.updateChildStatement = function (childStatement) {
+    };
     Else.prototype.generateId = function (number) {
         return 'else-' + number;
     };

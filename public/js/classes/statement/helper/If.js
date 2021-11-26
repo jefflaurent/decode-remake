@@ -35,9 +35,11 @@ var If = /** @class */ (function (_super) {
         return 'if-' + number;
     };
     If.prototype.init = function () {
-        if (this.childStatement != undefined)
-            for (var i = 0; i < this.childStatement.length; i++)
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
                 this.childStatement[i].parent = this;
+            }
+        }
     };
     If.prototype.updateChildStatement = function (childStatement) {
         this.childStatement = childStatement;
@@ -68,7 +70,7 @@ var If = /** @class */ (function (_super) {
         canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
         // Optional close block
         if (isClose) {
-            var coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level - 1) + canvas.SPACE;
+            var coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level - 1) + canvas.SPACE * (this.level - 1);
             var coorY = canvas.LAST_POSITION + canvas.SPACE;
             canvas.createBackground('#00A9E2', text, coorX, coorY);
         }
@@ -82,7 +84,7 @@ var If = /** @class */ (function (_super) {
         var tempChild = undefined;
         if (this.childStatement != undefined) {
             for (var i = 0; i < this.childStatement.length; i++) {
-                tempChild = this.childStatement[i].option.clickOption(canvas, x, y);
+                tempChild = this.childStatement[i].callClickEvent(canvas, x, y);
                 if (tempChild != undefined)
                     break;
             }

@@ -3,8 +3,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
+var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
     function Option(optionId, coorX, coorY, width, height, parent) {
@@ -22,7 +22,7 @@ var Option = /** @class */ (function () {
     };
     Option.prototype.generateOptions = function () {
         var temp = [];
-        if (this.parent instanceof DeclareStatement_1.default) {
+        if (this.parent instanceof DeclareStatement_1.default || this.parent instanceof IfStatement_1.default) {
             temp.push(new OptionSelection_1.default('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
             temp.push(new OptionSelection_1.default('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
             temp.push(new OptionSelection_1.default('MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent));
@@ -42,7 +42,6 @@ var Option = /** @class */ (function () {
     Option.prototype.clickOption = function (canvas, x, y) {
         var temp = undefined;
         if (x <= this.coorX + this.width && x >= this.coorX && y <= this.coorY + this.height && y >= this.coorY) {
-            temp = new ReturnClick_1.default(this.parent, 'ARR');
             if (!this.isSelectionActive) {
                 this.showOptionSelections(canvas);
             }
