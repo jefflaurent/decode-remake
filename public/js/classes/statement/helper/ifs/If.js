@@ -16,8 +16,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Statement_1 = __importDefault(require("../Statement"));
-var Option_1 = __importDefault(require("./options/Option"));
+var Statement_1 = __importDefault(require("../../Statement"));
+var Option_1 = __importDefault(require("../options/Option"));
 var If = /** @class */ (function (_super) {
     __extends(If, _super);
     function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
@@ -35,11 +35,9 @@ var If = /** @class */ (function (_super) {
         return 'if-' + number;
     };
     If.prototype.init = function () {
-        if (this.childStatement != undefined) {
-            for (var i = 0; i < this.childStatement.length; i++) {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].parent = this;
-            }
-        }
     };
     If.prototype.updateChildStatement = function (childStatement) {
         this.childStatement = childStatement;
@@ -61,19 +59,12 @@ var If = /** @class */ (function (_super) {
         // Create option button for If
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
         canvas.updateLastPosition();
-        // Body
-        if (this.childStatement != null) {
+        if (this.childStatement != undefined)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
-        }
-        // Create bridge 
         canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
-        // Optional close block
-        if (isClose) {
-            var coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level - 1) + canvas.SPACE * (this.level - 1);
-            var coorY = canvas.LAST_POSITION + canvas.SPACE;
+        if (isClose)
             canvas.writeClosingBlock(this.level, text, 'END IF');
-        }
     };
     If.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);

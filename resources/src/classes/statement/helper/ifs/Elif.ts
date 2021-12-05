@@ -1,7 +1,7 @@
 
-import Canvas from "../../canvas/Canvas"
-import Statement from "../Statement"
-import Condition from "./Condition"
+import Canvas from "../../../canvas/Canvas"
+import Statement from "../../Statement"
+import Condition from "../general/Condition"
 import If from "./If"
 
 class Elif extends If {
@@ -29,25 +29,17 @@ class Elif extends If {
         // ELSE IF( condition )
         let coordinate = canvas.writeText(this.level, text)
 
-        // Create option button
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT),  coordinate.y + canvas.SPACE)
         canvas.updateLastPosition()
 
-        // Body
-        if(this.childStatement != null) {
+        if(this.childStatement != null) 
             for(let i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas)
-        }
 
-        // Create bridge
         canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION)
 
-        // Optional close block
-        if(isClose) {
-            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE * (this.level-1)
-            let coorY = canvas.LAST_POSITION + canvas.SPACE
-            canvas.createBackground('#00A9E2', text, coorX, coorY)
-        }
+        if(isClose) 
+            canvas.writeClosingBlock(this.level, text, 'END IF')
     }
 }
 

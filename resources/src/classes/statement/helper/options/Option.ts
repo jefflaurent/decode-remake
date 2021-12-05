@@ -1,6 +1,7 @@
 import ReturnClick from "../../../../utilities/ReturnClick"
 import Canvas from "../../../canvas/Canvas"
 import DeclareStatement from "../../DeclareStatement"
+import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
 import Statement from "../../Statement"
 import OptionSelection from "./OptionSelection"
@@ -24,7 +25,12 @@ class Option {
         this.height = height
         this.isSelectionActive = false
         this.parent = parent
-        this.optionSelection = this.generateOptions()
+
+        let splitted: string[] = optionId.split('-')
+        if(this.parent instanceof IfStatement || this.parent instanceof DeclareStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer'))
+            this.optionSelection = this.generateCompleteOptions()
+        else
+            this.optionSelection = this.generateOptions()
     }
 
     generateId(optionId: string): string {
@@ -34,18 +40,21 @@ class Option {
     generateOptions() {
         let temp: OptionSelection[] = []
 
-        if(this.parent instanceof DeclareStatement || this.parent instanceof IfStatement) {
-            temp.push(new OptionSelection('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent))
-            temp.push(new OptionSelection('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent))
-            temp.push(new OptionSelection('MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent))
-            temp.push(new OptionSelection('CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent))
-            temp.push(new OptionSelection('DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent))
-            temp.push(new OptionSelection('EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent))
-        }
-        else {
-            temp.push(new OptionSelection('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent))
-            temp.push(new OptionSelection('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent))
-        }
+        temp.push(new OptionSelection(this.optionId, 'ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent))
+        
+        return temp
+    }
+
+    generateCompleteOptions() {
+        let temp: OptionSelection[] = []
+
+        temp.push(new OptionSelection(this.optionId, 'ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent))
         
         return temp
     }
@@ -91,9 +100,8 @@ class Option {
     }
 
     showOptionSelections(canvas: Canvas): void {
-        for(let i = 0; i < this.optionSelection.length; i++) {
+        for(let i = 0; i < this.optionSelection.length; i++)
             this.optionSelection[i].draw(canvas)
-        }
     }
 }
 

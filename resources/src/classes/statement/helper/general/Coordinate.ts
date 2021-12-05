@@ -8,7 +8,7 @@ class Coordinate {
         this.x = x
         this.y = y
     }
-
+    
 }
 
 export default Coordinate

@@ -1,4 +1,4 @@
-import Statement from "../Statement"
+import Statement from "../../Statement"
 
 class Else extends Statement {
 

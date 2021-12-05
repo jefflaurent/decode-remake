@@ -44,12 +44,16 @@
         }
 
         #block-code-container {
-            min-height: 40vh;
+            min-height: 100vh;
+            height: 100vh;
+            width: 100%;
+            overflow: auto;
+            overflow-x: hidden;
         }
 
-        canvas {
+        #block-code-canvas {
             background-color: #C4C4C4;
-            overflow-x: scroll;
+            display: block;
         }
 
         @media (max-width: 991px) {
@@ -68,8 +72,6 @@
     </div>
 
     <script src="/js/jquery-3.6.0.js"></script>
-    <script>var exports = {};</script>
-    <!-- <script src="/js/logic/program_input.js"></script> -->
     <script src="/js/bundles/program_input.js"></script>
     <script src="https://kit.fontawesome.com/2d0a60027c.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>

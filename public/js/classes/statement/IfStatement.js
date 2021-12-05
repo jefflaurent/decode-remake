@@ -46,25 +46,23 @@ var IfStatement = /** @class */ (function (_super) {
                 this.ifOperations[i].parent = this;
     };
     IfStatement.prototype.writeToCanvas = function (canvas) {
-        if (this.ifOperations) {
+        if (this.ifOperations)
             for (var i = 0; i < this.ifOperations.length; i++) {
                 if (i != this.ifOperations.length - 1)
                     this.ifOperations[i].writeToCanvas(canvas, false);
                 else
                     this.ifOperations[i].writeToCanvas(canvas, true);
             }
-        }
     };
     IfStatement.prototype.callClickEvent = function (canvas, x, y) {
         var temp = this.option.clickOption(canvas, x, y);
         var tempChild = undefined;
-        if (this.ifOperations != undefined) {
+        if (this.ifOperations != undefined)
             for (var i = 0; i < this.ifOperations.length; i++) {
                 tempChild = this.ifOperations[i].callClickEvent(canvas, x, y);
                 if (tempChild != undefined)
                     break;
             }
-        }
         return temp ? temp : tempChild;
     };
     return IfStatement;

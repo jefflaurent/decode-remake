@@ -47,21 +47,41 @@ var DeclareStatement = /** @class */ (function (_super) {
             return 'declare-string-' + number;
     };
     DeclareStatement.prototype.writeToCanvas = function (canvas) {
-        var text = '';
-        if (this.variable instanceof Integer_1.default)
-            text = 'INTEGER ' + this.variable.name + ' = ' + this.variable.value;
-        else if (this.variable instanceof Long_1.default)
-            text = 'LONG ' + this.variable.name + ' = ' + this.variable.value;
-        else if (this.variable instanceof Float_1.default)
-            text = 'FLOAT ' + this.variable.name + ' = ' + this.variable.value;
-        else if (this.variable instanceof Double_1.default)
-            text = 'DOUBLE ' + this.variable.name + ' = ' + this.variable.value;
-        else if (this.variable instanceof Char_1.default)
-            text = 'CHAR ' + this.variable.name + ' = ' + "'" + this.variable.value + "'";
-        else if (this.variable instanceof String_1.default)
-            text = 'STRING ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\"";
+        var text = this.getDeclareStatementText(true);
         var coordinate = canvas.writeText(this.level, text);
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
+    };
+    DeclareStatement.prototype.getDeclareStatementText = function (isDeclare) {
+        var text = '';
+        if (isDeclare) {
+            if (this.variable instanceof Integer_1.default)
+                text = 'INTEGER ' + this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Long_1.default)
+                text = 'LONG ' + this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Float_1.default)
+                text = 'FLOAT ' + this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Double_1.default)
+                text = 'DOUBLE ' + this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Char_1.default)
+                text = 'CHAR ' + this.variable.name + ' = ' + "'" + this.variable.value + "'";
+            else if (this.variable instanceof String_1.default)
+                text = 'STRING ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\"";
+        }
+        else {
+            if (this.variable instanceof Integer_1.default)
+                text = this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Long_1.default)
+                text = this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Float_1.default)
+                text = this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Double_1.default)
+                text = this.variable.name + ' = ' + this.variable.value;
+            else if (this.variable instanceof Char_1.default)
+                text = this.variable.name + ' = ' + "'" + this.variable.value + "'";
+            else if (this.variable instanceof String_1.default)
+                text = this.variable.name + ' = ' + "\"" + this.variable.value + "\"";
+        }
+        return text;
     };
     DeclareStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);

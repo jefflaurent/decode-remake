@@ -37,26 +37,25 @@ class IfStatement extends Statement {
     }
 
     writeToCanvas(canvas: Canvas): void {
-        if(this.ifOperations) {
+        if(this.ifOperations)
             for(let i = 0; i < this.ifOperations.length; i++) {
                 if(i != this.ifOperations.length - 1)
                     this.ifOperations[i].writeToCanvas(canvas, false)
                 else 
                     this.ifOperations[i].writeToCanvas(canvas, true)
             }
-        }
     }
 
     callClickEvent(canvas: Canvas, x: number, y: number): ReturnClick | undefined {
         let temp = this.option.clickOption(canvas, x, y)
         let tempChild: any = undefined
-        if(this.ifOperations != undefined) {
+        if(this.ifOperations != undefined)
             for(let i = 0; i < this.ifOperations.length; i++) {
                 tempChild = this.ifOperations[i].callClickEvent(canvas, x, y)
                 if(tempChild != undefined)
                     break
             }
-        }
+
         return temp ? temp : tempChild
     }
 }

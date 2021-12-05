@@ -6,14 +6,15 @@ import Char from '../classes/variable/Char'
 import String from '../classes/variable/String'
 import DeclareStatement from '../classes/statement/DeclareStatement'
 import IfStatement from '../classes/statement/IfStatement'
-import If from '../classes/statement/helper/If'
-import Elif from '../classes/statement/helper/Elif'
-import Condition from '../classes/statement/helper/Condition'
+import If from '../classes/statement/helper/ifs/If'
+import Elif from '../classes/statement/helper/ifs/Elif'
+import Condition from '../classes/statement/helper/general/Condition'
 import Canvas from '../classes/canvas/Canvas'
 import ReturnClick from '../utilities/ReturnClick'
 import Statement from '../classes/statement/Statement'
-import Else from '../classes/statement/helper/Else'
+import Else from '../classes/statement/helper/ifs/Else'
 import ReturnPaste from '../utilities/ReturnPaste'
+import ForStatement from '../classes/statement/ForStatement'
 
 $(document).ready(function() {
 
@@ -303,8 +304,10 @@ $(document).ready(function() {
             initInputDeclare('Declare Long')
             testing2()
         }
-        else if($(this).data('value') == 'float')
+        else if($(this).data('value') == 'float') {
             initInputDeclare('Declare Float')
+            testing3()
+        }
         else if($(this).data('value') == 'double')
             initInputDeclare('Declare Double')
         else if($(this).data('value') == 'char')
@@ -348,7 +351,8 @@ $(document).ready(function() {
         let height = con.height()
     
         canvas.width = width;
-        canvas.height = Math.round(width * aspect);
+        // canvas.height = Math.round(width * aspect);
+        canvas.height = height * 10
     }
 
     function drawCanvas() {
@@ -379,6 +383,7 @@ $(document).ready(function() {
             }
 
             if(temp != undefined) {
+                console.log(temp.option.optionId)
                 if(temp.option.optionName == 'ARR') {
 
                 }
@@ -390,20 +395,25 @@ $(document).ready(function() {
                         alert('Clipboard is empty!')
                     }
                     else {
-                        returnPaste = temp.option.handlePaste(temp.statement, clipboard, originStatement, listStatement, lastSelectedOption)
-                        listStatement = returnPaste.listStatement
-                        if(returnPaste.result == true) {
-                            drawCanvas()
-                            clipboard = undefined
-                            originStatement = undefined
+                        let splitted: string[] = temp.option.optionId.split('-')
+                        let isInner: boolean = splitted[splitted.length-1] == 'inner' ? true : false
+
+                        if(lastSelectedOption == 'MOV') {
+                            returnPaste = temp.option.pasteMove(listStatement, clipboard, temp.statement, isInner)
+                            listStatement = returnPaste.listStatement
+    
+                            if(returnPaste.result == true) {
+                                clipboard = undefined
+                                lastSelectedOption = 'PST'
+                                restructureStatement()
+                                drawCanvas()
+                            }
                         }
-                        lastSelectedOption = 'PST'
                     }
                 }
                 else if(temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
                     clipboard = temp.statement
                     lastSelectedOption = temp.option.optionName
-                    originStatement = temp.statement.parent
                 }
                 else if(temp.option.optionName == 'DEL') {
                     
@@ -413,6 +423,16 @@ $(document).ready(function() {
                 }
             }
         })
+    }
+
+    function restructureStatement(): void {
+        if(listStatement == undefined)
+            return
+        
+        for(let i = 0; i < listStatement.length; i++) {
+            listStatement[i].moveToSurface()
+            listStatement[i].updateChildLevel()
+        }
     }
 
     function testing() {
@@ -430,8 +450,8 @@ $(document).ready(function() {
         let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt4', 10), '!=', new Integer('testInt6', 200), false), undefined, undefined, undefined)
 
         ifs.push(firstIf)
-        // ifs.push(secondIf)
-        // ifs.push(thirdIf)
+        ifs.push(secondIf)
+        ifs.push(thirdIf)
         
         ifStatement.updateIfOperations(ifs)
 
@@ -463,5 +483,37 @@ $(document).ready(function() {
         ifStatement.writeToCanvas(blockCanvasInstance)
 
         listStatement.push(ifStatement)
+    }
+
+    function testing3() {
+        let temp: Statement[] = []
+        let ifStatement = new IfStatement(1, statementCount++, undefined)
+        let ifs = []
+        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt', 5), '==', new Integer('testInt2', 10), true), undefined, undefined, undefined)
+        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger', 10))
+        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger', 25))
+        let childStatements = []
+        childStatements.push(child1)
+        childStatements.push(child2)
+        firstIf.updateChildStatement(childStatements)
+
+        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt3', 10), '!=', new Integer('testInt4', 200), false), undefined, undefined, undefined)
+        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt4', 10), '!=', new Integer('testInt6', 200), false), undefined, undefined, undefined)
+
+        ifs.push(firstIf)
+        ifs.push(secondIf)
+        ifs.push(thirdIf)
+        
+        ifStatement.updateIfOperations(ifs)
+        temp.push(ifStatement)
+
+        let forStatement = new ForStatement(1, statementCount++, undefined, 
+            new Integer('testInt', 5), true, true, 1, new Condition(new Integer('testInt', 5), '<', new Integer('testInt2', 10), true))
+        
+        forStatement.updateChildStatement(temp)
+        forStatement.updateChildLevel()
+
+        forStatement.writeToCanvas(blockCanvasInstance)
+        listStatement.push(forStatement)
     }
 })

@@ -1,4 +1,4 @@
-import Coordinate from "../statement/helper/Coordinate"
+import Coordinate from "../statement/helper/general/Coordinate"
 
 class Canvas {
     
@@ -38,6 +38,18 @@ class Canvas {
         this.ctx.font = '14px sans-serif'   
         this.ctx.fillStyle = '#FFFFFF'
         this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7)
+
+        return coor
+    }
+
+    writeClosingBlock(level: number, text: string, writtenText: string): Coordinate {
+        let coorX = this.PADDING + this.LINE_HEIGHT * (level-1) + this.SPACE * (level-1)
+        let coorY = this.LAST_POSITION + this.SPACE
+        let coor = this.createBackground('#00A9E2', text, coorX, coorY)
+
+        this.ctx.font = '14px sans-serif'   
+        this.ctx.fillStyle = '#FFFFFF'
+        this.ctx.fillText(writtenText, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7)
 
         return coor
     }

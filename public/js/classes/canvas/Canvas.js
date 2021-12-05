@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Coordinate_1 = __importDefault(require("../statement/helper/Coordinate"));
+var Coordinate_1 = __importDefault(require("../statement/helper/general/Coordinate"));
 var Canvas = /** @class */ (function () {
     function Canvas(canvas, ctx, LINE_HEIGHT, PADDING, SPACE) {
         this.canvas = canvas;
@@ -30,6 +30,15 @@ var Canvas = /** @class */ (function () {
         this.ctx.font = '14px sans-serif';
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
+        return coor;
+    };
+    Canvas.prototype.writeClosingBlock = function (level, text, writtenText) {
+        var coorX = this.PADDING + this.LINE_HEIGHT * (level - 1) + this.SPACE * (level - 1);
+        var coorY = this.LAST_POSITION + this.SPACE;
+        var coor = this.createBackground('#00A9E2', text, coorX, coorY);
+        this.ctx.font = '14px sans-serif';
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillText(writtenText, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
         return coor;
     };
     Canvas.prototype.createBackground = function (color, text, coorX, coorY) {

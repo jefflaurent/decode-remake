@@ -25,6 +25,11 @@ class Statement {
         }
     }
 
+    moveToSurface(): void {
+        this.level = 1
+        this.parent = undefined
+    }
+
     generateId(number: number) {}
     writeToCanvas(canvas: Canvas,  isClose?: boolean) {}
     updateChildStatement(childStatement: Statement[]): void {}

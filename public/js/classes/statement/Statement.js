@@ -14,6 +14,10 @@ var Statement = /** @class */ (function () {
             }
         }
     };
+    Statement.prototype.moveToSurface = function () {
+        this.level = 1;
+        this.parent = undefined;
+    };
     Statement.prototype.generateId = function (number) { };
     Statement.prototype.writeToCanvas = function (canvas, isClose) { };
     Statement.prototype.updateChildStatement = function (childStatement) { };

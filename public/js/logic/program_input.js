@@ -11,10 +11,11 @@ var Char_1 = __importDefault(require("../classes/variable/Char"));
 var String_1 = __importDefault(require("../classes/variable/String"));
 var DeclareStatement_1 = __importDefault(require("../classes/statement/DeclareStatement"));
 var IfStatement_1 = __importDefault(require("../classes/statement/IfStatement"));
-var If_1 = __importDefault(require("../classes/statement/helper/If"));
-var Elif_1 = __importDefault(require("../classes/statement/helper/Elif"));
-var Condition_1 = __importDefault(require("../classes/statement/helper/Condition"));
+var If_1 = __importDefault(require("../classes/statement/helper/ifs/If"));
+var Elif_1 = __importDefault(require("../classes/statement/helper/ifs/Elif"));
+var Condition_1 = __importDefault(require("../classes/statement/helper/general/Condition"));
 var Canvas_1 = __importDefault(require("../classes/canvas/Canvas"));
+var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -257,8 +258,10 @@ $(document).ready(function () {
             initInputDeclare('Declare Long');
             testing2();
         }
-        else if ($(this).data('value') == 'float')
+        else if ($(this).data('value') == 'float') {
             initInputDeclare('Declare Float');
+            testing3();
+        }
         else if ($(this).data('value') == 'double')
             initInputDeclare('Declare Double');
         else if ($(this).data('value') == 'char')
@@ -294,7 +297,8 @@ $(document).ready(function () {
         var width = con.width();
         var height = con.height();
         canvas.width = width;
-        canvas.height = Math.round(width * aspect);
+        // canvas.height = Math.round(width * aspect);
+        canvas.height = height * 10;
     }
     function drawCanvas() {
         blockCanvasInstance.clearCanvas();
@@ -320,6 +324,7 @@ $(document).ready(function () {
                     break;
             }
             if (temp != undefined) {
+                console.log(temp.option.optionId);
                 if (temp.option.optionName == 'ARR') {
                 }
                 else if (temp.option.optionName == 'ADD') {
@@ -329,20 +334,23 @@ $(document).ready(function () {
                         alert('Clipboard is empty!');
                     }
                     else {
-                        returnPaste = temp.option.handlePaste(temp.statement, clipboard, originStatement, listStatement, lastSelectedOption);
-                        listStatement = returnPaste.listStatement;
-                        if (returnPaste.result == true) {
-                            drawCanvas();
-                            clipboard = undefined;
-                            originStatement = undefined;
+                        var splitted = temp.option.optionId.split('-');
+                        var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
+                        if (lastSelectedOption == 'MOV') {
+                            returnPaste = temp.option.pasteMove(listStatement, clipboard, temp.statement, isInner);
+                            listStatement = returnPaste.listStatement;
+                            if (returnPaste.result == true) {
+                                clipboard = undefined;
+                                lastSelectedOption = 'PST';
+                                restructureStatement();
+                                drawCanvas();
+                            }
                         }
-                        lastSelectedOption = 'PST';
                     }
                 }
                 else if (temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
                     clipboard = temp.statement;
                     lastSelectedOption = temp.option.optionName;
-                    originStatement = temp.statement.parent;
                 }
                 else if (temp.option.optionName == 'DEL') {
                 }
@@ -350,6 +358,14 @@ $(document).ready(function () {
                 }
             }
         });
+    }
+    function restructureStatement() {
+        if (listStatement == undefined)
+            return;
+        for (var i = 0; i < listStatement.length; i++) {
+            listStatement[i].moveToSurface();
+            listStatement[i].updateChildLevel();
+        }
     }
     function testing() {
         var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
@@ -364,8 +380,8 @@ $(document).ready(function () {
         var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
         var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
         ifs.push(firstIf);
-        // ifs.push(secondIf)
-        // ifs.push(thirdIf)
+        ifs.push(secondIf);
+        ifs.push(thirdIf);
         ifStatement.updateIfOperations(ifs);
         ifStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(ifStatement);
@@ -388,5 +404,29 @@ $(document).ready(function () {
         ifStatement.updateIfOperations(ifs);
         ifStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(ifStatement);
+    }
+    function testing3() {
+        var temp = [];
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var ifs = [];
+        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt', 5), '==', new Integer_1.default('testInt2', 10), true), undefined, undefined, undefined);
+        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger', 10));
+        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger', 25));
+        var childStatements = [];
+        childStatements.push(child1);
+        childStatements.push(child2);
+        firstIf.updateChildStatement(childStatements);
+        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
+        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
+        ifs.push(firstIf);
+        ifs.push(secondIf);
+        ifs.push(thirdIf);
+        ifStatement.updateIfOperations(ifs);
+        temp.push(ifStatement);
+        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, new Integer_1.default('testInt', 5), true, true, 1, new Condition_1.default(new Integer_1.default('testInt', 5), '<', new Integer_1.default('testInt2', 10), true));
+        forStatement.updateChildStatement(temp);
+        forStatement.updateChildLevel();
+        forStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(forStatement);
     }
 });

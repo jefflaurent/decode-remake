@@ -1,8 +1,8 @@
-import ReturnClick from "../../../utilities/ReturnClick"
-import Canvas from "../../canvas/Canvas"
-import Statement from "../Statement"
-import Condition from "./Condition"
-import Option from "./options/Option"
+import ReturnClick from "../../../../utilities/ReturnClick"
+import Canvas from "../../../canvas/Canvas"
+import Statement from "../../Statement"
+import Condition from "../general/Condition"
+import Option from "../options/Option"
 
 class If extends Statement {
     
@@ -29,11 +29,9 @@ class If extends Statement {
     }
 
     init(): void {
-        if(this.childStatement != undefined) {
-            for(let i = 0; i < this.childStatement.length; i++) {
+        if(this.childStatement != undefined)
+            for(let i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].parent = this
-            }
-        }
     }
 
     updateChildStatement(childStatement: Statement[]): void {
@@ -61,21 +59,14 @@ class If extends Statement {
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE)
         canvas.updateLastPosition()
 
-        // Body
-        if(this.childStatement != null) {
+        if(this.childStatement != undefined)
             for(let i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas)
-        }
 
-        // Create bridge 
         canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION)
 
-        // Optional close block
-        if(isClose) {
-            let coorX = canvas.PADDING + canvas.LINE_HEIGHT * (this.level-1) + canvas.SPACE * (this.level-1)
-            let coorY = canvas.LAST_POSITION + canvas.SPACE
-            canvas.createBackground('#00A9E2', text, coorX, coorY)
-        }
+        if(isClose) 
+            canvas.writeClosingBlock(this.level, text, 'END IF')
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number) {

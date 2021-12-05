@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
+var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
@@ -15,25 +16,29 @@ var Option = /** @class */ (function () {
         this.height = height;
         this.isSelectionActive = false;
         this.parent = parent;
-        this.optionSelection = this.generateOptions();
+        var splitted = optionId.split('-');
+        if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
+            this.optionSelection = this.generateCompleteOptions();
+        else
+            this.optionSelection = this.generateOptions();
     }
     Option.prototype.generateId = function (optionId) {
         return 'opt-' + optionId;
     };
     Option.prototype.generateOptions = function () {
         var temp = [];
-        if (this.parent instanceof DeclareStatement_1.default || this.parent instanceof IfStatement_1.default) {
-            temp.push(new OptionSelection_1.default('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
-            temp.push(new OptionSelection_1.default('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
-            temp.push(new OptionSelection_1.default('MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent));
-            temp.push(new OptionSelection_1.default('CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent));
-            temp.push(new OptionSelection_1.default('DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent));
-            temp.push(new OptionSelection_1.default('EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent));
-        }
-        else {
-            temp.push(new OptionSelection_1.default('ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
-            temp.push(new OptionSelection_1.default('PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
-        }
+        temp.push(new OptionSelection_1.default(this.optionId, 'ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
+        temp.push(new OptionSelection_1.default(this.optionId, 'PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
+        return temp;
+    };
+    Option.prototype.generateCompleteOptions = function () {
+        var temp = [];
+        temp.push(new OptionSelection_1.default(this.optionId, 'ADD', '#2948e3', this.coorX + 45, this.coorX, this.coorY, 40, 40, this.parent));
+        temp.push(new OptionSelection_1.default(this.optionId, 'PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent));
+        temp.push(new OptionSelection_1.default(this.optionId, 'MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent));
+        temp.push(new OptionSelection_1.default(this.optionId, 'CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent));
+        temp.push(new OptionSelection_1.default(this.optionId, 'DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent));
+        temp.push(new OptionSelection_1.default(this.optionId, 'EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent));
         return temp;
     };
     Option.prototype.draw = function (canvas) {
@@ -69,9 +74,8 @@ var Option = /** @class */ (function () {
         return temp;
     };
     Option.prototype.showOptionSelections = function (canvas) {
-        for (var i = 0; i < this.optionSelection.length; i++) {
+        for (var i = 0; i < this.optionSelection.length; i++)
             this.optionSelection[i].draw(canvas);
-        }
     };
     return Option;
 }());

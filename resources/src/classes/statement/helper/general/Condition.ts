@@ -1,6 +1,6 @@
-import Char from "../../variable/Char"
-import String from "../../variable/String"
-import Variable from "../../variable/Variable"
+import Char from "../../../variable/Char"
+import String from "../../../variable/String"
+import Variable from "../../../variable/Variable"
 
 class Condition {
 
@@ -28,7 +28,6 @@ class Condition {
         else 
             return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name
     }
-    
 }
 
 export default Condition

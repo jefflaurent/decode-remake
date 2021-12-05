@@ -36,23 +36,44 @@ class DeclareStatement extends Statement {
     }
 
     writeToCanvas(canvas: Canvas): void {
-        let text = ''
-
-        if(this.variable instanceof Integer)
-            text = 'INTEGER ' + this.variable.name + ' = ' + this.variable.value
-        else if(this.variable instanceof Long)
-            text = 'LONG ' + this.variable.name + ' = ' + this.variable.value
-        else if(this.variable instanceof Float)
-            text = 'FLOAT ' + this.variable.name + ' = ' + this.variable.value
-        else if(this.variable instanceof Double)
-            text = 'DOUBLE ' + this.variable.name + ' = ' + this.variable.value
-        else if(this.variable instanceof Char)
-            text = 'CHAR ' + this.variable.name + ' = ' + "'" + this.variable.value + "'"
-        else if(this.variable instanceof String)
-            text = 'STRING ' + this.variable.name + ' = ' +  `"` + this.variable.value + `"`
-
+        let text = this.getDeclareStatementText(true)
         let coordinate = canvas.writeText(this.level, text)
         this.createOption(canvas, coordinate.x + canvas.SPACE,  coordinate.y - canvas.LINE_HEIGHT)
+    }
+
+    getDeclareStatementText(isDeclare: boolean): string {
+        let text = ''
+
+        if(isDeclare) {
+            if(this.variable instanceof Integer)
+                text = 'INTEGER ' + this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Long)
+                text = 'LONG ' + this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Float)
+                text = 'FLOAT ' + this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Double)
+                text = 'DOUBLE ' + this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Char)
+                text = 'CHAR ' + this.variable.name + ' = ' + "'" + this.variable.value + "'"
+            else if(this.variable instanceof String)
+                text = 'STRING ' + this.variable.name + ' = ' +  `"` + this.variable.value + `"`
+        }
+        else {
+            if(this.variable instanceof Integer)
+                text = this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Long)
+                text = this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Float)
+                text = this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Double)
+                text = this.variable.name + ' = ' + this.variable.value
+            else if(this.variable instanceof Char)
+                text = this.variable.name + ' = ' + "'" + this.variable.value + "'"
+            else if(this.variable instanceof String)
+                text = this.variable.name + ' = ' +  `"` + this.variable.value + `"`
+        }
+
+        return text
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number): void {
