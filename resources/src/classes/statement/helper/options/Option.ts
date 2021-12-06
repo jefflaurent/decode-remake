@@ -4,6 +4,7 @@ import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
 import Statement from "../../Statement"
+import SwitchStatement from "../../SwitchStatement"
 import OptionSelection from "./OptionSelection"
 
 class Option {
@@ -27,7 +28,8 @@ class Option {
         this.parent = parent
 
         let splitted: string[] = optionId.split('-')
-        if(this.parent instanceof IfStatement || this.parent instanceof DeclareStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer'))
+        if(this.parent instanceof IfStatement || this.parent instanceof DeclareStatement 
+            || this.parent instanceof SwitchStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer'))
             this.optionSelection = this.generateCompleteOptions()
         else
             this.optionSelection = this.generateOptions()

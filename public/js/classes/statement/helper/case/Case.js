@@ -18,60 +18,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
-var If = /** @class */ (function (_super) {
-    __extends(If, _super);
-    function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
+var Case = /** @class */ (function (_super) {
+    __extends(Case, _super);
+    function Case(level, statementId, condition, childStatement, isDefault) {
         var _this = _super.call(this, level) || this;
-        _this.statementId = _this.generateId(statementId);
-        _this.firstCondition = firstCondition;
-        _this.logicalOperator = logicalOperator;
-        _this.secondCondition = secondCondition;
         _this.childStatement = childStatement;
+        _this.condition = condition;
         _this.color = '#2bea15';
-        _this.option = undefined;
-        _this.init();
+        _this.statementId = _this.generateId(statementId);
+        _this.isDefault = isDefault;
         return _this;
     }
-    If.prototype.generateId = function (number) {
-        return 'if-' + number;
-    };
-    If.prototype.init = function () {
+    Case.prototype.init = function () {
         if (this.childStatement != undefined)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].parent = this;
     };
-    If.prototype.updateChildStatement = function (childStatement) {
+    Case.prototype.generateId = function (statementId) {
+        return 'case-statement-' + statementId;
+    };
+    Case.prototype.updateChildLevel = function () {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++) {
+                this.childStatement[i].level = this.level + 1;
+                this.childStatement[i].updateChildLevel();
+            }
+    };
+    Case.prototype.updateChildStatement = function (childStatement) {
         this.childStatement = childStatement;
         this.init();
     };
-    If.prototype.writeToCanvas = function (canvas, isClose) {
+    Case.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
-        var text = 'IF ';
-        if (this.logicalOperator != undefined && this.secondCondition != undefined)
-            text += '( ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' '
-                + this.secondCondition.generateBlockCodeText() + ' )';
+        var text = '';
+        if (!this.isDefault)
+            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t';
         else
-            text += '( ' + this.firstCondition.generateBlockCodeText() + ' )';
-        // IF( condition )
+            text = 'DEFAULT:' + '\t\t\t\t\t\t';
         var coordinate = canvas.writeText(this.level, text, this.color);
-        // Create option button for IfStatement
-        this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this.parent);
-        this.parent.option.draw(canvas);
-        // Create option button for If
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
         canvas.updateLastPosition();
-        if (this.childStatement != undefined)
+        if (this.childStatement) {
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
+        }
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
-        if (isClose)
-            canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
+        canvas.writeClosingBlock(this.level, text, 'END CASE\t\t\t\t\t\t', this.color);
     };
-    If.prototype.createOption = function (canvas, coorX, coorY) {
+    Case.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
     };
-    If.prototype.callClickEvent = function (canvas, x, y) {
+    Case.prototype.callClickEvent = function (canvas, x, y) {
         var temp = this.option.clickOption(canvas, x, y);
         var tempChild = undefined;
         if (this.childStatement != undefined) {
@@ -83,6 +81,6 @@ var If = /** @class */ (function (_super) {
         }
         return temp ? temp : tempChild;
     };
-    return If;
+    return Case;
 }(Statement_1.default));
-exports.default = If;
+exports.default = Case;

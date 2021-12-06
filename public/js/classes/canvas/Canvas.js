@@ -23,19 +23,19 @@ var Canvas = /** @class */ (function () {
         this.ctx.fillStyle = '#C4C4C4';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
-    Canvas.prototype.writeText = function (level, text) {
+    Canvas.prototype.writeText = function (level, text, color) {
         var coorX = this.PADDING + this.LINE_HEIGHT * (level - 1) + this.SPACE * (level - 1);
         var coorY = this.LAST_POSITION + this.SPACE;
-        var coor = this.createBackground('#00A9E2', text, coorX, coorY);
+        var coor = this.createBackground(color, text, coorX, coorY);
         this.ctx.font = '14px sans-serif';
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
         return coor;
     };
-    Canvas.prototype.writeClosingBlock = function (level, text, writtenText) {
+    Canvas.prototype.writeClosingBlock = function (level, text, writtenText, color) {
         var coorX = this.PADDING + this.LINE_HEIGHT * (level - 1) + this.SPACE * (level - 1);
         var coorY = this.LAST_POSITION + this.SPACE;
-        var coor = this.createBackground('#00A9E2', text, coorX, coorY);
+        var coor = this.createBackground(color, text, coorX, coorY);
         this.ctx.font = '14px sans-serif';
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText(writtenText, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);

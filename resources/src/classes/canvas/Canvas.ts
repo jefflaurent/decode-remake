@@ -30,10 +30,10 @@ class Canvas {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
     }
 
-    writeText(level: number, text: string): Coordinate {
+    writeText(level: number, text: string, color: string): Coordinate {
         let coorX = this.PADDING + this.LINE_HEIGHT * (level-1) + this.SPACE * (level-1)
         let coorY = this.LAST_POSITION + this.SPACE
-        let coor = this.createBackground('#00A9E2', text, coorX, coorY)
+        let coor = this.createBackground(color, text, coorX, coorY)
 
         this.ctx.font = '14px sans-serif'   
         this.ctx.fillStyle = '#FFFFFF'
@@ -42,10 +42,10 @@ class Canvas {
         return coor
     }
 
-    writeClosingBlock(level: number, text: string, writtenText: string): Coordinate {
+    writeClosingBlock(level: number, text: string, writtenText: string, color: string): Coordinate {
         let coorX = this.PADDING + this.LINE_HEIGHT * (level-1) + this.SPACE * (level-1)
         let coorY = this.LAST_POSITION + this.SPACE
-        let coor = this.createBackground('#00A9E2', text, coorX, coorY)
+        let coor = this.createBackground(color, text, coorX, coorY)
 
         this.ctx.font = '14px sans-serif'   
         this.ctx.fillStyle = '#FFFFFF'

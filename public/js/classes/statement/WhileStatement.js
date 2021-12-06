@@ -16,73 +16,74 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var DeclareStatement_1 = __importDefault(require("./DeclareStatement"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
-var ForStatement = /** @class */ (function (_super) {
-    __extends(ForStatement, _super);
-    function ForStatement(level, statementId, childStatement, variable, variableIsNew, isIncrement, addValueBy, condition) {
+var WhileStatement = /** @class */ (function (_super) {
+    __extends(WhileStatement, _super);
+    function WhileStatement(level, statementId, isWhile, childStatement, firstCondition, logicalOperator, secondCondition) {
         var _this = _super.call(this, level) || this;
+        _this.logicalOperator = undefined;
+        _this.secondCondition = undefined;
+        _this.isWhile = isWhile;
         _this.statementId = _this.generateId(statementId);
         _this.childStatement = childStatement;
-        _this.variable = variable;
-        _this.variableIsNew = variableIsNew;
-        _this.isIncrement = isIncrement;
-        _this.addValueBy = addValueBy;
-        _this.condition = condition;
+        _this.firstCondition = firstCondition;
+        _this.logicalOperator = logicalOperator;
+        _this.secondCondition = secondCondition;
         _this.color = '#00A9E2';
         _this.option = [];
+        _this.init();
         return _this;
     }
-    ForStatement.prototype.generateId = function (number) {
-        return 'for-statement-' + number;
+    WhileStatement.prototype.generateId = function (statementId) {
+        return this.isWhile ? 'while-statement-' + statementId : 'do-while-statement-' + statementId;
     };
-    ForStatement.prototype.init = function () {
+    WhileStatement.prototype.init = function () {
         if (this.childStatement != undefined)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].parent = this;
     };
-    ForStatement.prototype.updateChildStatement = function (childStatement) {
+    WhileStatement.prototype.updateChildStatement = function (childStatement) {
         this.childStatement = childStatement;
         this.init();
     };
-    ForStatement.prototype.writeToCanvas = function (canvas) {
+    WhileStatement.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
-        var text = 'FOR ( ';
-        var declareStatement = new DeclareStatement_1.default(-1, -1, this.variable);
+        var text = '';
+        var conditionText = this.generateConditionText();
+        var coordinate;
         this.option = [];
-        text += declareStatement.getDeclareStatementText(this.variableIsNew) + '; ';
-        text += this.condition.generateBlockCodeText() + '; ';
-        if (this.isIncrement) {
-            if (this.addValueBy == 1)
-                text += this.variable.name + '++ )';
-            else
-                text += this.variable.name + ' += ' + this.addValueBy + ' )';
-        }
-        else {
-            if (this.addValueBy == 1)
-                text += this.variable.name + '-- )';
-            else
-                text += this.variable.name + ' -= ' + this.addValueBy + ' )';
-        }
-        // FOR ( ; ; )
-        var coordinate = canvas.writeText(this.level, text, this.color);
+        if (this.isWhile)
+            text = conditionText;
+        else
+            text = 'DO\t\t\t\t';
+        if (this.isWhile)
+            coordinate = canvas.writeText(this.level, text, this.color);
+        else
+            coordinate = canvas.writeClosingBlock(this.level, conditionText, text, this.color);
         this.option.push(new Option_1.default(this.statementId + '-outer', coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this));
         this.option[0].draw(canvas);
-        // Create option button for IfStatement
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
         canvas.updateLastPosition();
         if (this.childStatement != undefined)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
-        canvas.writeClosingBlock(this.level, text, 'END FOR', this.color);
+        if (this.isWhile)
+            canvas.writeClosingBlock(this.level, text, 'END WHILE', this.color);
+        else
+            canvas.writeText(this.level, conditionText, this.color);
     };
-    ForStatement.prototype.createOption = function (canvas, coorX, coorY) {
+    WhileStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option.push(new Option_1.default(this.statementId + '-inner', coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this));
         this.option[1].draw(canvas);
     };
-    ForStatement.prototype.callClickEvent = function (canvas, x, y) {
+    WhileStatement.prototype.generateConditionText = function () {
+        return this.secondCondition ? 'WHILE ( ' + this.firstCondition.generateBlockCodeText() + ' '
+            + this.logicalOperator + ' ' + this.secondCondition.generateBlockCodeText() + ' )' :
+            'WHILE ( ' + this.firstCondition.generateBlockCodeText() + ' )';
+    };
+    WhileStatement.prototype.callClickEvent = function (canvas, x, y) {
         var tempOption = undefined;
         var tempChild = undefined;
         for (var i = 0; i < this.option.length; i++) {
@@ -99,6 +100,6 @@ var ForStatement = /** @class */ (function (_super) {
                 }
         return tempOption ? tempOption : tempChild;
     };
-    return ForStatement;
+    return WhileStatement;
 }(Statement_1.default));
-exports.default = ForStatement;
+exports.default = WhileStatement;

@@ -16,6 +16,9 @@ var Elif_1 = __importDefault(require("../classes/statement/helper/ifs/Elif"));
 var Condition_1 = __importDefault(require("../classes/statement/helper/general/Condition"));
 var Canvas_1 = __importDefault(require("../classes/canvas/Canvas"));
 var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"));
+var SwitchStatement_1 = __importDefault(require("../classes/statement/SwitchStatement"));
+var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
+var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -262,10 +265,14 @@ $(document).ready(function () {
             initInputDeclare('Declare Float');
             testing3();
         }
-        else if ($(this).data('value') == 'double')
+        else if ($(this).data('value') == 'double') {
             initInputDeclare('Declare Double');
-        else if ($(this).data('value') == 'char')
+            testing4();
+        }
+        else if ($(this).data('value') == 'char') {
             initInputDeclare('Declare Char');
+            testing5();
+        }
         else if ($(this).data('value') == 'string')
             initInputDeclare('Declare String');
     });
@@ -324,7 +331,6 @@ $(document).ready(function () {
                     break;
             }
             if (temp != undefined) {
-                console.log(temp.option.optionId);
                 if (temp.option.optionName == 'ARR') {
                 }
                 else if (temp.option.optionName == 'ADD') {
@@ -399,8 +405,6 @@ $(document).ready(function () {
         var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
         var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
         ifs.push(firstIf);
-        // ifs.push(secondIf)
-        // ifs.push(thirdIf)
         ifStatement.updateIfOperations(ifs);
         ifStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(ifStatement);
@@ -428,5 +432,22 @@ $(document).ready(function () {
         forStatement.updateChildLevel();
         forStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(forStatement);
+    }
+    function testing4() {
+        var temp = [];
+        var switchStatement;
+        temp.push(new Case_1.default(2, statementCount++, new Condition_1.default(new Integer_1.default('tempInt', 5), '==', new Integer_1.default('tempInt2', 10), true), undefined, false));
+        temp.push(new Case_1.default(2, statementCount++, undefined, undefined, true));
+        switchStatement = new SwitchStatement_1.default(1, statementCount++, new Integer_1.default('tempInt', 5), undefined);
+        switchStatement.updateChildStatement(temp);
+        switchStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(switchStatement);
+    }
+    function testing5() {
+        var temp = [];
+        var whileStatement;
+        whileStatement = new WhileStatement_1.default(1, statementCount++, true, undefined, new Condition_1.default(new Long_1.default('testLong', '15'), '<', new Long_1.default('testLong2', '500'), false), 'OR', new Condition_1.default(new Double_1.default('testDouble', '15'), '<', new Double_1.default('testDouble2', '500'), true));
+        whileStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(whileStatement);
     }
 });

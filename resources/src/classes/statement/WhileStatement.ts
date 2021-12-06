@@ -1,40 +1,32 @@
 import ReturnClick from "../../utilities/ReturnClick";
 import Canvas from "../canvas/Canvas";
-import Double from "../variable/Double";
-import Float from "../variable/Float";
-import Integer from "../variable/Integer";
-import Long from "../variable/Long";
-import DeclareStatement from "./DeclareStatement";
 import Condition from "./helper/general/Condition";
 import Option from "./helper/options/Option";
 import Statement from "./Statement";
 
-class ForStatement extends Statement {
-    
-    variable: Integer | Float | Double | Long
-    childStatement: Statement[] | undefined
-    variableIsNew: boolean
-    isIncrement: boolean
-    addValueBy: number
-    condition: Condition
-    option: Option[]
+class WhileStatement extends Statement {
 
-    constructor(level: number, statementId: number, childStatement: Statement[] | undefined, variable: Integer | Float | Double | Long, 
-        variableIsNew: boolean, isIncrement: boolean, addValueBy: number, condition: Condition) {
+    option: Option[]
+    isWhile: boolean
+    firstCondition: Condition
+    logicalOperator: string | undefined = undefined
+    secondCondition: Condition | undefined = undefined
+
+    constructor(level: number, statementId: number, isWhile: boolean, childStatement: Statement[] | undefined, firstCondition: Condition, logicalOperator?: string, secondCondition?: Condition) {
         super(level)
+        this.isWhile = isWhile
         this.statementId = this.generateId(statementId)
         this.childStatement = childStatement
-        this.variable = variable
-        this.variableIsNew = variableIsNew
-        this.isIncrement = isIncrement
-        this.addValueBy = addValueBy
-        this.condition = condition
+        this.firstCondition = firstCondition
+        this.logicalOperator = logicalOperator
+        this.secondCondition = secondCondition
         this.color = '#00A9E2'
         this.option = []
+        this.init()
     }
 
-    generateId(number: number): string {
-        return 'for-statement-' + number
+    generateId(statementId: number): string {
+        return this.isWhile ? 'while-statement-' + statementId : 'do-while-statement-' + statementId
     }
 
     init(): void {
@@ -48,33 +40,26 @@ class ForStatement extends Statement {
         this.init()
     }
 
-    writeToCanvas(canvas: Canvas): void {
+    writeToCanvas(canvas: Canvas) {
         let upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE
-        let text = 'FOR ( '
-        let declareStatement: DeclareStatement = new DeclareStatement(-1, -1, this.variable)
+        let text = ''
+        let conditionText = this.generateConditionText()
+        let coordinate 
         this.option = []
 
-        text += declareStatement.getDeclareStatementText(this.variableIsNew) + '; '
-        text += this.condition.generateBlockCodeText() + '; '
-        if(this.isIncrement) {
-            if(this.addValueBy == 1) 
-                text += this.variable.name + '++ )'
-            else
-                text += this.variable.name + ' += ' + this.addValueBy + ' )'
-        }
-        else {
-            if(this.addValueBy == 1) 
-                text += this.variable.name + '-- )'
-            else
-                text += this.variable.name + ' -= ' + this.addValueBy + ' )'
-        }
+        if(this.isWhile)
+            text = conditionText
+        else
+            text = 'DO\t\t\t\t'
 
-        // FOR ( ; ; )
-        let coordinate = canvas.writeText(this.level, text, this.color)
+        if(this.isWhile)
+            coordinate = canvas.writeText(this.level, text, this.color)
+        else
+            coordinate = canvas.writeClosingBlock(this.level, conditionText, text, this.color)
+
         this.option.push(new Option(this.statementId + '-outer', coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this))
         this.option[0].draw(canvas)
 
-        // Create option button for IfStatement
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE)
         canvas.updateLastPosition()
 
@@ -83,12 +68,22 @@ class ForStatement extends Statement {
                 this.childStatement[i].writeToCanvas(canvas)
 
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION)
-        canvas.writeClosingBlock(this.level, text, 'END FOR', this.color)
+
+        if(this.isWhile)
+            canvas.writeClosingBlock(this.level, text, 'END WHILE', this.color)
+        else
+            canvas.writeText(this.level, conditionText, this.color)
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number) {
         this.option.push(new Option(this.statementId + '-inner', coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this))
         this.option[1].draw(canvas)
+    }
+
+    generateConditionText(): string {
+        return this.secondCondition ? 'WHILE ( ' + this.firstCondition.generateBlockCodeText() + ' '
+            + this.logicalOperator + ' ' + this.secondCondition.generateBlockCodeText() + ' )' : 
+            'WHILE ( ' + this.firstCondition.generateBlockCodeText() + ' )'
     }
 
     callClickEvent(canvas: Canvas, x: number, y: number): ReturnClick | undefined {
@@ -112,4 +107,4 @@ class ForStatement extends Statement {
     }
 }
 
-export default ForStatement
+export default WhileStatement

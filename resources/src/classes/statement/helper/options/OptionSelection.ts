@@ -5,6 +5,9 @@ import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
 import Statement from "../../Statement"
+import SwitchStatement from "../../SwitchStatement"
+import WhileStatement from "../../WhileStatement"
+import Case from "../case/Case"
 import Elif from "../ifs/Elif"
 import Else from "../ifs/Else"
 import If from "../ifs/If"
@@ -52,23 +55,27 @@ export default class OptionSelection {
         
         /** List of possibilities:
           * - Paste after statement
-          * -> Applies to DeclareStatement, IfStatement, ForStatement
+          * -> Applies to DeclareStatement, IfStatement, ForStatement, SwitchStatement
           * - Paste inside a statement
-          * -> Applies to If, Elif, Else, ForStatement
+          * -> Applies to If, Elif, Else, ForStatement, Case
         **/
 
         // Target is located on level 1
         if(targetStatement.parent == undefined) {
-            if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || (targetStatement instanceof ForStatement && !isInner))
+            if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
+                || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard)
-            else if(targetStatement instanceof If || (targetStatement instanceof ForStatement && isInner))
+            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+                || (targetStatement instanceof WhileStatement && isInner))
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
         }
         // Target is a child of another statement
         else {
-            if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || (targetStatement instanceof ForStatement && !isInner))
+            if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement ||  targetStatement instanceof SwitchStatement 
+                || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard)) 
-            else if(targetStatement instanceof If || (targetStatement instanceof ForStatement && isInner))
+            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+                || (targetStatement instanceof WhileStatement && isInner))
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
         }
 

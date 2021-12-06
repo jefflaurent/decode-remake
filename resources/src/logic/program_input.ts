@@ -15,6 +15,9 @@ import Statement from '../classes/statement/Statement'
 import Else from '../classes/statement/helper/ifs/Else'
 import ReturnPaste from '../utilities/ReturnPaste'
 import ForStatement from '../classes/statement/ForStatement'
+import SwitchStatement from '../classes/statement/SwitchStatement'
+import Case from '../classes/statement/helper/case/Case'
+import WhileStatement from '../classes/statement/WhileStatement'
 
 $(document).ready(function() {
 
@@ -308,10 +311,14 @@ $(document).ready(function() {
             initInputDeclare('Declare Float')
             testing3()
         }
-        else if($(this).data('value') == 'double')
+        else if($(this).data('value') == 'double') {
             initInputDeclare('Declare Double')
-        else if($(this).data('value') == 'char')
+            testing4()
+        }
+        else if($(this).data('value') == 'char') {
             initInputDeclare('Declare Char')
+            testing5()
+        }
         else if($(this).data('value') == 'string')
             initInputDeclare('Declare String')
     })
@@ -383,7 +390,6 @@ $(document).ready(function() {
             }
 
             if(temp != undefined) {
-                console.log(temp.option.optionId)
                 if(temp.option.optionName == 'ARR') {
 
                 }
@@ -454,7 +460,6 @@ $(document).ready(function() {
         ifs.push(thirdIf)
         
         ifStatement.updateIfOperations(ifs)
-
         ifStatement.writeToCanvas(blockCanvasInstance)
 
         listStatement.push(ifStatement)
@@ -475,8 +480,6 @@ $(document).ready(function() {
         let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt7', 10), '!=', new Integer('testInt9', 200), false), undefined, undefined, undefined)
 
         ifs.push(firstIf)
-        // ifs.push(secondIf)
-        // ifs.push(thirdIf)
         
         ifStatement.updateIfOperations(ifs)
 
@@ -515,5 +518,27 @@ $(document).ready(function() {
 
         forStatement.writeToCanvas(blockCanvasInstance)
         listStatement.push(forStatement)
+    }
+
+    function testing4() {
+        let temp: Statement[] = []
+
+        let switchStatement: SwitchStatement
+        temp.push(new Case(2, statementCount++, new Condition(new Integer('tempInt', 5), '==', new Integer('tempInt2', 10), true), undefined, false))
+        temp.push(new Case(2, statementCount++, undefined, undefined, true))
+        switchStatement = new SwitchStatement(1, statementCount++, new Integer('tempInt', 5), undefined)
+        switchStatement.updateChildStatement(temp)
+
+        switchStatement.writeToCanvas(blockCanvasInstance)
+        listStatement.push(switchStatement)
+    }
+
+    function testing5() {
+        let temp: Statement[] = []  
+        let whileStatement: WhileStatement
+
+        whileStatement = new WhileStatement(1, statementCount++, true, undefined, new Condition(new Long('testLong', '15'), '<', new Long('testLong2', '500'), false), 'OR', new Condition(new Double('testDouble', '15'), '<', new Double('testDouble2', '500'), true))
+        whileStatement.writeToCanvas(blockCanvasInstance)
+        listStatement.push(whileStatement)
     }
 })

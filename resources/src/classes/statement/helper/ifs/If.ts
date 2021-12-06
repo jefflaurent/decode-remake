@@ -20,6 +20,7 @@ class If extends Statement {
         this.logicalOperator = logicalOperator
         this.secondCondition = secondCondition
         this.childStatement = childStatement
+        this.color = '#2bea15'
         this.option = undefined
         this.init()
     }
@@ -50,7 +51,7 @@ class If extends Statement {
             text += '( ' + this.firstCondition.generateBlockCodeText() + ' )' 
 
         // IF( condition )
-        let coordinate = canvas.writeText(this.level, text)
+        let coordinate = canvas.writeText(this.level, text, this.color)
         // Create option button for IfStatement
         this.parent.option = new Option(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this.parent)
         this.parent.option.draw(canvas)
@@ -63,10 +64,10 @@ class If extends Statement {
             for(let i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas)
 
-        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION)
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION)
 
         if(isClose) 
-            canvas.writeClosingBlock(this.level, text, 'END IF')
+            canvas.writeClosingBlock(this.level, text, 'END IF', this.color)
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number) {

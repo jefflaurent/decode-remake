@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
     function Option(optionId, coorX, coorY, width, height, parent) {
@@ -17,7 +18,8 @@ var Option = /** @class */ (function () {
         this.isSelectionActive = false;
         this.parent = parent;
         var splitted = optionId.split('-');
-        if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
+        if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
+            || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
             this.optionSelection = this.generateCompleteOptions();
         else
             this.optionSelection = this.generateOptions();

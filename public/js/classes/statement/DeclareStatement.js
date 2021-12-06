@@ -30,6 +30,7 @@ var DeclareStatement = /** @class */ (function (_super) {
         var _this = _super.call(this, level) || this;
         _this.variable = variable;
         _this.statementId = _this.generateId(statementId);
+        _this.color = '#f4be0b';
         return _this;
     }
     DeclareStatement.prototype.generateId = function (number) {
@@ -48,7 +49,7 @@ var DeclareStatement = /** @class */ (function (_super) {
     };
     DeclareStatement.prototype.writeToCanvas = function (canvas) {
         var text = this.getDeclareStatementText(true);
-        var coordinate = canvas.writeText(this.level, text);
+        var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
     };
     DeclareStatement.prototype.getDeclareStatementText = function (isDeclare) {

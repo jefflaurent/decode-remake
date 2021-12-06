@@ -3,12 +3,13 @@ import Canvas from "../canvas/Canvas"
 import Option from "./helper/options/Option"
 
 class Statement {
-
+    
     statementId: string
     level: number
     parent: any
     option: Option | any
     childStatement: Statement[] | any
+    color: string
 
     constructor(level: number) {
         this.statementId = ''

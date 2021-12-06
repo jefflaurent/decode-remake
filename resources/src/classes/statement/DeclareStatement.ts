@@ -18,6 +18,7 @@ class DeclareStatement extends Statement {
         super(level)
         this.variable = variable
         this.statementId = this.generateId(statementId)
+        this.color = '#f4be0b'
     }
 
     generateId(number: number): string {
@@ -37,7 +38,7 @@ class DeclareStatement extends Statement {
 
     writeToCanvas(canvas: Canvas): void {
         let text = this.getDeclareStatementText(true)
-        let coordinate = canvas.writeText(this.level, text)
+        let coordinate = canvas.writeText(this.level, text, this.color)
         this.createOption(canvas, coordinate.x + canvas.SPACE,  coordinate.y - canvas.LINE_HEIGHT)
     }
 

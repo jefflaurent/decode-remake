@@ -24,19 +24,19 @@ var Canvas = /** @class */ (function () {
         this.ctx.fillStyle = '#C4C4C4';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
-    Canvas.prototype.writeText = function (level, text) {
+    Canvas.prototype.writeText = function (level, text, color) {
         var coorX = this.PADDING + this.LINE_HEIGHT * (level - 1) + this.SPACE * (level - 1);
         var coorY = this.LAST_POSITION + this.SPACE;
-        var coor = this.createBackground('#00A9E2', text, coorX, coorY);
+        var coor = this.createBackground(color, text, coorX, coorY);
         this.ctx.font = '14px sans-serif';
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText(text, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
         return coor;
     };
-    Canvas.prototype.writeClosingBlock = function (level, text, writtenText) {
+    Canvas.prototype.writeClosingBlock = function (level, text, writtenText, color) {
         var coorX = this.PADDING + this.LINE_HEIGHT * (level - 1) + this.SPACE * (level - 1);
         var coorY = this.LAST_POSITION + this.SPACE;
-        var coor = this.createBackground('#00A9E2', text, coorX, coorY);
+        var coor = this.createBackground(color, text, coorX, coorY);
         this.ctx.font = '14px sans-serif';
         this.ctx.fillStyle = '#FFFFFF';
         this.ctx.fillText(writtenText, coorX + this.LINE_HEIGHT / 3, coorY + this.LINE_HEIGHT / 1.7);
@@ -85,7 +85,7 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":7}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":10}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -118,6 +118,7 @@ var DeclareStatement = /** @class */ (function (_super) {
         var _this = _super.call(this, level) || this;
         _this.variable = variable;
         _this.statementId = _this.generateId(statementId);
+        _this.color = '#f4be0b';
         return _this;
     }
     DeclareStatement.prototype.generateId = function (number) {
@@ -136,7 +137,7 @@ var DeclareStatement = /** @class */ (function (_super) {
     };
     DeclareStatement.prototype.writeToCanvas = function (canvas) {
         var text = this.getDeclareStatementText(true);
-        var coordinate = canvas.writeText(this.level, text);
+        var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
     };
     DeclareStatement.prototype.getDeclareStatementText = function (isDeclare) {
@@ -183,7 +184,7 @@ var DeclareStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../variable/Char":12,"../variable/Double":13,"../variable/Float":14,"../variable/Integer":15,"../variable/Long":16,"../variable/String":17,"./Statement":5,"./helper/options/Option":10}],3:[function(require,module,exports){
+},{"../variable/Char":15,"../variable/Double":16,"../variable/Float":17,"../variable/Integer":18,"../variable/Long":19,"../variable/String":20,"./Statement":5,"./helper/options/Option":13}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -216,6 +217,7 @@ var ForStatement = /** @class */ (function (_super) {
         _this.isIncrement = isIncrement;
         _this.addValueBy = addValueBy;
         _this.condition = condition;
+        _this.color = '#00A9E2';
         _this.option = [];
         return _this;
     }
@@ -251,7 +253,7 @@ var ForStatement = /** @class */ (function (_super) {
                 text += this.variable.name + ' -= ' + this.addValueBy + ' )';
         }
         // FOR ( ; ; )
-        var coordinate = canvas.writeText(this.level, text);
+        var coordinate = canvas.writeText(this.level, text, this.color);
         this.option.push(new Option_1.default(this.statementId + '-outer', coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this));
         this.option[0].draw(canvas);
         // Create option button for IfStatement
@@ -260,8 +262,8 @@ var ForStatement = /** @class */ (function (_super) {
         if (this.childStatement != undefined)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
-        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
-        canvas.writeClosingBlock(this.level, text, 'END FOR');
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
+        canvas.writeClosingBlock(this.level, text, 'END FOR', this.color);
     };
     ForStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option.push(new Option_1.default(this.statementId + '-inner', coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this));
@@ -288,7 +290,7 @@ var ForStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"./DeclareStatement":2,"./Statement":5,"./helper/options/Option":10}],4:[function(require,module,exports){
+},{"./DeclareStatement":2,"./Statement":5,"./helper/options/Option":13}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -391,6 +393,280 @@ exports.default = Statement;
 
 },{}],6:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Option_1 = __importDefault(require("./helper/options/Option"));
+var Statement_1 = __importDefault(require("./Statement"));
+var SwitchStatement = /** @class */ (function (_super) {
+    __extends(SwitchStatement, _super);
+    function SwitchStatement(level, statementId, variable, caseStatement) {
+        var _this = _super.call(this, level) || this;
+        _this.statementId = _this.generateId(statementId);
+        _this.caseStatement = caseStatement;
+        _this.variable = variable;
+        _this.color = '#2bea15';
+        _this.init();
+        return _this;
+    }
+    SwitchStatement.prototype.updateChildLevel = function () {
+        if (this.caseStatement != undefined)
+            for (var i = 0; i < this.caseStatement.length; i++) {
+                this.caseStatement[i].level = this.level + 1;
+                this.caseStatement[i].updateChildLevel();
+            }
+    };
+    SwitchStatement.prototype.updateChildStatement = function (caseStatement) {
+        this.caseStatement = caseStatement;
+        this.init();
+    };
+    SwitchStatement.prototype.generateId = function (statementId) {
+        return 'switch-statement-' + statementId;
+    };
+    SwitchStatement.prototype.init = function () {
+        if (this.caseStatement != undefined)
+            for (var i = 0; i < this.caseStatement.length; i++)
+                this.caseStatement[i].parent = this;
+    };
+    SwitchStatement.prototype.writeToCanvas = function (canvas) {
+        var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
+        var text = 'SWITCH (' + this.variable.name + ' )';
+        var coordinate = canvas.writeText(this.level, text, this.color);
+        this.option = new Option_1.default(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
+        this.option.draw(canvas);
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            console.log(this.caseStatement[i]);
+            this.caseStatement[i].writeToCanvas(canvas);
+        }
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
+        canvas.writeClosingBlock(this.level, text, 'END SWITCH', this.color);
+    };
+    SwitchStatement.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.caseStatement != undefined)
+            for (var i = 0; i < this.caseStatement.length; i++) {
+                tempChild = this.caseStatement[i].callClickEvent(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        return temp ? temp : tempChild;
+    };
+    return SwitchStatement;
+}(Statement_1.default));
+exports.default = SwitchStatement;
+
+},{"./Statement":5,"./helper/options/Option":13}],7:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Option_1 = __importDefault(require("./helper/options/Option"));
+var Statement_1 = __importDefault(require("./Statement"));
+var WhileStatement = /** @class */ (function (_super) {
+    __extends(WhileStatement, _super);
+    function WhileStatement(level, statementId, isWhile, childStatement, firstCondition, logicalOperator, secondCondition) {
+        var _this = _super.call(this, level) || this;
+        _this.logicalOperator = undefined;
+        _this.secondCondition = undefined;
+        _this.isWhile = isWhile;
+        _this.statementId = _this.generateId(statementId);
+        _this.childStatement = childStatement;
+        _this.firstCondition = firstCondition;
+        _this.logicalOperator = logicalOperator;
+        _this.secondCondition = secondCondition;
+        _this.color = '#00A9E2';
+        _this.option = [];
+        _this.init();
+        return _this;
+    }
+    WhileStatement.prototype.generateId = function (statementId) {
+        return this.isWhile ? 'while-statement-' + statementId : 'do-while-statement-' + statementId;
+    };
+    WhileStatement.prototype.init = function () {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].parent = this;
+    };
+    WhileStatement.prototype.updateChildStatement = function (childStatement) {
+        this.childStatement = childStatement;
+        this.init();
+    };
+    WhileStatement.prototype.writeToCanvas = function (canvas) {
+        var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
+        var text = '';
+        var conditionText = this.generateConditionText();
+        var coordinate;
+        this.option = [];
+        if (this.isWhile)
+            text = conditionText;
+        else
+            text = 'DO\t\t\t\t';
+        if (this.isWhile)
+            coordinate = canvas.writeText(this.level, text, this.color);
+        else
+            coordinate = canvas.writeClosingBlock(this.level, conditionText, text, this.color);
+        this.option.push(new Option_1.default(this.statementId + '-outer', coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this));
+        this.option[0].draw(canvas);
+        this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
+        canvas.updateLastPosition();
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].writeToCanvas(canvas);
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
+        if (this.isWhile)
+            canvas.writeClosingBlock(this.level, text, 'END WHILE', this.color);
+        else
+            canvas.writeText(this.level, conditionText, this.color);
+    };
+    WhileStatement.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option.push(new Option_1.default(this.statementId + '-inner', coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this));
+        this.option[1].draw(canvas);
+    };
+    WhileStatement.prototype.generateConditionText = function () {
+        return this.secondCondition ? 'WHILE ( ' + this.firstCondition.generateBlockCodeText() + ' '
+            + this.logicalOperator + ' ' + this.secondCondition.generateBlockCodeText() + ' )' :
+            'WHILE ( ' + this.firstCondition.generateBlockCodeText() + ' )';
+    };
+    WhileStatement.prototype.callClickEvent = function (canvas, x, y) {
+        var tempOption = undefined;
+        var tempChild = undefined;
+        for (var i = 0; i < this.option.length; i++) {
+            tempOption = this.option[i].clickOption(canvas, x, y);
+            if (tempOption != undefined)
+                break;
+        }
+        if (tempOption == undefined)
+            if (this.childStatement != undefined)
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    tempChild = this.childStatement[i].callClickEvent(canvas, x, y);
+                    if (tempChild != undefined)
+                        break;
+                }
+        return tempOption ? tempOption : tempChild;
+    };
+    return WhileStatement;
+}(Statement_1.default));
+exports.default = WhileStatement;
+
+},{"./Statement":5,"./helper/options/Option":13}],8:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Statement_1 = __importDefault(require("../../Statement"));
+var Option_1 = __importDefault(require("../options/Option"));
+var Case = /** @class */ (function (_super) {
+    __extends(Case, _super);
+    function Case(level, statementId, condition, childStatement, isDefault) {
+        var _this = _super.call(this, level) || this;
+        _this.childStatement = childStatement;
+        _this.condition = condition;
+        _this.color = '#2bea15';
+        _this.statementId = _this.generateId(statementId);
+        _this.isDefault = isDefault;
+        return _this;
+    }
+    Case.prototype.init = function () {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].parent = this;
+    };
+    Case.prototype.generateId = function (statementId) {
+        return 'case-statement-' + statementId;
+    };
+    Case.prototype.updateChildLevel = function () {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++) {
+                this.childStatement[i].level = this.level + 1;
+                this.childStatement[i].updateChildLevel();
+            }
+    };
+    Case.prototype.updateChildStatement = function (childStatement) {
+        this.childStatement = childStatement;
+        this.init();
+    };
+    Case.prototype.writeToCanvas = function (canvas) {
+        var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
+        var text = '';
+        if (!this.isDefault)
+            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t';
+        else
+            text = 'DEFAULT:' + '\t\t\t\t\t\t';
+        var coordinate = canvas.writeText(this.level, text, this.color);
+        this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
+        canvas.updateLastPosition();
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].writeToCanvas(canvas);
+        }
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
+        canvas.writeClosingBlock(this.level, text, 'END CASE\t\t\t\t\t\t', this.color);
+    };
+    Case.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
+        this.option.draw(canvas);
+    };
+    Case.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                tempChild = this.childStatement[i].callClickEvent(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        }
+        return temp ? temp : tempChild;
+    };
+    return Case;
+}(Statement_1.default));
+exports.default = Case;
+
+},{"../../Statement":5,"../options/Option":13}],9:[function(require,module,exports){
+"use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -420,7 +696,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":12,"../../../variable/String":17}],7:[function(require,module,exports){
+},{"../../../variable/Char":15,"../../../variable/String":20}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -432,7 +708,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -472,21 +748,21 @@ var Elif = /** @class */ (function (_super) {
         else
             text += '( ' + this.firstCondition.generateBlockCodeText() + ' )';
         // ELSE IF( condition )
-        var coordinate = canvas.writeText(this.level, text);
+        var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
         canvas.updateLastPosition();
         if (this.childStatement != null)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
-        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
         if (isClose)
-            canvas.writeClosingBlock(this.level, text, 'END IF');
+            canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
     };
     return Elif;
 }(If_1.default));
 exports.default = Elif;
 
-},{"./If":9}],9:[function(require,module,exports){
+},{"./If":12}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -516,6 +792,7 @@ var If = /** @class */ (function (_super) {
         _this.logicalOperator = logicalOperator;
         _this.secondCondition = secondCondition;
         _this.childStatement = childStatement;
+        _this.color = '#2bea15';
         _this.option = undefined;
         _this.init();
         return _this;
@@ -541,7 +818,7 @@ var If = /** @class */ (function (_super) {
         else
             text += '( ' + this.firstCondition.generateBlockCodeText() + ' )';
         // IF( condition )
-        var coordinate = canvas.writeText(this.level, text);
+        var coordinate = canvas.writeText(this.level, text, this.color);
         // Create option button for IfStatement
         this.parent.option = new Option_1.default(this.parent.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this.parent);
         this.parent.option.draw(canvas);
@@ -551,9 +828,9 @@ var If = /** @class */ (function (_super) {
         if (this.childStatement != undefined)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
-        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
         if (isClose)
-            canvas.writeClosingBlock(this.level, text, 'END IF');
+            canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
     };
     If.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
@@ -575,7 +852,7 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../Statement":5,"../options/Option":10}],10:[function(require,module,exports){
+},{"../../Statement":5,"../options/Option":13}],13:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -584,6 +861,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
     function Option(optionId, coorX, coorY, width, height, parent) {
@@ -595,7 +873,8 @@ var Option = /** @class */ (function () {
         this.isSelectionActive = false;
         this.parent = parent;
         var splitted = optionId.split('-');
-        if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
+        if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
+            || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
             this.optionSelection = this.generateCompleteOptions();
         else
             this.optionSelection = this.generateOptions();
@@ -659,7 +938,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"./OptionSelection":11}],11:[function(require,module,exports){
+},{"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../SwitchStatement":6,"./OptionSelection":14}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -670,6 +949,9 @@ var ReturnPaste_1 = __importDefault(require("../../../../utilities/ReturnPaste")
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
+var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
+var Case_1 = __importDefault(require("../case/Case"));
 var If_1 = __importDefault(require("../ifs/If"));
 var OptionSelection = /** @class */ (function () {
     function OptionSelection(optionId, optionName, optionColor, coorX, currentX, coorY, width, height, parent) {
@@ -699,22 +981,26 @@ var OptionSelection = /** @class */ (function () {
             clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard));
         /** List of possibilities:
           * - Paste after statement
-          * -> Applies to DeclareStatement, IfStatement, ForStatement
+          * -> Applies to DeclareStatement, IfStatement, ForStatement, SwitchStatement
           * - Paste inside a statement
-          * -> Applies to If, Elif, Else, ForStatement
+          * -> Applies to If, Elif, Else, ForStatement, Case
         **/
         // Target is located on level 1
         if (targetStatement.parent == undefined) {
-            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner))
+            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
-            else if (targetStatement instanceof If_1.default || (targetStatement instanceof ForStatement_1.default && isInner))
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner))
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
         }
         // Target is a child of another statement
         else {
-            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner))
+            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
-            else if (targetStatement instanceof If_1.default || (targetStatement instanceof ForStatement_1.default && isInner))
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner))
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
         }
         return new ReturnPaste_1.default(true, mainListStatement);
@@ -741,7 +1027,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":21,"../../../../utilities/ReturnPaste":22,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../ifs/If":9}],12:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":24,"../../../../utilities/ReturnPaste":25,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../SwitchStatement":6,"../../WhileStatement":7,"../case/Case":8,"../ifs/If":12}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -777,7 +1063,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":20,"./Variable":18}],13:[function(require,module,exports){
+},{"../../utilities/Return":23,"./Variable":21}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -819,7 +1105,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":20,"./Variable":18}],14:[function(require,module,exports){
+},{"../../utilities/Return":23,"./Variable":21}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -861,7 +1147,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":20,"./Variable":18}],15:[function(require,module,exports){
+},{"../../utilities/Return":23,"./Variable":21}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -903,7 +1189,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":20,"./Variable":18}],16:[function(require,module,exports){
+},{"../../utilities/Return":23,"./Variable":21}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -943,7 +1229,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":20,"./Variable":18}],17:[function(require,module,exports){
+},{"../../utilities/Return":23,"./Variable":21}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -976,7 +1262,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":20,"./Variable":18}],18:[function(require,module,exports){
+},{"../../utilities/Return":23,"./Variable":21}],21:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1005,7 +1291,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":20}],19:[function(require,module,exports){
+},{"../../utilities/Return":23}],22:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1024,6 +1310,9 @@ var Elif_1 = __importDefault(require("../classes/statement/helper/ifs/Elif"));
 var Condition_1 = __importDefault(require("../classes/statement/helper/general/Condition"));
 var Canvas_1 = __importDefault(require("../classes/canvas/Canvas"));
 var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"));
+var SwitchStatement_1 = __importDefault(require("../classes/statement/SwitchStatement"));
+var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
+var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -1270,10 +1559,14 @@ $(document).ready(function () {
             initInputDeclare('Declare Float');
             testing3();
         }
-        else if ($(this).data('value') == 'double')
+        else if ($(this).data('value') == 'double') {
             initInputDeclare('Declare Double');
-        else if ($(this).data('value') == 'char')
+            testing4();
+        }
+        else if ($(this).data('value') == 'char') {
             initInputDeclare('Declare Char');
+            testing5();
+        }
         else if ($(this).data('value') == 'string')
             initInputDeclare('Declare String');
     });
@@ -1332,7 +1625,6 @@ $(document).ready(function () {
                     break;
             }
             if (temp != undefined) {
-                console.log(temp.option.optionId);
                 if (temp.option.optionName == 'ARR') {
                 }
                 else if (temp.option.optionName == 'ADD') {
@@ -1407,8 +1699,6 @@ $(document).ready(function () {
         var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
         var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
         ifs.push(firstIf);
-        // ifs.push(secondIf)
-        // ifs.push(thirdIf)
         ifStatement.updateIfOperations(ifs);
         ifStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(ifStatement);
@@ -1437,9 +1727,26 @@ $(document).ready(function () {
         forStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(forStatement);
     }
+    function testing4() {
+        var temp = [];
+        var switchStatement;
+        temp.push(new Case_1.default(2, statementCount++, new Condition_1.default(new Integer_1.default('tempInt', 5), '==', new Integer_1.default('tempInt2', 10), true), undefined, false));
+        temp.push(new Case_1.default(2, statementCount++, undefined, undefined, true));
+        switchStatement = new SwitchStatement_1.default(1, statementCount++, new Integer_1.default('tempInt', 5), undefined);
+        switchStatement.updateChildStatement(temp);
+        switchStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(switchStatement);
+    }
+    function testing5() {
+        var temp = [];
+        var whileStatement;
+        whileStatement = new WhileStatement_1.default(1, statementCount++, true, undefined, new Condition_1.default(new Long_1.default('testLong', '15'), '<', new Long_1.default('testLong2', '500'), false), 'OR', new Condition_1.default(new Double_1.default('testDouble', '15'), '<', new Double_1.default('testDouble2', '500'), true));
+        whileStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(whileStatement);
+    }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/helper/general/Condition":6,"../classes/statement/helper/ifs/Elif":8,"../classes/statement/helper/ifs/If":9,"../classes/variable/Char":12,"../classes/variable/Double":13,"../classes/variable/Float":14,"../classes/variable/Integer":15,"../classes/variable/Long":16,"../classes/variable/String":17}],20:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/SwitchStatement":6,"../classes/statement/WhileStatement":7,"../classes/statement/helper/case/Case":8,"../classes/statement/helper/general/Condition":9,"../classes/statement/helper/ifs/Elif":11,"../classes/statement/helper/ifs/If":12,"../classes/variable/Char":15,"../classes/variable/Double":16,"../classes/variable/Float":17,"../classes/variable/Integer":18,"../classes/variable/Long":19,"../classes/variable/String":20}],23:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -1451,7 +1758,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],21:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -1463,7 +1770,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],22:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -1475,4 +1782,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[19]);
+},{}]},{},[22]);

@@ -37,15 +37,15 @@ var Elif = /** @class */ (function (_super) {
         else
             text += '( ' + this.firstCondition.generateBlockCodeText() + ' )';
         // ELSE IF( condition )
-        var coordinate = canvas.writeText(this.level, text);
+        var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
         canvas.updateLastPosition();
         if (this.childStatement != null)
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].writeToCanvas(canvas);
-        canvas.createBridge('#00A9E2', this.level, upper, canvas.LAST_POSITION);
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
         if (isClose)
-            canvas.writeClosingBlock(this.level, text, 'END IF');
+            canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
     };
     return Elif;
 }(If_1.default));
