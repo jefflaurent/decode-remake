@@ -1,5 +1,6 @@
 import ReturnClick from "../../utilities/ReturnClick"
 import Canvas from "../canvas/Canvas"
+import Variable from "../variable/Variable"
 import Statement from "./Statement"
 
 class IfStatement extends Statement {
@@ -57,6 +58,19 @@ class IfStatement extends Statement {
             }
 
         return temp ? temp : tempChild
+    }
+
+    findVariable(variable: Variable): Statement | undefined {
+        let temp: Statement | undefined  = undefined
+
+        for(let i = 0; i < this.ifOperations.length; i++) {
+            temp = this.ifOperations[i].findVariable(variable)
+
+            if(temp != undefined)
+                return temp
+        }
+
+        return undefined
     }
 }
 

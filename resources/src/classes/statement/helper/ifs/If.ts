@@ -1,5 +1,7 @@
 import ReturnClick from "../../../../utilities/ReturnClick"
+import ReturnFind from "../../../../utilities/ReturnFind"
 import Canvas from "../../../canvas/Canvas"
+import Variable from "../../../variable/Variable"
 import Statement from "../../Statement"
 import Condition from "../general/Condition"
 import Option from "../options/Option"
@@ -87,6 +89,29 @@ class If extends Statement {
         }
 
         return temp ? temp : tempChild
+    }
+
+    findVariable(variable: Variable): Statement | undefined {
+        let temp: Statement | undefined = undefined
+
+        if(this.firstCondition.findVariable(variable))
+            return this
+        
+        if(this.secondCondition) {
+            if(this.secondCondition.findVariable(variable))
+                return this
+        }
+        
+        if(this.childStatement == undefined)
+            return undefined
+
+        for(let i = 0; i < this.childStatement.length; i++) {
+            temp = this.childStatement[i].findVariable(variable)
+            if(temp != undefined)
+                return temp
+        }
+
+        return undefined
     }
 }
 

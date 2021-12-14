@@ -24,6 +24,15 @@ var Condition = /** @class */ (function () {
         else
             return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
     };
+    Condition.prototype.findVariable = function (variable) {
+        if (this.firstVariable.name == variable.name)
+            return true;
+        if (!this.isCustomValue) {
+            if (this.secondVariable.name == variable.name)
+                return true;
+        }
+        return false;
+    };
     return Condition;
 }());
 exports.default = Condition;

@@ -83,6 +83,23 @@ var If = /** @class */ (function (_super) {
         }
         return temp ? temp : tempChild;
     };
+    If.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.firstCondition.findVariable(variable))
+            return this;
+        if (this.secondCondition) {
+            if (this.secondCondition.findVariable(variable))
+                return this;
+        }
+        if (this.childStatement == undefined)
+            return undefined;
+        for (var i = 0; i < this.childStatement.length; i++) {
+            temp = this.childStatement[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
+    };
     return If;
 }(Statement_1.default));
 exports.default = If;

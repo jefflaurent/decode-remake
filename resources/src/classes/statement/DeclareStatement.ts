@@ -9,6 +9,7 @@ import Option from './helper/options/Option'
 import Variable from '../variable/Variable'
 import Canvas from '../canvas/Canvas'
 import ReturnClick from '../../utilities/ReturnClick'
+import ReturnFind from '../../utilities/ReturnFind'
 
 class DeclareStatement extends Statement {
 
@@ -86,6 +87,10 @@ class DeclareStatement extends Statement {
     callClickEvent(canvas: Canvas, x: number, y: number): ReturnClick | undefined {
         return this.option.clickOption(canvas, x, y)
     }
+
+    findVariable(variable: Variable): Statement | undefined {
+        return undefined
+    }   
 }
 
 export default DeclareStatement

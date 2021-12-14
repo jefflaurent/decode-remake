@@ -72,10 +72,10 @@
                             <strong>Output</strong>
                         </div>
                         <div class="col-12 d-flex justify-content-between mt-2" style="width: 100%;">
-                            <div class="col-4 d-flex justify-content-start">
+                            <div class="col-4 d-flex justify-content-start output" data-value="variable">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Variable</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-center">
+                            <div class="col-4 d-flex justify-content-center output" data-value="text">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Text</div>
                             </div>
                             <div class="col-4 d-flex justify-content-end"></div>

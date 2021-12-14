@@ -54,10 +54,8 @@ var SwitchStatement = /** @class */ (function (_super) {
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.option = new Option_1.default(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
-        for (var i = 0; i < this.caseStatement.length; i++) {
-            console.log(this.caseStatement[i]);
+        for (var i = 0; i < this.caseStatement.length; i++)
             this.caseStatement[i].writeToCanvas(canvas);
-        }
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
         canvas.writeClosingBlock(this.level, text, 'END SWITCH', this.color);
     };
@@ -71,6 +69,17 @@ var SwitchStatement = /** @class */ (function (_super) {
                     break;
             }
         return temp ? temp : tempChild;
+    };
+    SwitchStatement.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.variable.name == variable.name)
+            return this;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
     };
     return SwitchStatement;
 }(Statement_1.default));

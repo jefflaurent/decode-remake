@@ -1,5 +1,6 @@
-import ReturnClick from "../../utilities/ReturnClick"
+import ReturnFind from "../../utilities/ReturnFind"
 import Canvas from "../canvas/Canvas"
+import Variable from "../variable/Variable"
 import Option from "./helper/options/Option"
 
 class Statement {
@@ -15,6 +16,7 @@ class Statement {
         this.statementId = ''
         this.level = level
         this.childStatement = undefined
+        this.parent = undefined
     }
 
     updateChildLevel(): void {
@@ -31,10 +33,15 @@ class Statement {
         this.parent = undefined
     }
 
+    getParent(): Statement | undefined {
+        return this.parent
+    }
+
     generateId(number: number) {}
     writeToCanvas(canvas: Canvas,  isClose?: boolean) {}
     updateChildStatement(childStatement: Statement[]): void {}
     callClickEvent(canvas: Canvas, x: number, y: number) {}
+    findVariable(variable: Variable): Statement | undefined  { return undefined }
 }
 
 export default Statement

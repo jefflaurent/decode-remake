@@ -65,6 +65,15 @@ var IfStatement = /** @class */ (function (_super) {
             }
         return temp ? temp : tempChild;
     };
+    IfStatement.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            temp = this.ifOperations[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;

@@ -3,6 +3,7 @@ import Canvas from "../../../canvas/Canvas"
 import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
+import InputStatement from "../../InputStatement"
 import Statement from "../../Statement"
 import SwitchStatement from "../../SwitchStatement"
 import OptionSelection from "./OptionSelection"
@@ -29,8 +30,10 @@ class Option {
 
         let splitted: string[] = optionId.split('-')
         if(this.parent instanceof IfStatement || this.parent instanceof DeclareStatement 
-            || this.parent instanceof SwitchStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer'))
+            || this.parent instanceof SwitchStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer') 
+            || this.parent instanceof InputStatement) {
             this.optionSelection = this.generateCompleteOptions()
+        }
         else
             this.optionSelection = this.generateOptions()
     }
@@ -77,6 +80,8 @@ class Option {
                 this.findChildOptionClick(x, y)
             }
             this.isSelectionActive = !this.isSelectionActive
+            if(!this.isSelectionActive)
+                temp = new ReturnClick(undefined, undefined, true)
         }
         else if(this.isSelectionActive){
             temp = this.findChildOptionClick(x, y)

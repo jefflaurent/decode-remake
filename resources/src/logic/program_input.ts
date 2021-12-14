@@ -18,6 +18,9 @@ import ForStatement from '../classes/statement/ForStatement'
 import SwitchStatement from '../classes/statement/SwitchStatement'
 import Case from '../classes/statement/helper/case/Case'
 import WhileStatement from '../classes/statement/WhileStatement'
+import Option from '../classes/statement/helper/options/Option'
+import Variable from '../classes/variable/Variable'
+import InputStatement from '../classes/statement/InputStatement'
 
 $(document).ready(function() {
 
@@ -27,15 +30,15 @@ $(document).ready(function() {
     var variableIndex = 0
 
     // All declared variable names
-    var allVariableNames: {[index: string]:any} = {}
+    var allVariableNames: {[index: string]: any} = {}
 
     // Declared variables
-    var listInteger = []
-    var listFloat = []
-    var listLong = []
-    var listDouble = []
-    var listChar = []
-    var listString = []
+    var listInteger: Variable[] = []
+    var listFloat: Variable[] = []
+    var listLong: Variable[] = []
+    var listDouble: Variable[] = []
+    var listChar: Variable[] = []
+    var listString: Variable[] = []
 
     // Statement
     var statementCount = 0
@@ -44,12 +47,11 @@ $(document).ready(function() {
     var listStatement: any[] = []
 
     // Helper Functions
-
     function createHint(text: string, length: number) {
         let className = "col-sm-" + length 
         let className2 = 'col-xs-' + length
         let strong = $('<strong></strong>').text(text)
-        let div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black')
+        let div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black').addClass('align-items-center')
         div.append(strong)
 
         return div
@@ -102,6 +104,25 @@ $(document).ready(function() {
         $('#pcInputContainer').append(container)
     }
 
+    function createSelect(listVariable: Variable[], length: number) {
+        let className = 'col-sm-' + length
+        let className2 = 'col-xs-' + length
+        let container = $('<div></div>').addClass(className).addClass(className2)
+        let select = $('<select></select>').addClass('form-select').addClass('col-sm-12').addClass('col-xs-12')
+        let option
+
+        select.append($('<option></option>').val(null).text('Choose Variable'))
+
+        for(let variable of listVariable) {
+            option = $('<option></option>').val(variable.name).text(variable.name)
+            select.append(option)
+        }
+
+        container.append(select)
+
+        return container
+    }
+
     function clearError() {
         $('#pcInputErrorContainer').empty()
 
@@ -110,9 +131,11 @@ $(document).ready(function() {
 
         for(let varValue of declareVariableValueList)
             $('.' + varValue).removeClass('input-error')
+
+        $('#chosenVariable').removeClass('input-error')
     }
 
-    function initInputDeclare(title: string) {
+    function initInput(title: string) {
         $('#pcInputErrorContainer').empty()
         $('#pcInputContainer').empty()
         $('#pcInputContainerLower').empty()
@@ -163,14 +186,43 @@ $(document).ready(function() {
                 listString.push(variable)
             }
             
-            listStatement.push(new DeclareStatement(statementCount++, 1, variable))
+            handleAdd(new DeclareStatement(statementCount++, 1, variable))
+        }
+    }
+
+    function getVariable(listVariable: Variable[], variableName: string): Variable | undefined {
+        for(let i = 0 ; i < listVariable.length; i++) {
+            if(listVariable[i].name == variableName)
+                return listVariable[i]
+        }
+
+        return undefined
+    }
+
+    function createStatementClone(statement: Statement): Statement | undefined {
+        if(statement instanceof DeclareStatement) {
+            alert('Could not copy declare statement!')
+            return undefined 
+        }
+        else if(statement instanceof InputStatement) {
+            
+        }
+        else if(statement instanceof IfStatement) {
+            
+        }
+        else if(statement instanceof SwitchStatement) {
+             
+        }
+        else if(statement instanceof ForStatement) {
+            
+        }
+        else if(statement instanceof WhileStatement) {
+             
         }
     }
 
     // Declare Variable
-
     $(document).on('click', '.addVariableDeclareBtn', function() { 
-        console.log($(this).data('value'))
         if($(this).data('value') == false)
             createDeclareDataVariable(false, false)
         else
@@ -187,6 +239,43 @@ $(document).ready(function() {
         $(this).parent().parent().parent().remove()
     })
 
+    // Click declare variable button
+    $('.declareVariable').on('click', function() {
+        let isNumericValue
+
+        if($(this).data('value') == 'int')
+            initInput('Declare Integer')
+        else if($(this).data('value') == 'long')
+            initInput('Declare Long')
+        else if($(this).data('value') == 'float')
+            initInput('Declare Float')
+        else if($(this).data('value') == 'double')
+            initInput('Declare Double')
+        else if($(this).data('value') == 'char')
+            initInput('Declare Char')
+        else if($(this).data('value') == 'string')
+            initInput('Declare String')
+        
+        if($(this).data('value') == 'string' || $(this).data('value') == 'char') {
+            createDeclareDataVariable(true, false)
+            isNumericValue = false
+        }
+        else {
+            createDeclareDataVariable(true, true)
+            isNumericValue = true
+        }
+
+        let btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
+                    addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable')
+        let createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+                            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create')
+
+        $('#pcInputContainerLower').append(btn)
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'))
+        $('#pcInputContainerLower').append(createBtn)
+    })
+
+    // Click create variable button
     $(document).on('click', '#createVariableBtn', function() {
         clearError()
         let variableName: any
@@ -246,94 +335,123 @@ $(document).ready(function() {
         // Insert every declared variable and declare statement instance to list
         insertToVariableList()
         // Push statement to canvas
+        restructureStatement()
         drawCanvas()
     })
 
-    $('.declareVariable').on('click', function() {
-        let isNumericValue
-
-        if($(this).data('value') == 'int')
-            initInputDeclare('Declare Integer')
-        else if($(this).data('value') == 'long')
-            initInputDeclare('Declare Long')
-        else if($(this).data('value') == 'float')
-            initInputDeclare('Declare Float')
-        else if($(this).data('value') == 'double')
-            initInputDeclare('Declare Double')
-        else if($(this).data('value') == 'char')
-            initInputDeclare('Declare Char')
-        else if($(this).data('value') == 'string')
-            initInputDeclare('Declare String')
-        
-        if($(this).data('value') == 'string' || $(this).data('value') == 'char') {
-            createDeclareDataVariable(true, false)
-            isNumericValue = false
-        }
-        else {
-            createDeclareDataVariable(true, true)
-            isNumericValue = true
-        }
-
-        let btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-                    addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable')
-        let createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create')
-
-        $('#pcInputContainerLower').append(btn)
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'))
-        $('#pcInputContainerLower').append(createBtn)
-    })
-
-    // Helper Functions
-
-    function initInputVariable() {
-        $('#pcInputErrorContainer').empty()
-        $('#pcInputContainer').empty()
-        $('#pcInputContainerLower').empty()
-        $('#command-name').text('')
-
-        declareVariableNameList = []
-        declareVariableValueList = []
-        variableIndex = 0
-    }
-
-    // Input to Variable
+    // Click input variable button
     $(document).on('click', '.inputVariable', function() {
+        let listVariable: Variable[]
+
         if($(this).data('value') == 'int') {
-            initInputDeclare('Declare Integer')
-            testing()
+            initInput('Input Integer')
+            listVariable = listInteger
         }
         else if($(this).data('value') == 'long') {
-            initInputDeclare('Declare Long')
-            testing2()
+            initInput('Input Long')
+            listVariable = listLong
         }
         else if($(this).data('value') == 'float') {
-            initInputDeclare('Declare Float')
-            testing3()
+            initInput('Input Float')
+            listVariable = listFloat
         }
         else if($(this).data('value') == 'double') {
-            initInputDeclare('Declare Double')
-            testing4()
+            initInput('Input Double')
+            listVariable = listDouble
         }
         else if($(this).data('value') == 'char') {
-            initInputDeclare('Declare Char')
-            testing5()
+            initInput('Input Char')
+            listVariable = listChar
         }
-        else if($(this).data('value') == 'string')
-            initInputDeclare('Declare String')
+        else if($(this).data('value') == 'string') {
+            initInput('Input String')
+            listVariable = listString
+        }
+
+        let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
+        let select = createSelect(listVariable, 7).attr('id', 'chosenVariable')
+
+        container.append(createHint('Variable Name', 5))
+        container.append(select)
+        container.addClass('mb-3')
+        $('#pcInputContainer').append(container)
+
+        let inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+                            addClass('col-xs-2').attr('id', 'inputVariableBtn').data('value', $(this).data('value')).text('Select')
+
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'))
+        $('#pcInputContainerLower').append(inputBtn)
     })
 
+    // Click select input variable button
+    $(document).on('click', '#inputVariableBtn', function() {
+        clearError()
+
+        if($('#chosenVariable').find('option').filter(':selected').val() == '') {
+            createErrorMessage('Please select a variable')
+            $('#chosenVariable').addClass('input-error')
+        }
+        else {
+            let variableName = $('#chosenVariable').find('option').filter(':selected').val() as string
+            let variable: Variable | undefined = undefined
+            let statement: Statement
+
+            if($('#inputVariableBtn').data('value') == 'int') 
+                variable = getVariable(listInteger, variableName)
+            else if($('#inputVariableBtn').data('value') == 'long')
+                variable = getVariable(listLong, variableName)
+            else if($('#inputVariableBtn').data('value') == 'float') 
+                variable = getVariable(listFloat, variableName)
+            else if($('#inputVariableBtn').data('value') == 'double') 
+                variable = getVariable(listDouble, variableName)
+            else if($('#inputVariableBtn').data('value') == 'char') 
+                variable = getVariable(listChar, variableName)
+            else 
+                variable = getVariable(listString, variableName)
+            
+            if(variable != undefined) {
+                statement = new InputStatement(statementCount++, 1, variable)
+                handleAdd(statement)
+                restructureStatement()
+                drawCanvas()
+            }
+        }
+    })
+
+    function deleteVariable(variable: Variable) {
+        allVariableNames[variable.name] = false
+        if(variable instanceof Integer)
+            listInteger.splice(listInteger.indexOf(variable), 1)
+        else if(variable instanceof Long) 
+            listLong.splice(listLong.indexOf(variable), 1)
+        else if(variable instanceof Float) 
+            listFloat.splice(listFloat.indexOf(variable), 1)
+        else if(variable instanceof Double) 
+            listDouble.splice(listDouble.indexOf(variable), 1)
+        else if(variable instanceof Char) 
+            listChar.splice(listChar.indexOf(variable), 1)
+        else 
+            listString.splice(listString.indexOf(variable), 1)
+    }
+
+    // Click output
+    $(document).on('click', '.output', function() {
+        if($(this).data('value') == 'variable') {
+            testing3()
+        }
+    })
 
     // Canvas logic
     initializeCanvas()
 
     var blockCanvasInstance: Canvas // instance of Class Canvas
     var canvas: any
+    var option: Option | undefined = undefined
 
-    // Variables to handle move and copy
-    var originStatement: Statement | undefined
+    // Variables to handle canvas interaction (add, mov, pst)
     var clipboard: Statement | undefined = undefined
     var lastSelectedOption: string | undefined = undefined 
+    var returnClick: ReturnClick | undefined = undefined
 
     // Initialize Canvas
     function initializeCanvas() {
@@ -343,7 +461,9 @@ $(document).ready(function() {
         blockCanvasInstance = new Canvas(canvas, canvas.getContext('2d'), 40, 30, 5)
         
         setTimeout(function() {
-            blockCanvasInstance.createOption(30, 30)
+            option = new Option('special', blockCanvasInstance.PADDING, blockCanvasInstance.PADDING, 
+                blockCanvasInstance.LINE_HEIGHT, blockCanvasInstance.LINE_HEIGHT, undefined);
+            option.draw(blockCanvasInstance)
             blockCanvasInstance.updateLastPosition()
         }, 50)
     }
@@ -366,6 +486,9 @@ $(document).ready(function() {
         blockCanvasInstance.clearCanvas()
         let statement
 
+        option.draw(blockCanvasInstance)
+        blockCanvasInstance.updateLastPosition()
+
         for(let i = 0 ; i < listStatement.length; i++) {
             statement = listStatement[i]
             statement.writeToCanvas(blockCanvasInstance)
@@ -379,56 +502,104 @@ $(document).ready(function() {
             let x = event.clientX - rect.left
             let y = event.clientY - rect.top
             let statement 
-            let temp: ReturnClick | undefined = undefined
-            let returnPaste: ReturnPaste
 
-            for(let i = 0; i < listStatement.length; i++) {
-                statement = listStatement[i]
-                temp = statement.callClickEvent(blockCanvasInstance, x, y)
-                if(temp != undefined)
-                    break
+            returnClick = option.clickOption(blockCanvasInstance, x, y)
+
+            if(!returnClick) {
+                for(let i = 0; i < listStatement.length; i++) {
+                    statement = listStatement[i]
+                    returnClick = statement.callClickEvent(blockCanvasInstance, x, y)
+                    if(returnClick != undefined)
+                        break
+                }
             }
 
-            if(temp != undefined) {
-                if(temp.option.optionName == 'ARR') {
+            if(returnClick != undefined) {
+                if(returnClick.isClose != undefined) {
+                    finishAction()
+                    return
+                }
 
+                if(returnClick.option.optionName == 'ADD') {
+                    clipboard = returnClick.statement
+                    lastSelectedOption = returnClick.option.optionName
                 }
-                else if(temp.option.optionName == 'ADD') {
-                    
+                else if(returnClick.option.optionName == 'PST') {
+                    handlePaste()
                 }
-                else if(temp.option.optionName == 'PST') {
-                    if(clipboard == undefined) {
-                        alert('Clipboard is empty!')
-                    }
-                    else {
-                        let splitted: string[] = temp.option.optionId.split('-')
-                        let isInner: boolean = splitted[splitted.length-1] == 'inner' ? true : false
-
-                        if(lastSelectedOption == 'MOV') {
-                            returnPaste = temp.option.pasteMove(listStatement, clipboard, temp.statement, isInner)
-                            listStatement = returnPaste.listStatement
-    
-                            if(returnPaste.result == true) {
-                                clipboard = undefined
-                                lastSelectedOption = 'PST'
-                                restructureStatement()
-                                drawCanvas()
-                            }
-                        }
-                    }
+                else if(returnClick.option.optionName == 'MOV' || returnClick.option.optionName == 'CPY') {
+                    clipboard = returnClick.statement
+                    lastSelectedOption = returnClick.option.optionName
                 }
-                else if(temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
-                    clipboard = temp.statement
-                    lastSelectedOption = temp.option.optionName
+                else if(returnClick.option.optionName == 'DEL') {
+                    clipboard = returnClick.statement
+                    lastSelectedOption = returnClick.option.optionName
                 }
-                else if(temp.option.optionName == 'DEL') {
-                    
-                }
-                else if(temp.option.optionName == 'EDT') {
-                    
+                else if(returnClick.option.optionName == 'EDT') {
+                    clipboard = returnClick.statement
+                    lastSelectedOption = returnClick.option.optionName
                 }
             }
         })
+    }
+
+    function handleAdd(statement: Statement): void {
+        let returnPaste: ReturnPaste
+
+        // Initialize
+        if(lastSelectedOption == undefined && clipboard == undefined && returnClick == undefined) {
+            listStatement.push(statement)
+        }
+        // Action taken, user chose ADD
+        else if(lastSelectedOption == 'ADD' && returnClick != undefined) {
+            returnPaste = returnClick.option.addStatement(listStatement, statement, clipboard, returnClick.option.optionId)
+            
+            if(returnPaste.result == true) {
+                finishAction()
+                listStatement = returnPaste.listStatement
+            }
+            else {
+                if(statement instanceof DeclareStatement) 
+                    deleteVariable(statement.variable)
+                alert('Could not add statement here')
+                finishAction()
+            }
+        }
+    }
+
+    function handlePaste(): void {
+        let returnPaste: ReturnPaste
+
+        if(clipboard == undefined) {
+            alert('Clipboard is empty!')
+            return
+        }
+        
+        let splitted: string[] = returnClick.option.optionId.split('-')
+        let isInner: boolean = splitted[splitted.length-1] == 'inner' ? true : false
+
+        if(lastSelectedOption == 'MOV') {
+            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner)
+            listStatement = returnPaste.listStatement
+
+            if(returnPaste.result == true) {
+                finishAction()
+                restructureStatement()
+                drawCanvas()
+            }
+            else {
+                alert('Could not paste statement here!')
+                finishAction()
+                restructureStatement()
+                drawCanvas()
+            }
+        }
+    }
+
+    function finishAction() {
+        returnClick = undefined
+        clipboard = undefined
+        lastSelectedOption = undefined
     }
 
     function restructureStatement(): void {

@@ -49,10 +49,8 @@ class SwitchStatement extends Statement {
         this.option = new Option(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this)
         this.option.draw(canvas)
 
-        for(let i = 0; i < this.caseStatement.length; i++) {   
-            console.log(this.caseStatement[i])
+        for(let i = 0; i < this.caseStatement.length; i++)    
             this.caseStatement[i].writeToCanvas(canvas)
-        }
 
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION)
         canvas.writeClosingBlock(this.level, text, 'END SWITCH', this.color)
@@ -69,6 +67,21 @@ class SwitchStatement extends Statement {
             }
 
         return temp ? temp : tempChild
+    }
+
+    findVariable(variable: Variable): Statement | undefined {
+        let temp: Statement | undefined = undefined
+        if(this.variable.name == variable.name)
+            return this
+        
+        for(let i = 0; i < this.caseStatement.length; i++) {      
+            temp = this.caseStatement[i].findVariable(variable)
+            
+            if(temp != undefined)
+                return temp
+        }
+
+        return undefined
     }
 }
 

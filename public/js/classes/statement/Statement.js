@@ -5,6 +5,7 @@ var Statement = /** @class */ (function () {
         this.statementId = '';
         this.level = level;
         this.childStatement = undefined;
+        this.parent = undefined;
     }
     Statement.prototype.updateChildLevel = function () {
         if (this.childStatement != undefined) {
@@ -18,10 +19,14 @@ var Statement = /** @class */ (function () {
         this.level = 1;
         this.parent = undefined;
     };
+    Statement.prototype.getParent = function () {
+        return this.parent;
+    };
     Statement.prototype.generateId = function (number) { };
     Statement.prototype.writeToCanvas = function (canvas, isClose) { };
     Statement.prototype.updateChildStatement = function (childStatement) { };
     Statement.prototype.callClickEvent = function (canvas, x, y) { };
+    Statement.prototype.findVariable = function (variable) { return undefined; };
     return Statement;
 }());
 exports.default = Statement;

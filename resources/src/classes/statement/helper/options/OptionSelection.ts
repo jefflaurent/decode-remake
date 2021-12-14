@@ -1,9 +1,11 @@
 import ReturnClick from "../../../../utilities/ReturnClick"
 import ReturnPaste from "../../../../utilities/ReturnPaste"
 import Canvas from "../../../canvas/Canvas"
+import Variable from "../../../variable/Variable"
 import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
+import InputStatement from "../../InputStatement"
 import Statement from "../../Statement"
 import SwitchStatement from "../../SwitchStatement"
 import WhileStatement from "../../WhileStatement"
@@ -46,37 +48,125 @@ export default class OptionSelection {
         return undefined
     }
 
-    pasteMove(mainListStatement: Statement[], clipboard: Statement, targetStatement: Statement, isInner: boolean): ReturnPaste {
+    addStatement(mainListStatement: Statement[], newStatement: Statement, targetStatement: Statement | undefined, optionId: string) : ReturnPaste {
+        let splitted: string[] = optionId.split('-')
+        let isInner: boolean = splitted[splitted.length-1] == 'inner' ? true : false
+
+        // Declare statement is only allowed on level 1
+        if(newStatement instanceof DeclareStatement) {
+            if(!this.validateDeclarePlacement(targetStatement, isInner)) 
+                return new ReturnPaste(false, mainListStatement)
+        }
+        
+        // Statements must be added after declaration
+        if(!this.validateMainListPlacement(mainListStatement, newStatement, targetStatement, isInner))
+            return new ReturnPaste(false, mainListStatement)
+            
+        return this.paste(mainListStatement, newStatement, targetStatement, isInner)
+    }
+
+    validateDeclarePlacement(targetStatement: Statement | undefined, isInner: boolean): boolean {
+        if(targetStatement != undefined) {
+            if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
+                || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
+                if(targetStatement.level > 1) 
+                    return false
+            }
+            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+                || (targetStatement instanceof WhileStatement && isInner)) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    validateMainListPlacement(mainListStatement: Statement[] | undefined, clipboard: Statement, targetStatement: Statement | undefined, isInner: boolean): boolean {
+        let returnPaste: ReturnPaste | undefined = undefined
+        let mainListStatementClone: Statement[] | undefined = []
+
+        if(mainListStatement != undefined)
+            for(let i = 0; i < mainListStatement.length; i++) 
+                mainListStatementClone[i] = mainListStatement[i]
+        
+        returnPaste = this.paste(mainListStatementClone, clipboard, targetStatement, isInner)
+        if(returnPaste.result) {
+            mainListStatementClone = returnPaste.listStatement
+            let variableFound: boolean = false
+            
+            if(mainListStatementClone != undefined) {
+                for(let i = 0 ; i < mainListStatementClone.length; i++) {
+                    if(mainListStatementClone[i] instanceof DeclareStatement) {
+                        variableFound = this.isVariableExist(mainListStatementClone, mainListStatementClone[i] as DeclareStatement, i)
+                        if(variableFound)
+                            return false
+                    }
+                }
+            }
+        }
+
+        return true
+    }
+
+    isVariableExist(mainListStatementClone: Statement[] | undefined, declareStatement: DeclareStatement, index: number): boolean {
+        let statement: Statement | undefined = undefined
+
+        if(mainListStatementClone == undefined)
+            return false
+            
+        for(let i = index; i >= 0; i--) {
+            statement = mainListStatementClone[i].findVariable(declareStatement.variable)
+
+            if(statement != undefined)
+                return true
+        }
+
+        return false
+    }
+
+    handlePaste(mainListStatement: Statement[], clipboard: Statement, targetStatement: Statement, isInner: boolean): ReturnPaste {
+        // Statements must be added after declaration
+        if(!this.validateMainListPlacement(mainListStatement, clipboard, targetStatement, isInner))
+            return new ReturnPaste(false, mainListStatement)
+
         // Removing statement
         if(clipboard.parent == undefined) 
             mainListStatement = this.removeSourceStatement(mainListStatement, clipboard)
         else 
             clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard))
-        
+    
+        return this.paste(mainListStatement, clipboard, targetStatement, isInner)
+    }
+
+    paste(mainListStatement: Statement[], clipboard: Statement, targetStatement: Statement | undefined, isInner: boolean): ReturnPaste { 
         /** List of possibilities:
           * - Paste after statement
-          * -> Applies to DeclareStatement, IfStatement, ForStatement, SwitchStatement
+          * -> Applies to DeclareStatement, IfStatement, ForStatement, SwitchStatement, InputStatement
           * - Paste inside a statement
           * -> Applies to If, Elif, Else, ForStatement, Case
         **/
 
         // Target is located on level 1
-        if(targetStatement.parent == undefined) {
-            if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
-                || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))
+        if(targetStatement == undefined || targetStatement.parent == undefined) {
+            if(targetStatement == undefined || (targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
+                || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard)
+            }
             else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
-                || (targetStatement instanceof WhileStatement && isInner))
+                || (targetStatement instanceof WhileStatement && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
+            }
         }
         // Target is a child of another statement
         else {
             if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement ||  targetStatement instanceof SwitchStatement 
-                || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))
+                || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard)) 
+            }
             else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
-                || (targetStatement instanceof WhileStatement && isInner))
+                || (targetStatement instanceof WhileStatement && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
+            }
         }
 
         return new ReturnPaste(true, mainListStatement)

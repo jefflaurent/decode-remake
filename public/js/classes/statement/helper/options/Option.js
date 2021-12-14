@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var InputStatement_1 = __importDefault(require("../../InputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
@@ -19,8 +21,10 @@ var Option = /** @class */ (function () {
         this.parent = parent;
         var splitted = optionId.split('-');
         if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
-            || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
+            || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer')
+            || this.parent instanceof InputStatement_1.default) {
             this.optionSelection = this.generateCompleteOptions();
+        }
         else
             this.optionSelection = this.generateOptions();
     }
@@ -57,6 +61,8 @@ var Option = /** @class */ (function () {
                 this.findChildOptionClick(x, y);
             }
             this.isSelectionActive = !this.isSelectionActive;
+            if (!this.isSelectionActive)
+                temp = new ReturnClick_1.default(undefined, undefined, true);
         }
         else if (this.isSelectionActive) {
             temp = this.findChildOptionClick(x, y);

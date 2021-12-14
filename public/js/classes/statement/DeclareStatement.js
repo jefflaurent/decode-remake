@@ -92,6 +92,9 @@ var DeclareStatement = /** @class */ (function (_super) {
     DeclareStatement.prototype.callClickEvent = function (canvas, x, y) {
         return this.option.clickOption(canvas, x, y);
     };
+    DeclareStatement.prototype.findVariable = function (variable) {
+        return undefined;
+    };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;

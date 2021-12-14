@@ -4,6 +4,7 @@ import Double from "../variable/Double";
 import Float from "../variable/Float";
 import Integer from "../variable/Integer";
 import Long from "../variable/Long";
+import Variable from "../variable/Variable";
 import DeclareStatement from "./DeclareStatement";
 import Condition from "./helper/general/Condition";
 import Option from "./helper/options/Option";
@@ -109,6 +110,25 @@ class ForStatement extends Statement {
                 }
 
         return tempOption ? tempOption : tempChild
+    }
+
+    findVariable(variable: Variable): Statement | undefined {
+        if(!this.variableIsNew) {
+            if(this.variable.name == variable.name)
+                return this
+        }
+
+        let temp: Statement | undefined = undefined
+
+        if(this.childStatement) {
+            for(let i = 0; i < this.childStatement.length; i++) {                
+                temp = this.childStatement[i].findVariable(variable)
+                if(temp != undefined)
+                    return temp
+            }
+        }
+
+        return undefined
     }
 }
 

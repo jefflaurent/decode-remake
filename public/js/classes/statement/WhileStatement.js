@@ -100,6 +100,22 @@ var WhileStatement = /** @class */ (function (_super) {
                 }
         return tempOption ? tempOption : tempChild;
     };
+    WhileStatement.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.firstCondition.findVariable(variable))
+            return this;
+        if (this.secondCondition)
+            if (this.secondCondition.findVariable(variable))
+                return this;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                temp = this.childStatement[i].findVariable(variable);
+                if (temp != undefined)
+                    return temp;
+            }
+        }
+        return undefined;
+    };
     return WhileStatement;
 }(Statement_1.default));
 exports.default = WhileStatement;

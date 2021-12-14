@@ -30,6 +30,15 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return this.isCustomValue ? this.firstVariable.name + ' = ' + this.secondVariable.value :
             this.firstVariable.name + ' = ' + this.secondVariable.name;
     };
+    AssignmentStatement.prototype.findVariable = function (variable) {
+        if (variable.name == this.firstVariable.name)
+            return this;
+        if (!this.isCustomValue) {
+            if (variable.name == this.secondVariable.name)
+                return this;
+        }
+        return undefined;
+    };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;

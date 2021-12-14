@@ -26,7 +26,6 @@
                                     <option value="">Java</option>
                                     <option value="">Python</option>
                                     <option value="">Pseudocode</option>
-                                    <option value="">Flowchart</option>
                                 </select>
                             </div>
                             <div class="col-1"></div>

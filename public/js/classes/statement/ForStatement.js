@@ -99,6 +99,21 @@ var ForStatement = /** @class */ (function (_super) {
                 }
         return tempOption ? tempOption : tempChild;
     };
+    ForStatement.prototype.findVariable = function (variable) {
+        if (!this.variableIsNew) {
+            if (this.variable.name == variable.name)
+                return this;
+        }
+        var temp = undefined;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                temp = this.childStatement[i].findVariable(variable);
+                if (temp != undefined)
+                    return temp;
+            }
+        }
+        return undefined;
+    };
     return ForStatement;
 }(Statement_1.default));
 exports.default = ForStatement;

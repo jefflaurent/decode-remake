@@ -85,7 +85,7 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":10}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":11}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -180,11 +180,14 @@ var DeclareStatement = /** @class */ (function (_super) {
     DeclareStatement.prototype.callClickEvent = function (canvas, x, y) {
         return this.option.clickOption(canvas, x, y);
     };
+    DeclareStatement.prototype.findVariable = function (variable) {
+        return undefined;
+    };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../variable/Char":15,"../variable/Double":16,"../variable/Float":17,"../variable/Integer":18,"../variable/Long":19,"../variable/String":20,"./Statement":5,"./helper/options/Option":13}],3:[function(require,module,exports){
+},{"../variable/Char":16,"../variable/Double":17,"../variable/Float":18,"../variable/Integer":19,"../variable/Long":20,"../variable/String":21,"./Statement":6,"./helper/options/Option":14}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -286,11 +289,26 @@ var ForStatement = /** @class */ (function (_super) {
                 }
         return tempOption ? tempOption : tempChild;
     };
+    ForStatement.prototype.findVariable = function (variable) {
+        if (!this.variableIsNew) {
+            if (this.variable.name == variable.name)
+                return this;
+        }
+        var temp = undefined;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                temp = this.childStatement[i].findVariable(variable);
+                if (temp != undefined)
+                    return temp;
+            }
+        }
+        return undefined;
+    };
     return ForStatement;
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"./DeclareStatement":2,"./Statement":5,"./helper/options/Option":13}],4:[function(require,module,exports){
+},{"./DeclareStatement":2,"./Statement":6,"./helper/options/Option":14}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -358,11 +376,91 @@ var IfStatement = /** @class */ (function (_super) {
             }
         return temp ? temp : tempChild;
     };
+    IfStatement.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            temp = this.ifOperations[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"./Statement":5}],5:[function(require,module,exports){
+},{"./Statement":6}],5:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Char_1 = __importDefault(require("../variable/Char"));
+var Double_1 = __importDefault(require("../variable/Double"));
+var Float_1 = __importDefault(require("../variable/Float"));
+var Integer_1 = __importDefault(require("../variable/Integer"));
+var Long_1 = __importDefault(require("../variable/Long"));
+var Option_1 = __importDefault(require("./helper/options/Option"));
+var Statement_1 = __importDefault(require("./Statement"));
+var InputStatement = /** @class */ (function (_super) {
+    __extends(InputStatement, _super);
+    function InputStatement(statementId, level, variable) {
+        var _this = _super.call(this, level) || this;
+        _this.variable = variable;
+        _this.statementId = _this.generateId(statementId);
+        _this.color = '#f4be0b';
+        return _this;
+    }
+    InputStatement.prototype.generateId = function (number) {
+        if (this.variable instanceof Integer_1.default)
+            return 'declare-integer-' + number;
+        else if (this.variable instanceof Long_1.default)
+            return 'declare-long-' + number;
+        else if (this.variable instanceof Float_1.default)
+            return 'declare-float-' + number;
+        else if (this.variable instanceof Double_1.default)
+            return 'declare-double-' + number;
+        else if (this.variable instanceof Char_1.default)
+            return 'declare-char-' + number;
+        else
+            return 'declare-string-' + number;
+    };
+    InputStatement.prototype.writeToCanvas = function (canvas) {
+        var text = 'INPUT ' + this.variable.name;
+        var coordinate = canvas.writeText(this.level, text, this.color);
+        this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
+    };
+    InputStatement.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
+        this.option.parent = this;
+        this.option.draw(canvas);
+    };
+    InputStatement.prototype.callClickEvent = function (canvas, x, y) {
+        return this.option.clickOption(canvas, x, y);
+    };
+    InputStatement.prototype.findVariable = function (variable) {
+        if (this.variable.name == variable.name)
+            return this;
+        return undefined;
+    };
+    return InputStatement;
+}(Statement_1.default));
+exports.default = InputStatement;
+
+},{"../variable/Char":16,"../variable/Double":17,"../variable/Float":18,"../variable/Integer":19,"../variable/Long":20,"./Statement":6,"./helper/options/Option":14}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement = /** @class */ (function () {
@@ -370,6 +468,7 @@ var Statement = /** @class */ (function () {
         this.statementId = '';
         this.level = level;
         this.childStatement = undefined;
+        this.parent = undefined;
     }
     Statement.prototype.updateChildLevel = function () {
         if (this.childStatement != undefined) {
@@ -383,15 +482,19 @@ var Statement = /** @class */ (function () {
         this.level = 1;
         this.parent = undefined;
     };
+    Statement.prototype.getParent = function () {
+        return this.parent;
+    };
     Statement.prototype.generateId = function (number) { };
     Statement.prototype.writeToCanvas = function (canvas, isClose) { };
     Statement.prototype.updateChildStatement = function (childStatement) { };
     Statement.prototype.callClickEvent = function (canvas, x, y) { };
+    Statement.prototype.findVariable = function (variable) { return undefined; };
     return Statement;
 }());
 exports.default = Statement;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -448,10 +551,8 @@ var SwitchStatement = /** @class */ (function (_super) {
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.option = new Option_1.default(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
-        for (var i = 0; i < this.caseStatement.length; i++) {
-            console.log(this.caseStatement[i]);
+        for (var i = 0; i < this.caseStatement.length; i++)
             this.caseStatement[i].writeToCanvas(canvas);
-        }
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
         canvas.writeClosingBlock(this.level, text, 'END SWITCH', this.color);
     };
@@ -466,11 +567,22 @@ var SwitchStatement = /** @class */ (function (_super) {
             }
         return temp ? temp : tempChild;
     };
+    SwitchStatement.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.variable.name == variable.name)
+            return this;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
+    };
     return SwitchStatement;
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"./Statement":5,"./helper/options/Option":13}],7:[function(require,module,exports){
+},{"./Statement":6,"./helper/options/Option":14}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -573,11 +685,27 @@ var WhileStatement = /** @class */ (function (_super) {
                 }
         return tempOption ? tempOption : tempChild;
     };
+    WhileStatement.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.firstCondition.findVariable(variable))
+            return this;
+        if (this.secondCondition)
+            if (this.secondCondition.findVariable(variable))
+                return this;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                temp = this.childStatement[i].findVariable(variable);
+                if (temp != undefined)
+                    return temp;
+            }
+        }
+        return undefined;
+    };
     return WhileStatement;
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"./Statement":5,"./helper/options/Option":13}],8:[function(require,module,exports){
+},{"./Statement":6,"./helper/options/Option":14}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -661,11 +789,22 @@ var Case = /** @class */ (function (_super) {
         }
         return temp ? temp : tempChild;
     };
+    Case.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                temp = this.childStatement[i].findVariable(variable);
+                if (temp != undefined)
+                    return temp;
+            }
+        }
+        return undefined;
+    };
     return Case;
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../Statement":5,"../options/Option":13}],9:[function(require,module,exports){
+},{"../../Statement":6,"../options/Option":14}],10:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -692,11 +831,20 @@ var Condition = /** @class */ (function () {
         else
             return this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
     };
+    Condition.prototype.findVariable = function (variable) {
+        if (this.firstVariable.name == variable.name)
+            return true;
+        if (!this.isCustomValue) {
+            if (this.secondVariable.name == variable.name)
+                return true;
+        }
+        return false;
+    };
     return Condition;
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":15,"../../../variable/String":20}],10:[function(require,module,exports){
+},{"../../../variable/Char":16,"../../../variable/String":21}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -708,7 +856,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -762,7 +910,7 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"./If":12}],12:[function(require,module,exports){
+},{"./If":13}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -848,19 +996,38 @@ var If = /** @class */ (function (_super) {
         }
         return temp ? temp : tempChild;
     };
+    If.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.firstCondition.findVariable(variable))
+            return this;
+        if (this.secondCondition) {
+            if (this.secondCondition.findVariable(variable))
+                return this;
+        }
+        if (this.childStatement == undefined)
+            return undefined;
+        for (var i = 0; i < this.childStatement.length; i++) {
+            temp = this.childStatement[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
+    };
     return If;
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../Statement":5,"../options/Option":13}],13:[function(require,module,exports){
+},{"../../Statement":6,"../options/Option":14}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var InputStatement_1 = __importDefault(require("../../InputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
@@ -874,8 +1041,10 @@ var Option = /** @class */ (function () {
         this.parent = parent;
         var splitted = optionId.split('-');
         if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
-            || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer'))
+            || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer')
+            || this.parent instanceof InputStatement_1.default) {
             this.optionSelection = this.generateCompleteOptions();
+        }
         else
             this.optionSelection = this.generateOptions();
     }
@@ -912,6 +1081,8 @@ var Option = /** @class */ (function () {
                 this.findChildOptionClick(x, y);
             }
             this.isSelectionActive = !this.isSelectionActive;
+            if (!this.isSelectionActive)
+                temp = new ReturnClick_1.default(undefined, undefined, true);
         }
         else if (this.isSelectionActive) {
             temp = this.findChildOptionClick(x, y);
@@ -938,7 +1109,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../SwitchStatement":6,"./OptionSelection":14}],14:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":25,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../SwitchStatement":7,"./OptionSelection":15}],15:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -949,6 +1120,7 @@ var ReturnPaste_1 = __importDefault(require("../../../../utilities/ReturnPaste")
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
+var InputStatement_1 = __importDefault(require("../../InputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
 var Case_1 = __importDefault(require("../case/Case"));
@@ -973,35 +1145,105 @@ var OptionSelection = /** @class */ (function () {
             return new ReturnClick_1.default(this.parent, this);
         return undefined;
     };
-    OptionSelection.prototype.pasteMove = function (mainListStatement, clipboard, targetStatement, isInner) {
+    OptionSelection.prototype.addStatement = function (mainListStatement, newStatement, targetStatement, optionId) {
+        var splitted = optionId.split('-');
+        var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
+        // Declare statement is only allowed on level 1
+        if (newStatement instanceof DeclareStatement_1.default) {
+            if (!this.validateDeclarePlacement(targetStatement, isInner))
+                return new ReturnPaste_1.default(false, mainListStatement);
+        }
+        // Statements must be added after declaration
+        if (!this.validateMainListPlacement(mainListStatement, newStatement, targetStatement, isInner))
+            return new ReturnPaste_1.default(false, mainListStatement);
+        return this.paste(mainListStatement, newStatement, targetStatement, isInner);
+    };
+    OptionSelection.prototype.validateDeclarePlacement = function (targetStatement, isInner) {
+        if (targetStatement != undefined) {
+            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
+                if (targetStatement.level > 1)
+                    return false;
+            }
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    OptionSelection.prototype.validateMainListPlacement = function (mainListStatement, clipboard, targetStatement, isInner) {
+        var returnPaste = undefined;
+        var mainListStatementClone = [];
+        if (mainListStatement != undefined)
+            for (var i = 0; i < mainListStatement.length; i++)
+                mainListStatementClone[i] = mainListStatement[i];
+        returnPaste = this.paste(mainListStatementClone, clipboard, targetStatement, isInner);
+        if (returnPaste.result) {
+            mainListStatementClone = returnPaste.listStatement;
+            var variableFound = false;
+            if (mainListStatementClone != undefined) {
+                for (var i = 0; i < mainListStatementClone.length; i++) {
+                    if (mainListStatementClone[i] instanceof DeclareStatement_1.default) {
+                        variableFound = this.isVariableExist(mainListStatementClone, mainListStatementClone[i], i);
+                        if (variableFound)
+                            return false;
+                    }
+                }
+            }
+        }
+        return true;
+    };
+    OptionSelection.prototype.isVariableExist = function (mainListStatementClone, declareStatement, index) {
+        var statement = undefined;
+        if (mainListStatementClone == undefined)
+            return false;
+        for (var i = index; i >= 0; i--) {
+            statement = mainListStatementClone[i].findVariable(declareStatement.variable);
+            if (statement != undefined)
+                return true;
+        }
+        return false;
+    };
+    OptionSelection.prototype.handlePaste = function (mainListStatement, clipboard, targetStatement, isInner) {
+        // Statements must be added after declaration
+        if (!this.validateMainListPlacement(mainListStatement, clipboard, targetStatement, isInner))
+            return new ReturnPaste_1.default(false, mainListStatement);
         // Removing statement
         if (clipboard.parent == undefined)
             mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
         else
             clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard));
+        return this.paste(mainListStatement, clipboard, targetStatement, isInner);
+    };
+    OptionSelection.prototype.paste = function (mainListStatement, clipboard, targetStatement, isInner) {
         /** List of possibilities:
           * - Paste after statement
-          * -> Applies to DeclareStatement, IfStatement, ForStatement, SwitchStatement
+          * -> Applies to DeclareStatement, IfStatement, ForStatement, SwitchStatement, InputStatement
           * - Paste inside a statement
           * -> Applies to If, Elif, Else, ForStatement, Case
         **/
         // Target is located on level 1
-        if (targetStatement.parent == undefined) {
-            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
-                || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))
+        if (targetStatement == undefined || targetStatement.parent == undefined) {
+            if (targetStatement == undefined || (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
+            }
             else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
-                || (targetStatement instanceof WhileStatement_1.default && isInner))
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
+            }
         }
         // Target is a child of another statement
         else {
             if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
-                || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))
+                || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
+            }
             else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
-                || (targetStatement instanceof WhileStatement_1.default && isInner))
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
+            }
         }
         return new ReturnPaste_1.default(true, mainListStatement);
     };
@@ -1027,7 +1269,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":24,"../../../../utilities/ReturnPaste":25,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../SwitchStatement":6,"../../WhileStatement":7,"../case/Case":8,"../ifs/If":12}],15:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":25,"../../../../utilities/ReturnPaste":26,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../SwitchStatement":7,"../../WhileStatement":8,"../case/Case":9,"../ifs/If":13}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1063,7 +1305,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":23,"./Variable":21}],16:[function(require,module,exports){
+},{"../../utilities/Return":24,"./Variable":22}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1105,7 +1347,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":23,"./Variable":21}],17:[function(require,module,exports){
+},{"../../utilities/Return":24,"./Variable":22}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1147,7 +1389,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":23,"./Variable":21}],18:[function(require,module,exports){
+},{"../../utilities/Return":24,"./Variable":22}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1189,7 +1431,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":23,"./Variable":21}],19:[function(require,module,exports){
+},{"../../utilities/Return":24,"./Variable":22}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1229,7 +1471,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":23,"./Variable":21}],20:[function(require,module,exports){
+},{"../../utilities/Return":24,"./Variable":22}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1262,7 +1504,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":23,"./Variable":21}],21:[function(require,module,exports){
+},{"../../utilities/Return":24,"./Variable":22}],22:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1291,7 +1533,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":23}],22:[function(require,module,exports){
+},{"../../utilities/Return":24}],23:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1313,6 +1555,8 @@ var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"
 var SwitchStatement_1 = __importDefault(require("../classes/statement/SwitchStatement"));
 var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
 var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatement"));
+var Option_1 = __importDefault(require("../classes/statement/helper/options/Option"));
+var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -1336,7 +1580,7 @@ $(document).ready(function () {
         var className = "col-sm-" + length;
         var className2 = 'col-xs-' + length;
         var strong = $('<strong></strong>').text(text);
-        var div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black');
+        var div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black').addClass('align-items-center');
         div.append(strong);
         return div;
     }
@@ -1378,6 +1622,21 @@ $(document).ready(function () {
         container.append(inputContainer);
         $('#pcInputContainer').append(container);
     }
+    function createSelect(listVariable, length) {
+        var className = 'col-sm-' + length;
+        var className2 = 'col-xs-' + length;
+        var container = $('<div></div>').addClass(className).addClass(className2);
+        var select = $('<select></select>').addClass('form-select').addClass('col-sm-12').addClass('col-xs-12');
+        var option;
+        select.append($('<option></option>').val(null).text('Choose Variable'));
+        for (var _i = 0, listVariable_1 = listVariable; _i < listVariable_1.length; _i++) {
+            var variable = listVariable_1[_i];
+            option = $('<option></option>').val(variable.name).text(variable.name);
+            select.append(option);
+        }
+        container.append(select);
+        return container;
+    }
     function clearError() {
         $('#pcInputErrorContainer').empty();
         for (var _i = 0, declareVariableNameList_1 = declareVariableNameList; _i < declareVariableNameList_1.length; _i++) {
@@ -1388,8 +1647,9 @@ $(document).ready(function () {
             var varValue = declareVariableValueList_1[_a];
             $('.' + varValue).removeClass('input-error');
         }
+        $('#chosenVariable').removeClass('input-error');
     }
-    function initInputDeclare(title) {
+    function initInput(title) {
         $('#pcInputErrorContainer').empty();
         $('#pcInputContainer').empty();
         $('#pcInputContainerLower').empty();
@@ -1434,12 +1694,34 @@ $(document).ready(function () {
                 variable = new String_1.default(variableName, variableValue);
                 listString.push(variable);
             }
-            listStatement.push(new DeclareStatement_1.default(statementCount++, 1, variable));
+            handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        }
+    }
+    function getVariable(listVariable, variableName) {
+        for (var i = 0; i < listVariable.length; i++) {
+            if (listVariable[i].name == variableName)
+                return listVariable[i];
+        }
+        return undefined;
+    }
+    function createStatementClone(statement) {
+        if (statement instanceof DeclareStatement_1.default) {
+            alert('Could not copy declare statement!');
+            return undefined;
+        }
+        else if (statement instanceof InputStatement_1.default) {
+        }
+        else if (statement instanceof IfStatement_1.default) {
+        }
+        else if (statement instanceof SwitchStatement_1.default) {
+        }
+        else if (statement instanceof ForStatement_1.default) {
+        }
+        else if (statement instanceof WhileStatement_1.default) {
         }
     }
     // Declare Variable
     $(document).on('click', '.addVariableDeclareBtn', function () {
-        console.log($(this).data('value'));
         if ($(this).data('value') == false)
             createDeclareDataVariable(false, false);
         else
@@ -1452,6 +1734,38 @@ $(document).ready(function () {
         declareVariableValueList.splice(declareVariableValueList.indexOf(varVal), 1);
         $(this).parent().parent().parent().remove();
     });
+    // Click declare variable button
+    $('.declareVariable').on('click', function () {
+        var isNumericValue;
+        if ($(this).data('value') == 'int')
+            initInput('Declare Integer');
+        else if ($(this).data('value') == 'long')
+            initInput('Declare Long');
+        else if ($(this).data('value') == 'float')
+            initInput('Declare Float');
+        else if ($(this).data('value') == 'double')
+            initInput('Declare Double');
+        else if ($(this).data('value') == 'char')
+            initInput('Declare Char');
+        else if ($(this).data('value') == 'string')
+            initInput('Declare String');
+        if ($(this).data('value') == 'string' || $(this).data('value') == 'char') {
+            createDeclareDataVariable(true, false);
+            isNumericValue = false;
+        }
+        else {
+            createDeclareDataVariable(true, true);
+            isNumericValue = true;
+        }
+        var btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
+            addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable');
+        var createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create');
+        $('#pcInputContainerLower').append(btn);
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'));
+        $('#pcInputContainerLower').append(createBtn);
+    });
+    // Click create variable button
     $(document).on('click', '#createVariableBtn', function () {
         clearError();
         var variableName;
@@ -1503,81 +1817,108 @@ $(document).ready(function () {
         // Insert every declared variable and declare statement instance to list
         insertToVariableList();
         // Push statement to canvas
+        restructureStatement();
         drawCanvas();
     });
-    $('.declareVariable').on('click', function () {
-        var isNumericValue;
-        if ($(this).data('value') == 'int')
-            initInputDeclare('Declare Integer');
-        else if ($(this).data('value') == 'long')
-            initInputDeclare('Declare Long');
-        else if ($(this).data('value') == 'float')
-            initInputDeclare('Declare Float');
-        else if ($(this).data('value') == 'double')
-            initInputDeclare('Declare Double');
-        else if ($(this).data('value') == 'char')
-            initInputDeclare('Declare Char');
-        else if ($(this).data('value') == 'string')
-            initInputDeclare('Declare String');
-        if ($(this).data('value') == 'string' || $(this).data('value') == 'char') {
-            createDeclareDataVariable(true, false);
-            isNumericValue = false;
-        }
-        else {
-            createDeclareDataVariable(true, true);
-            isNumericValue = true;
-        }
-        var btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-            addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable');
-        var createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create');
-        $('#pcInputContainerLower').append(btn);
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'));
-        $('#pcInputContainerLower').append(createBtn);
-    });
-    // Helper Functions
-    function initInputVariable() {
-        $('#pcInputErrorContainer').empty();
-        $('#pcInputContainer').empty();
-        $('#pcInputContainerLower').empty();
-        $('#command-name').text('');
-        declareVariableNameList = [];
-        declareVariableValueList = [];
-        variableIndex = 0;
-    }
-    // Input to Variable
+    // Click input variable button
     $(document).on('click', '.inputVariable', function () {
+        var listVariable;
         if ($(this).data('value') == 'int') {
-            initInputDeclare('Declare Integer');
-            testing();
+            initInput('Input Integer');
+            listVariable = listInteger;
         }
         else if ($(this).data('value') == 'long') {
-            initInputDeclare('Declare Long');
-            testing2();
+            initInput('Input Long');
+            listVariable = listLong;
         }
         else if ($(this).data('value') == 'float') {
-            initInputDeclare('Declare Float');
-            testing3();
+            initInput('Input Float');
+            listVariable = listFloat;
         }
         else if ($(this).data('value') == 'double') {
-            initInputDeclare('Declare Double');
-            testing4();
+            initInput('Input Double');
+            listVariable = listDouble;
         }
         else if ($(this).data('value') == 'char') {
-            initInputDeclare('Declare Char');
-            testing5();
+            initInput('Input Char');
+            listVariable = listChar;
         }
-        else if ($(this).data('value') == 'string')
-            initInputDeclare('Declare String');
+        else if ($(this).data('value') == 'string') {
+            initInput('Input String');
+            listVariable = listString;
+        }
+        var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
+        var select = createSelect(listVariable, 7).attr('id', 'chosenVariable');
+        container.append(createHint('Variable Name', 5));
+        container.append(select);
+        container.addClass('mb-3');
+        $('#pcInputContainer').append(container);
+        var inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+            addClass('col-xs-2').attr('id', 'inputVariableBtn').data('value', $(this).data('value')).text('Select');
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'));
+        $('#pcInputContainerLower').append(inputBtn);
+    });
+    // Click select input variable button
+    $(document).on('click', '#inputVariableBtn', function () {
+        clearError();
+        if ($('#chosenVariable').find('option').filter(':selected').val() == '') {
+            createErrorMessage('Please select a variable');
+            $('#chosenVariable').addClass('input-error');
+        }
+        else {
+            var variableName = $('#chosenVariable').find('option').filter(':selected').val();
+            var variable = undefined;
+            var statement = void 0;
+            if ($('#inputVariableBtn').data('value') == 'int')
+                variable = getVariable(listInteger, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'long')
+                variable = getVariable(listLong, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'float')
+                variable = getVariable(listFloat, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'double')
+                variable = getVariable(listDouble, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'char')
+                variable = getVariable(listChar, variableName);
+            else
+                variable = getVariable(listString, variableName);
+            if (variable != undefined) {
+                statement = new InputStatement_1.default(statementCount++, 1, variable);
+                handleAdd(statement);
+                restructureStatement();
+                drawCanvas();
+            }
+        }
+    });
+    function deleteVariable(variable) {
+        allVariableNames[variable.name] = false;
+        if (variable instanceof Integer_1.default)
+            listInteger.splice(listInteger.indexOf(variable), 1);
+        else if (variable instanceof Long_1.default)
+            listLong.splice(listLong.indexOf(variable), 1);
+        else if (variable instanceof Float_1.default)
+            listFloat.splice(listFloat.indexOf(variable), 1);
+        else if (variable instanceof Double_1.default)
+            listDouble.splice(listDouble.indexOf(variable), 1);
+        else if (variable instanceof Char_1.default)
+            listChar.splice(listChar.indexOf(variable), 1);
+        else
+            listString.splice(listString.indexOf(variable), 1);
+    }
+    // Click output
+    $(document).on('click', '.output', function () {
+        if ($(this).data('value') == 'variable') {
+            testing3();
+        }
     });
     // Canvas logic
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
     var canvas;
-    // Variables to handle move and copy
-    var originStatement;
+    var option = undefined;
+    // Variables to handle canvas interaction (add, mov, pst)
     var clipboard = undefined;
     var lastSelectedOption = undefined;
+    var returnClick = undefined;
     // Initialize Canvas
     function initializeCanvas() {
         canvas = document.getElementById('block-code-canvas');
@@ -1585,7 +1926,8 @@ $(document).ready(function () {
         handleCanvasClick();
         blockCanvasInstance = new Canvas_1.default(canvas, canvas.getContext('2d'), 40, 30, 5);
         setTimeout(function () {
-            blockCanvasInstance.createOption(30, 30);
+            option = new Option_1.default('special', blockCanvasInstance.PADDING, blockCanvasInstance.PADDING, blockCanvasInstance.LINE_HEIGHT, blockCanvasInstance.LINE_HEIGHT, undefined);
+            option.draw(blockCanvasInstance);
             blockCanvasInstance.updateLastPosition();
         }, 50);
     }
@@ -1604,6 +1946,8 @@ $(document).ready(function () {
     function drawCanvas() {
         blockCanvasInstance.clearCanvas();
         var statement;
+        option.draw(blockCanvasInstance);
+        blockCanvasInstance.updateLastPosition();
         for (var i = 0; i < listStatement.length; i++) {
             statement = listStatement[i];
             statement.writeToCanvas(blockCanvasInstance);
@@ -1616,48 +1960,91 @@ $(document).ready(function () {
             var x = event.clientX - rect.left;
             var y = event.clientY - rect.top;
             var statement;
-            var temp = undefined;
-            var returnPaste;
-            for (var i = 0; i < listStatement.length; i++) {
-                statement = listStatement[i];
-                temp = statement.callClickEvent(blockCanvasInstance, x, y);
-                if (temp != undefined)
-                    break;
+            returnClick = option.clickOption(blockCanvasInstance, x, y);
+            if (!returnClick) {
+                for (var i = 0; i < listStatement.length; i++) {
+                    statement = listStatement[i];
+                    returnClick = statement.callClickEvent(blockCanvasInstance, x, y);
+                    if (returnClick != undefined)
+                        break;
+                }
             }
-            if (temp != undefined) {
-                if (temp.option.optionName == 'ARR') {
+            if (returnClick != undefined) {
+                if (returnClick.isClose != undefined) {
+                    finishAction();
+                    return;
                 }
-                else if (temp.option.optionName == 'ADD') {
+                if (returnClick.option.optionName == 'ADD') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
-                else if (temp.option.optionName == 'PST') {
-                    if (clipboard == undefined) {
-                        alert('Clipboard is empty!');
-                    }
-                    else {
-                        var splitted = temp.option.optionId.split('-');
-                        var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
-                        if (lastSelectedOption == 'MOV') {
-                            returnPaste = temp.option.pasteMove(listStatement, clipboard, temp.statement, isInner);
-                            listStatement = returnPaste.listStatement;
-                            if (returnPaste.result == true) {
-                                clipboard = undefined;
-                                lastSelectedOption = 'PST';
-                                restructureStatement();
-                                drawCanvas();
-                            }
-                        }
-                    }
+                else if (returnClick.option.optionName == 'PST') {
+                    handlePaste();
                 }
-                else if (temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
-                    clipboard = temp.statement;
-                    lastSelectedOption = temp.option.optionName;
+                else if (returnClick.option.optionName == 'MOV' || returnClick.option.optionName == 'CPY') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
-                else if (temp.option.optionName == 'DEL') {
+                else if (returnClick.option.optionName == 'DEL') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
-                else if (temp.option.optionName == 'EDT') {
+                else if (returnClick.option.optionName == 'EDT') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
             }
         });
+    }
+    function handleAdd(statement) {
+        var returnPaste;
+        // Initialize
+        if (lastSelectedOption == undefined && clipboard == undefined && returnClick == undefined) {
+            listStatement.push(statement);
+        }
+        // Action taken, user chose ADD
+        else if (lastSelectedOption == 'ADD' && returnClick != undefined) {
+            returnPaste = returnClick.option.addStatement(listStatement, statement, clipboard, returnClick.option.optionId);
+            if (returnPaste.result == true) {
+                finishAction();
+                listStatement = returnPaste.listStatement;
+            }
+            else {
+                if (statement instanceof DeclareStatement_1.default)
+                    deleteVariable(statement.variable);
+                alert('Could not add statement here');
+                finishAction();
+            }
+        }
+    }
+    function handlePaste() {
+        var returnPaste;
+        if (clipboard == undefined) {
+            alert('Clipboard is empty!');
+            return;
+        }
+        var splitted = returnClick.option.optionId.split('-');
+        var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
+        if (lastSelectedOption == 'MOV') {
+            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner);
+            listStatement = returnPaste.listStatement;
+            if (returnPaste.result == true) {
+                finishAction();
+                restructureStatement();
+                drawCanvas();
+            }
+            else {
+                alert('Could not paste statement here!');
+                finishAction();
+                restructureStatement();
+                drawCanvas();
+            }
+        }
+    }
+    function finishAction() {
+        returnClick = undefined;
+        clipboard = undefined;
+        lastSelectedOption = undefined;
     }
     function restructureStatement() {
         if (listStatement == undefined)
@@ -1746,7 +2133,7 @@ $(document).ready(function () {
     }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/SwitchStatement":6,"../classes/statement/WhileStatement":7,"../classes/statement/helper/case/Case":8,"../classes/statement/helper/general/Condition":9,"../classes/statement/helper/ifs/Elif":11,"../classes/statement/helper/ifs/If":12,"../classes/variable/Char":15,"../classes/variable/Double":16,"../classes/variable/Float":17,"../classes/variable/Integer":18,"../classes/variable/Long":19,"../classes/variable/String":20}],23:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/InputStatement":5,"../classes/statement/SwitchStatement":7,"../classes/statement/WhileStatement":8,"../classes/statement/helper/case/Case":9,"../classes/statement/helper/general/Condition":10,"../classes/statement/helper/ifs/Elif":12,"../classes/statement/helper/ifs/If":13,"../classes/statement/helper/options/Option":14,"../classes/variable/Char":16,"../classes/variable/Double":17,"../classes/variable/Float":18,"../classes/variable/Integer":19,"../classes/variable/Long":20,"../classes/variable/String":21}],24:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -1758,19 +2145,21 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
-    function ReturnClick(statement, option) {
+    function ReturnClick(statement, option, isClose) {
+        this.isClose = undefined;
         this.statement = statement;
         this.option = option;
+        this.isClose = isClose;
     }
     return ReturnClick;
 }());
 exports.default = ReturnClick;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -1782,4 +2171,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[22]);
+},{}]},{},[23]);

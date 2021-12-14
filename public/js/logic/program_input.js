@@ -19,6 +19,8 @@ var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"
 var SwitchStatement_1 = __importDefault(require("../classes/statement/SwitchStatement"));
 var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
 var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatement"));
+var Option_1 = __importDefault(require("../classes/statement/helper/options/Option"));
+var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -42,7 +44,7 @@ $(document).ready(function () {
         var className = "col-sm-" + length;
         var className2 = 'col-xs-' + length;
         var strong = $('<strong></strong>').text(text);
-        var div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black');
+        var div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black').addClass('align-items-center');
         div.append(strong);
         return div;
     }
@@ -84,6 +86,21 @@ $(document).ready(function () {
         container.append(inputContainer);
         $('#pcInputContainer').append(container);
     }
+    function createSelect(listVariable, length) {
+        var className = 'col-sm-' + length;
+        var className2 = 'col-xs-' + length;
+        var container = $('<div></div>').addClass(className).addClass(className2);
+        var select = $('<select></select>').addClass('form-select').addClass('col-sm-12').addClass('col-xs-12');
+        var option;
+        select.append($('<option></option>').val(null).text('Choose Variable'));
+        for (var _i = 0, listVariable_1 = listVariable; _i < listVariable_1.length; _i++) {
+            var variable = listVariable_1[_i];
+            option = $('<option></option>').val(variable.name).text(variable.name);
+            select.append(option);
+        }
+        container.append(select);
+        return container;
+    }
     function clearError() {
         $('#pcInputErrorContainer').empty();
         for (var _i = 0, declareVariableNameList_1 = declareVariableNameList; _i < declareVariableNameList_1.length; _i++) {
@@ -94,8 +111,9 @@ $(document).ready(function () {
             var varValue = declareVariableValueList_1[_a];
             $('.' + varValue).removeClass('input-error');
         }
+        $('#chosenVariable').removeClass('input-error');
     }
-    function initInputDeclare(title) {
+    function initInput(title) {
         $('#pcInputErrorContainer').empty();
         $('#pcInputContainer').empty();
         $('#pcInputContainerLower').empty();
@@ -140,12 +158,34 @@ $(document).ready(function () {
                 variable = new String_1.default(variableName, variableValue);
                 listString.push(variable);
             }
-            listStatement.push(new DeclareStatement_1.default(statementCount++, 1, variable));
+            handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        }
+    }
+    function getVariable(listVariable, variableName) {
+        for (var i = 0; i < listVariable.length; i++) {
+            if (listVariable[i].name == variableName)
+                return listVariable[i];
+        }
+        return undefined;
+    }
+    function createStatementClone(statement) {
+        if (statement instanceof DeclareStatement_1.default) {
+            alert('Could not copy declare statement!');
+            return undefined;
+        }
+        else if (statement instanceof InputStatement_1.default) {
+        }
+        else if (statement instanceof IfStatement_1.default) {
+        }
+        else if (statement instanceof SwitchStatement_1.default) {
+        }
+        else if (statement instanceof ForStatement_1.default) {
+        }
+        else if (statement instanceof WhileStatement_1.default) {
         }
     }
     // Declare Variable
     $(document).on('click', '.addVariableDeclareBtn', function () {
-        console.log($(this).data('value'));
         if ($(this).data('value') == false)
             createDeclareDataVariable(false, false);
         else
@@ -158,6 +198,38 @@ $(document).ready(function () {
         declareVariableValueList.splice(declareVariableValueList.indexOf(varVal), 1);
         $(this).parent().parent().parent().remove();
     });
+    // Click declare variable button
+    $('.declareVariable').on('click', function () {
+        var isNumericValue;
+        if ($(this).data('value') == 'int')
+            initInput('Declare Integer');
+        else if ($(this).data('value') == 'long')
+            initInput('Declare Long');
+        else if ($(this).data('value') == 'float')
+            initInput('Declare Float');
+        else if ($(this).data('value') == 'double')
+            initInput('Declare Double');
+        else if ($(this).data('value') == 'char')
+            initInput('Declare Char');
+        else if ($(this).data('value') == 'string')
+            initInput('Declare String');
+        if ($(this).data('value') == 'string' || $(this).data('value') == 'char') {
+            createDeclareDataVariable(true, false);
+            isNumericValue = false;
+        }
+        else {
+            createDeclareDataVariable(true, true);
+            isNumericValue = true;
+        }
+        var btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
+            addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable');
+        var createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create');
+        $('#pcInputContainerLower').append(btn);
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'));
+        $('#pcInputContainerLower').append(createBtn);
+    });
+    // Click create variable button
     $(document).on('click', '#createVariableBtn', function () {
         clearError();
         var variableName;
@@ -209,81 +281,108 @@ $(document).ready(function () {
         // Insert every declared variable and declare statement instance to list
         insertToVariableList();
         // Push statement to canvas
+        restructureStatement();
         drawCanvas();
     });
-    $('.declareVariable').on('click', function () {
-        var isNumericValue;
-        if ($(this).data('value') == 'int')
-            initInputDeclare('Declare Integer');
-        else if ($(this).data('value') == 'long')
-            initInputDeclare('Declare Long');
-        else if ($(this).data('value') == 'float')
-            initInputDeclare('Declare Float');
-        else if ($(this).data('value') == 'double')
-            initInputDeclare('Declare Double');
-        else if ($(this).data('value') == 'char')
-            initInputDeclare('Declare Char');
-        else if ($(this).data('value') == 'string')
-            initInputDeclare('Declare String');
-        if ($(this).data('value') == 'string' || $(this).data('value') == 'char') {
-            createDeclareDataVariable(true, false);
-            isNumericValue = false;
-        }
-        else {
-            createDeclareDataVariable(true, true);
-            isNumericValue = true;
-        }
-        var btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-            addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable');
-        var createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create');
-        $('#pcInputContainerLower').append(btn);
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'));
-        $('#pcInputContainerLower').append(createBtn);
-    });
-    // Helper Functions
-    function initInputVariable() {
-        $('#pcInputErrorContainer').empty();
-        $('#pcInputContainer').empty();
-        $('#pcInputContainerLower').empty();
-        $('#command-name').text('');
-        declareVariableNameList = [];
-        declareVariableValueList = [];
-        variableIndex = 0;
-    }
-    // Input to Variable
+    // Click input variable button
     $(document).on('click', '.inputVariable', function () {
+        var listVariable;
         if ($(this).data('value') == 'int') {
-            initInputDeclare('Declare Integer');
-            testing();
+            initInput('Input Integer');
+            listVariable = listInteger;
         }
         else if ($(this).data('value') == 'long') {
-            initInputDeclare('Declare Long');
-            testing2();
+            initInput('Input Long');
+            listVariable = listLong;
         }
         else if ($(this).data('value') == 'float') {
-            initInputDeclare('Declare Float');
-            testing3();
+            initInput('Input Float');
+            listVariable = listFloat;
         }
         else if ($(this).data('value') == 'double') {
-            initInputDeclare('Declare Double');
-            testing4();
+            initInput('Input Double');
+            listVariable = listDouble;
         }
         else if ($(this).data('value') == 'char') {
-            initInputDeclare('Declare Char');
-            testing5();
+            initInput('Input Char');
+            listVariable = listChar;
         }
-        else if ($(this).data('value') == 'string')
-            initInputDeclare('Declare String');
+        else if ($(this).data('value') == 'string') {
+            initInput('Input String');
+            listVariable = listString;
+        }
+        var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
+        var select = createSelect(listVariable, 7).attr('id', 'chosenVariable');
+        container.append(createHint('Variable Name', 5));
+        container.append(select);
+        container.addClass('mb-3');
+        $('#pcInputContainer').append(container);
+        var inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+            addClass('col-xs-2').attr('id', 'inputVariableBtn').data('value', $(this).data('value')).text('Select');
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'));
+        $('#pcInputContainerLower').append(inputBtn);
+    });
+    // Click select input variable button
+    $(document).on('click', '#inputVariableBtn', function () {
+        clearError();
+        if ($('#chosenVariable').find('option').filter(':selected').val() == '') {
+            createErrorMessage('Please select a variable');
+            $('#chosenVariable').addClass('input-error');
+        }
+        else {
+            var variableName = $('#chosenVariable').find('option').filter(':selected').val();
+            var variable = undefined;
+            var statement = void 0;
+            if ($('#inputVariableBtn').data('value') == 'int')
+                variable = getVariable(listInteger, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'long')
+                variable = getVariable(listLong, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'float')
+                variable = getVariable(listFloat, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'double')
+                variable = getVariable(listDouble, variableName);
+            else if ($('#inputVariableBtn').data('value') == 'char')
+                variable = getVariable(listChar, variableName);
+            else
+                variable = getVariable(listString, variableName);
+            if (variable != undefined) {
+                statement = new InputStatement_1.default(statementCount++, 1, variable);
+                handleAdd(statement);
+                restructureStatement();
+                drawCanvas();
+            }
+        }
+    });
+    function deleteVariable(variable) {
+        allVariableNames[variable.name] = false;
+        if (variable instanceof Integer_1.default)
+            listInteger.splice(listInteger.indexOf(variable), 1);
+        else if (variable instanceof Long_1.default)
+            listLong.splice(listLong.indexOf(variable), 1);
+        else if (variable instanceof Float_1.default)
+            listFloat.splice(listFloat.indexOf(variable), 1);
+        else if (variable instanceof Double_1.default)
+            listDouble.splice(listDouble.indexOf(variable), 1);
+        else if (variable instanceof Char_1.default)
+            listChar.splice(listChar.indexOf(variable), 1);
+        else
+            listString.splice(listString.indexOf(variable), 1);
+    }
+    // Click output
+    $(document).on('click', '.output', function () {
+        if ($(this).data('value') == 'variable') {
+            testing3();
+        }
     });
     // Canvas logic
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
     var canvas;
-    // Variables to handle move and copy
-    var originStatement;
+    var option = undefined;
+    // Variables to handle canvas interaction (add, mov, pst)
     var clipboard = undefined;
     var lastSelectedOption = undefined;
+    var returnClick = undefined;
     // Initialize Canvas
     function initializeCanvas() {
         canvas = document.getElementById('block-code-canvas');
@@ -291,7 +390,8 @@ $(document).ready(function () {
         handleCanvasClick();
         blockCanvasInstance = new Canvas_1.default(canvas, canvas.getContext('2d'), 40, 30, 5);
         setTimeout(function () {
-            blockCanvasInstance.createOption(30, 30);
+            option = new Option_1.default('special', blockCanvasInstance.PADDING, blockCanvasInstance.PADDING, blockCanvasInstance.LINE_HEIGHT, blockCanvasInstance.LINE_HEIGHT, undefined);
+            option.draw(blockCanvasInstance);
             blockCanvasInstance.updateLastPosition();
         }, 50);
     }
@@ -310,6 +410,8 @@ $(document).ready(function () {
     function drawCanvas() {
         blockCanvasInstance.clearCanvas();
         var statement;
+        option.draw(blockCanvasInstance);
+        blockCanvasInstance.updateLastPosition();
         for (var i = 0; i < listStatement.length; i++) {
             statement = listStatement[i];
             statement.writeToCanvas(blockCanvasInstance);
@@ -322,48 +424,91 @@ $(document).ready(function () {
             var x = event.clientX - rect.left;
             var y = event.clientY - rect.top;
             var statement;
-            var temp = undefined;
-            var returnPaste;
-            for (var i = 0; i < listStatement.length; i++) {
-                statement = listStatement[i];
-                temp = statement.callClickEvent(blockCanvasInstance, x, y);
-                if (temp != undefined)
-                    break;
+            returnClick = option.clickOption(blockCanvasInstance, x, y);
+            if (!returnClick) {
+                for (var i = 0; i < listStatement.length; i++) {
+                    statement = listStatement[i];
+                    returnClick = statement.callClickEvent(blockCanvasInstance, x, y);
+                    if (returnClick != undefined)
+                        break;
+                }
             }
-            if (temp != undefined) {
-                if (temp.option.optionName == 'ARR') {
+            if (returnClick != undefined) {
+                if (returnClick.isClose != undefined) {
+                    finishAction();
+                    return;
                 }
-                else if (temp.option.optionName == 'ADD') {
+                if (returnClick.option.optionName == 'ADD') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
-                else if (temp.option.optionName == 'PST') {
-                    if (clipboard == undefined) {
-                        alert('Clipboard is empty!');
-                    }
-                    else {
-                        var splitted = temp.option.optionId.split('-');
-                        var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
-                        if (lastSelectedOption == 'MOV') {
-                            returnPaste = temp.option.pasteMove(listStatement, clipboard, temp.statement, isInner);
-                            listStatement = returnPaste.listStatement;
-                            if (returnPaste.result == true) {
-                                clipboard = undefined;
-                                lastSelectedOption = 'PST';
-                                restructureStatement();
-                                drawCanvas();
-                            }
-                        }
-                    }
+                else if (returnClick.option.optionName == 'PST') {
+                    handlePaste();
                 }
-                else if (temp.option.optionName == 'MOV' || temp.option.optionName == 'CPY') {
-                    clipboard = temp.statement;
-                    lastSelectedOption = temp.option.optionName;
+                else if (returnClick.option.optionName == 'MOV' || returnClick.option.optionName == 'CPY') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
-                else if (temp.option.optionName == 'DEL') {
+                else if (returnClick.option.optionName == 'DEL') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
-                else if (temp.option.optionName == 'EDT') {
+                else if (returnClick.option.optionName == 'EDT') {
+                    clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
                 }
             }
         });
+    }
+    function handleAdd(statement) {
+        var returnPaste;
+        // Initialize
+        if (lastSelectedOption == undefined && clipboard == undefined && returnClick == undefined) {
+            listStatement.push(statement);
+        }
+        // Action taken, user chose ADD
+        else if (lastSelectedOption == 'ADD' && returnClick != undefined) {
+            returnPaste = returnClick.option.addStatement(listStatement, statement, clipboard, returnClick.option.optionId);
+            if (returnPaste.result == true) {
+                finishAction();
+                listStatement = returnPaste.listStatement;
+            }
+            else {
+                if (statement instanceof DeclareStatement_1.default)
+                    deleteVariable(statement.variable);
+                alert('Could not add statement here');
+                finishAction();
+            }
+        }
+    }
+    function handlePaste() {
+        var returnPaste;
+        if (clipboard == undefined) {
+            alert('Clipboard is empty!');
+            return;
+        }
+        var splitted = returnClick.option.optionId.split('-');
+        var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
+        if (lastSelectedOption == 'MOV') {
+            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner);
+            listStatement = returnPaste.listStatement;
+            if (returnPaste.result == true) {
+                finishAction();
+                restructureStatement();
+                drawCanvas();
+            }
+            else {
+                alert('Could not paste statement here!');
+                finishAction();
+                restructureStatement();
+                drawCanvas();
+            }
+        }
+    }
+    function finishAction() {
+        returnClick = undefined;
+        clipboard = undefined;
+        lastSelectedOption = undefined;
     }
     function restructureStatement() {
         if (listStatement == undefined)
