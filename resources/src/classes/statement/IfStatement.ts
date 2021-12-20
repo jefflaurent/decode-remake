@@ -1,13 +1,17 @@
 import ReturnClick from "../../utilities/ReturnClick"
+import ReturnClone from "../../utilities/ReturnClone"
 import Canvas from "../canvas/Canvas"
 import Variable from "../variable/Variable"
+import Condition from "./helper/general/Condition"
+import Else from "./helper/ifs/Else"
+import If from "./helper/ifs/If"
 import Statement from "./Statement"
 
 class IfStatement extends Statement {
 
     ifOperations: any[] | undefined
  
-    constructor(level: number, statementId: number, ifOperations: any[] | undefined) {
+    constructor(level: number, statementId: number, ifOperations: Statement[] | undefined) {
         super(level)
         this.statementId = this.generateId(statementId)
         this.ifOperations = ifOperations
@@ -15,26 +19,33 @@ class IfStatement extends Statement {
     }
 
     updateChildLevel(): void {
-        if(this.ifOperations != undefined)
+        if(this.ifOperations != undefined) {
             for(let i = 0; i < this.ifOperations.length; i++) {
                 this.ifOperations[i].level = this.level
-                this.ifOperations[i].updateChildLevel()
+                if(this.ifOperations[i] instanceof If)
+                    (this.ifOperations[i] as If).updateChildLevel()
+                else
+                    (this.ifOperations[i] as Else).updateChildLevel()
             }
+        }
     }
 
     generateId(number: number): string {
         return 'if-statement-' + number
     }
 
-    updateIfOperations(ifOperations: any[]): void {
+    updateIfOperations(ifOperations: Statement[]): void {
         this.ifOperations = ifOperations
         this.init()
     }
 
     init(): void {
-        if(this.ifOperations != undefined)
-            for(let i = 0; i < this.ifOperations.length; i++)
-                this.ifOperations[i].parent = this
+        if(this.ifOperations != undefined) {
+            for(let i = 0; i < this.ifOperations.length; i++) {
+                if(this.ifOperations[i] != undefined)
+                    this.ifOperations[i].parent = this
+            }
+        }
     }
 
     writeToCanvas(canvas: Canvas): void {
@@ -71,6 +82,38 @@ class IfStatement extends Statement {
         }
 
         return undefined
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+
+        let statementFound: boolean = false
+    
+        for(let i = 0; i < this.ifOperations.length; i++) {
+            statementFound = this.ifOperations[i].findStatement(statement)
+            if(statementFound)
+                return true
+        }
+
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let ifStatement: IfStatement = new IfStatement(this.level, statementCount++, undefined)
+        let ifOperations: any[] = []
+        let returnClone: ReturnClone | undefined = undefined
+
+        for(let i = 0; i < this.ifOperations.length; i++) {
+            returnClone = this.ifOperations[i].cloneStatement(statementCount++)
+            if(returnClone.result == false)
+                return returnClone
+
+            ifOperations.push(returnClone.statement)
+            ifStatement.updateIfOperations(ifOperations)
+        }
+
+        return new ReturnClone(ifStatement, true)
     }
 }
 

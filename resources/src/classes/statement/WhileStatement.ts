@@ -1,4 +1,5 @@
 import ReturnClick from "../../utilities/ReturnClick";
+import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
 import Variable from "../variable/Variable";
 import Condition from "./helper/general/Condition";
@@ -126,6 +127,30 @@ class WhileStatement extends Statement {
         }
 
         return undefined
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let whileStatement: WhileStatement
+        let returnClone: ReturnClone
+        let childStatement: Statement[] = []
+
+        if(this.logicalOperator != undefined)
+            whileStatement = new WhileStatement(this.level, statementCount++, this.isWhile, undefined, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition())
+        else
+            whileStatement =  new WhileStatement(this.level, statementCount++, this.isWhile, undefined, this.firstCondition.cloneCondition())    
+    
+        if(this.childStatement) {
+             for(let i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++)
+                if(returnClone.result == false) 
+                    return returnClone
+
+                childStatement.push(returnClone.statement)
+             }
+             whileStatement.updateChildStatement(childStatement)
+        }
+        
+        return new ReturnClone(whileStatement, true)
     }
 }
 

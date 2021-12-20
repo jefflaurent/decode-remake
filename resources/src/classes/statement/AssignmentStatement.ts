@@ -1,3 +1,4 @@
+import ReturnClone from "../../utilities/ReturnClone";
 import Variable from "../variable/Variable";
 import Statement from "./Statement";
 
@@ -7,11 +8,16 @@ class AssignmentStatement extends Statement {
     secondVariable: Variable
     isCustomValue: boolean
 
-    constructor(level: number, firstVariable: Variable, secondVariable: Variable, isCustomValue: boolean) {
+    constructor(statementId: number, level: number, firstVariable: Variable, secondVariable: Variable, isCustomValue: boolean) {
         super(level)
+        this.statementId = this.generateId(statementId)
         this.firstVariable = firstVariable
         this.secondVariable = secondVariable
         this.isCustomValue = isCustomValue
+    }
+
+    generateId(number: number): string {
+        return 'assignment-statement-' + number
     }
 
     generateBlockCodeText(): string {
@@ -28,6 +34,16 @@ class AssignmentStatement extends Statement {
         }
         
         return undefined
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        return new ReturnClone(new AssignmentStatement(statementCount, this.level, this.firstVariable, this.secondVariable, this.isCustomValue), false)
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+        return false
     }
 }
 

@@ -10,6 +10,7 @@ import Variable from '../variable/Variable'
 import Canvas from '../canvas/Canvas'
 import ReturnClick from '../../utilities/ReturnClick'
 import ReturnFind from '../../utilities/ReturnFind'
+import ReturnClone from '../../utilities/ReturnClone'
 
 class DeclareStatement extends Statement {
 
@@ -91,6 +92,16 @@ class DeclareStatement extends Statement {
     findVariable(variable: Variable): Statement | undefined {
         return undefined
     }   
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        return new ReturnClone(new DeclareStatement(statementCount, this.level, this.variable), true)
+    }
 }
 
 export default DeclareStatement

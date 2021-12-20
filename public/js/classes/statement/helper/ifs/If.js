@@ -16,12 +16,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
 var If = /** @class */ (function (_super) {
     __extends(If, _super);
     function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
         var _this = _super.call(this, level) || this;
+        _this.logicalOperator = undefined;
         _this.statementId = _this.generateId(statementId);
         _this.firstCondition = firstCondition;
         _this.logicalOperator = logicalOperator;
@@ -99,6 +101,39 @@ var If = /** @class */ (function (_super) {
                 return temp;
         }
         return undefined;
+    };
+    If.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    If.prototype.cloneStatement = function (statementCount) {
+        var ifStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.logicalOperator != undefined) {
+            ifStatement = new If(this.level, statementCount, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition());
+        }
+        else
+            ifStatement = new If(this.level, statementCount, this.firstCondition.cloneCondition());
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            ifStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(ifStatement, true);
     };
     return If;
 }(Statement_1.default));

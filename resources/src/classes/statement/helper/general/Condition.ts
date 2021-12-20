@@ -1,4 +1,3 @@
-import ReturnFind from "../../../../utilities/ReturnFind"
 import Char from "../../../variable/Char"
 import String from "../../../variable/String"
 import Variable from "../../../variable/Variable"
@@ -41,6 +40,10 @@ class Condition {
 
         return false
     } 
+
+    cloneCondition(): Condition {
+        return new Condition(this.firstVariable, this.operator, this.secondVariable, this.isCustomValue)
+    }
 }
 
 export default Condition

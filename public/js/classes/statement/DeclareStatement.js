@@ -24,6 +24,7 @@ var Long_1 = __importDefault(require("../variable/Long"));
 var String_1 = __importDefault(require("../variable/String"));
 var Statement_1 = __importDefault(require("./Statement"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var DeclareStatement = /** @class */ (function (_super) {
     __extends(DeclareStatement, _super);
     function DeclareStatement(statementId, level, variable) {
@@ -94,6 +95,14 @@ var DeclareStatement = /** @class */ (function (_super) {
     };
     DeclareStatement.prototype.findVariable = function (variable) {
         return undefined;
+    };
+    DeclareStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
+    };
+    DeclareStatement.prototype.cloneStatement = function (statementCount) {
+        return new ReturnClone_1.default(new DeclareStatement(statementCount, this.level, this.variable), true);
     };
     return DeclareStatement;
 }(Statement_1.default));

@@ -1,4 +1,5 @@
 
+import ReturnClone from "../../../../utilities/ReturnClone"
 import Canvas from "../../../canvas/Canvas"
 import Statement from "../../Statement"
 import Condition from "../general/Condition"
@@ -40,6 +41,32 @@ class Elif extends If {
 
         if(isClose) 
             canvas.writeClosingBlock(this.level, text, 'END IF', this.color)
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let ifStatement: If
+        let returnClone: ReturnClone
+        let childStatement: Statement[] = []
+
+        if(this.logicalOperator != undefined) {
+            ifStatement =  new Elif(this.level, statementCount, 
+                this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition())
+        }
+        else
+            ifStatement = new Elif(this.level, statementCount, this.firstCondition.cloneCondition())
+
+        if(this.childStatement) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++)
+                if(returnClone.result == false) 
+                    return returnClone
+                
+                childStatement.push(returnClone.statement)
+            }
+            ifStatement.updateChildStatement(childStatement)
+        }
+
+        return new ReturnClone(ifStatement, true)
     }
 }
 

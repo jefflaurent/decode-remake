@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
 var If_1 = __importDefault(require("./If"));
 var Elif = /** @class */ (function (_super) {
     __extends(Elif, _super);
@@ -46,6 +47,26 @@ var Elif = /** @class */ (function (_super) {
         canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
         if (isClose)
             canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
+    };
+    Elif.prototype.cloneStatement = function (statementCount) {
+        var ifStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.logicalOperator != undefined) {
+            ifStatement = new Elif(this.level, statementCount, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition());
+        }
+        else
+            ifStatement = new Elif(this.level, statementCount, this.firstCondition.cloneCondition());
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            ifStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(ifStatement, true);
     };
     return Elif;
 }(If_1.default));

@@ -1,4 +1,5 @@
 import ReturnClick from "../../utilities/ReturnClick"
+import ReturnClone from "../../utilities/ReturnClone"
 import Canvas from "../canvas/Canvas"
 import Char from "../variable/Char"
 import Double from "../variable/Double"
@@ -22,17 +23,17 @@ class InputStatement extends Statement {
 
     generateId(number: number): string {
         if(this.variable instanceof Integer)
-            return 'declare-integer-' + number 
+            return 'input-integer-' + number 
         else if(this.variable instanceof Long)
-            return 'declare-long-' + number
+            return 'input-long-' + number
         else if(this.variable instanceof Float) 
-            return 'declare-float-' + number
+            return 'input-float-' + number
         else if(this.variable instanceof Double)
-            return 'declare-double-' + number
+            return 'input-double-' + number
         else if(this.variable instanceof Char)
-            return 'declare-char-' + number
+            return 'input-char-' + number
         else 
-            return 'declare-string-' + number
+            return 'input-string-' + number
     }
 
     writeToCanvas(canvas: Canvas): void {
@@ -56,6 +57,17 @@ class InputStatement extends Statement {
             return this
 
         return undefined
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+        
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        return new ReturnClone(new InputStatement(statementCount, this.level, this.variable), true)
     }
 }
 

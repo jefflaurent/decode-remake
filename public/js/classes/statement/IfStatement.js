@@ -16,6 +16,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var If_1 = __importDefault(require("./helper/ifs/If"));
 var Statement_1 = __importDefault(require("./Statement"));
 var IfStatement = /** @class */ (function (_super) {
     __extends(IfStatement, _super);
@@ -27,11 +29,15 @@ var IfStatement = /** @class */ (function (_super) {
         return _this;
     }
     IfStatement.prototype.updateChildLevel = function () {
-        if (this.ifOperations != undefined)
+        if (this.ifOperations != undefined) {
             for (var i = 0; i < this.ifOperations.length; i++) {
                 this.ifOperations[i].level = this.level;
-                this.ifOperations[i].updateChildLevel();
+                if (this.ifOperations[i] instanceof If_1.default)
+                    this.ifOperations[i].updateChildLevel();
+                else
+                    this.ifOperations[i].updateChildLevel();
             }
+        }
     };
     IfStatement.prototype.generateId = function (number) {
         return 'if-statement-' + number;
@@ -41,9 +47,12 @@ var IfStatement = /** @class */ (function (_super) {
         this.init();
     };
     IfStatement.prototype.init = function () {
-        if (this.ifOperations != undefined)
-            for (var i = 0; i < this.ifOperations.length; i++)
-                this.ifOperations[i].parent = this;
+        if (this.ifOperations != undefined) {
+            for (var i = 0; i < this.ifOperations.length; i++) {
+                if (this.ifOperations[i] != undefined)
+                    this.ifOperations[i].parent = this;
+            }
+        }
     };
     IfStatement.prototype.writeToCanvas = function (canvas) {
         if (this.ifOperations)
@@ -73,6 +82,30 @@ var IfStatement = /** @class */ (function (_super) {
                 return temp;
         }
         return undefined;
+    };
+    IfStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            statementFound = this.ifOperations[i].findStatement(statement);
+            if (statementFound)
+                return true;
+        }
+        return false;
+    };
+    IfStatement.prototype.cloneStatement = function (statementCount) {
+        var ifStatement = new IfStatement(this.level, statementCount++, undefined);
+        var ifOperations = [];
+        var returnClone = undefined;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            returnClone = this.ifOperations[i].cloneStatement(statementCount++);
+            if (returnClone.result == false)
+                return returnClone;
+            ifOperations.push(returnClone.statement);
+            ifStatement.updateIfOperations(ifOperations);
+        }
+        return new ReturnClone_1.default(ifStatement, true);
     };
     return IfStatement;
 }(Statement_1.default));

@@ -16,16 +16,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(level, firstVariable, secondVariable, isCustomValue) {
+    function AssignmentStatement(statementId, level, firstVariable, secondVariable, isCustomValue) {
         var _this = _super.call(this, level) || this;
+        _this.statementId = _this.generateId(statementId);
         _this.firstVariable = firstVariable;
         _this.secondVariable = secondVariable;
         _this.isCustomValue = isCustomValue;
         return _this;
     }
+    AssignmentStatement.prototype.generateId = function (number) {
+        return 'assignment-statement-' + number;
+    };
     AssignmentStatement.prototype.generateBlockCodeText = function () {
         return this.isCustomValue ? this.firstVariable.name + ' = ' + this.secondVariable.value :
             this.firstVariable.name + ' = ' + this.secondVariable.name;
@@ -38,6 +43,14 @@ var AssignmentStatement = /** @class */ (function (_super) {
                 return this;
         }
         return undefined;
+    };
+    AssignmentStatement.prototype.cloneStatement = function (statementCount) {
+        return new ReturnClone_1.default(new AssignmentStatement(statementCount, this.level, this.firstVariable, this.secondVariable, this.isCustomValue), false);
+    };
+    AssignmentStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
     };
     return AssignmentStatement;
 }(Statement_1.default));

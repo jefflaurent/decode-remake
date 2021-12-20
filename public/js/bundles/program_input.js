@@ -85,7 +85,7 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":11}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":12}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -112,6 +112,7 @@ var Long_1 = __importDefault(require("../variable/Long"));
 var String_1 = __importDefault(require("../variable/String"));
 var Statement_1 = __importDefault(require("./Statement"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var DeclareStatement = /** @class */ (function (_super) {
     __extends(DeclareStatement, _super);
     function DeclareStatement(statementId, level, variable) {
@@ -183,11 +184,19 @@ var DeclareStatement = /** @class */ (function (_super) {
     DeclareStatement.prototype.findVariable = function (variable) {
         return undefined;
     };
+    DeclareStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
+    };
+    DeclareStatement.prototype.cloneStatement = function (statementCount) {
+        return new ReturnClone_1.default(new DeclareStatement(statementCount, this.level, this.variable), true);
+    };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../variable/Char":16,"../variable/Double":17,"../variable/Float":18,"../variable/Integer":19,"../variable/Long":20,"../variable/String":21,"./Statement":6,"./helper/options/Option":14}],3:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27,"../variable/Char":17,"../variable/Double":18,"../variable/Float":19,"../variable/Integer":20,"../variable/Long":21,"../variable/String":22,"./Statement":7,"./helper/options/Option":15}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -206,6 +215,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var DeclareStatement_1 = __importDefault(require("./DeclareStatement"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
@@ -304,11 +314,39 @@ var ForStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    ForStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    ForStatement.prototype.cloneStatement = function (statementCount) {
+        var forStatement = new ForStatement(this.level, statementCount++, undefined, this.variable, this.variableIsNew, this.isIncrement, this.addValueBy, this.condition.cloneCondition());
+        var childStatement = [];
+        var returnClone;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            forStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(forStatement, true);
+    };
     return ForStatement;
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"./DeclareStatement":2,"./Statement":6,"./helper/options/Option":14}],4:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27,"./DeclareStatement":2,"./Statement":7,"./helper/options/Option":15}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -327,6 +365,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var If_1 = __importDefault(require("./helper/ifs/If"));
 var Statement_1 = __importDefault(require("./Statement"));
 var IfStatement = /** @class */ (function (_super) {
     __extends(IfStatement, _super);
@@ -338,11 +378,15 @@ var IfStatement = /** @class */ (function (_super) {
         return _this;
     }
     IfStatement.prototype.updateChildLevel = function () {
-        if (this.ifOperations != undefined)
+        if (this.ifOperations != undefined) {
             for (var i = 0; i < this.ifOperations.length; i++) {
                 this.ifOperations[i].level = this.level;
-                this.ifOperations[i].updateChildLevel();
+                if (this.ifOperations[i] instanceof If_1.default)
+                    this.ifOperations[i].updateChildLevel();
+                else
+                    this.ifOperations[i].updateChildLevel();
             }
+        }
     };
     IfStatement.prototype.generateId = function (number) {
         return 'if-statement-' + number;
@@ -352,9 +396,12 @@ var IfStatement = /** @class */ (function (_super) {
         this.init();
     };
     IfStatement.prototype.init = function () {
-        if (this.ifOperations != undefined)
-            for (var i = 0; i < this.ifOperations.length; i++)
-                this.ifOperations[i].parent = this;
+        if (this.ifOperations != undefined) {
+            for (var i = 0; i < this.ifOperations.length; i++) {
+                if (this.ifOperations[i] != undefined)
+                    this.ifOperations[i].parent = this;
+            }
+        }
     };
     IfStatement.prototype.writeToCanvas = function (canvas) {
         if (this.ifOperations)
@@ -385,11 +432,35 @@ var IfStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    IfStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            statementFound = this.ifOperations[i].findStatement(statement);
+            if (statementFound)
+                return true;
+        }
+        return false;
+    };
+    IfStatement.prototype.cloneStatement = function (statementCount) {
+        var ifStatement = new IfStatement(this.level, statementCount++, undefined);
+        var ifOperations = [];
+        var returnClone = undefined;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            returnClone = this.ifOperations[i].cloneStatement(statementCount++);
+            if (returnClone.result == false)
+                return returnClone;
+            ifOperations.push(returnClone.statement);
+            ifStatement.updateIfOperations(ifOperations);
+        }
+        return new ReturnClone_1.default(ifStatement, true);
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"./Statement":6}],5:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/ifs/If":14}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -408,6 +479,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Char_1 = __importDefault(require("../variable/Char"));
 var Double_1 = __importDefault(require("../variable/Double"));
 var Float_1 = __importDefault(require("../variable/Float"));
@@ -426,17 +498,17 @@ var InputStatement = /** @class */ (function (_super) {
     }
     InputStatement.prototype.generateId = function (number) {
         if (this.variable instanceof Integer_1.default)
-            return 'declare-integer-' + number;
+            return 'input-integer-' + number;
         else if (this.variable instanceof Long_1.default)
-            return 'declare-long-' + number;
+            return 'input-long-' + number;
         else if (this.variable instanceof Float_1.default)
-            return 'declare-float-' + number;
+            return 'input-float-' + number;
         else if (this.variable instanceof Double_1.default)
-            return 'declare-double-' + number;
+            return 'input-double-' + number;
         else if (this.variable instanceof Char_1.default)
-            return 'declare-char-' + number;
+            return 'input-char-' + number;
         else
-            return 'declare-string-' + number;
+            return 'input-string-' + number;
     };
     InputStatement.prototype.writeToCanvas = function (canvas) {
         var text = 'INPUT ' + this.variable.name;
@@ -456,13 +528,109 @@ var InputStatement = /** @class */ (function (_super) {
             return this;
         return undefined;
     };
+    InputStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
+    };
+    InputStatement.prototype.cloneStatement = function (statementCount) {
+        return new ReturnClone_1.default(new InputStatement(statementCount, this.level, this.variable), true);
+    };
     return InputStatement;
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../variable/Char":16,"../variable/Double":17,"../variable/Float":18,"../variable/Integer":19,"../variable/Long":20,"./Statement":6,"./helper/options/Option":14}],6:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27,"../variable/Char":17,"../variable/Double":18,"../variable/Float":19,"../variable/Integer":20,"../variable/Long":21,"./Statement":7,"./helper/options/Option":15}],6:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Option_1 = __importDefault(require("./helper/options/Option"));
+var Statement_1 = __importDefault(require("./Statement"));
+var OutputStatement = /** @class */ (function (_super) {
+    __extends(OutputStatement, _super);
+    function OutputStatement(statementId, level, isNewLine, type, variable) {
+        var _this = _super.call(this, level) || this;
+        _this.variable = undefined;
+        _this.variable = variable;
+        _this.statementId = _this.generateId(statementId);
+        _this.isNewLine = isNewLine;
+        _this.type = type;
+        _this.color = '#f4be0b';
+        return _this;
+    }
+    OutputStatement.prototype.generateId = function (number) {
+        return 'output-' + number;
+    };
+    OutputStatement.prototype.writeToCanvas = function (canvas) {
+        var text = this.generateBlockCodeText();
+        var coordinate = canvas.writeText(this.level, text, this.color);
+        this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
+    };
+    OutputStatement.prototype.generateBlockCodeText = function () {
+        var text = 'PRINT ';
+        if (this.type == 'variable') {
+            text += this.variable.name;
+        }
+        else if (this.type == 'text') {
+            text += "\"Hello World!\"";
+        }
+        if (this.isNewLine)
+            text += ' \n';
+        return text;
+    };
+    OutputStatement.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
+        this.option.parent = this;
+        this.option.draw(canvas);
+    };
+    OutputStatement.prototype.callClickEvent = function (canvas, x, y) {
+        return this.option.clickOption(canvas, x, y);
+    };
+    OutputStatement.prototype.findVariable = function (variable) {
+        if (this.variable) {
+            if (this.variable.name == variable.name)
+                return this;
+        }
+        return undefined;
+    };
+    OutputStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
+    };
+    OutputStatement.prototype.cloneStatement = function (statementCount) {
+        if (this.type == 'variable')
+            return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, this.variable), true);
+        else
+            return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type), true);
+    };
+    return OutputStatement;
+}(Statement_1.default));
+exports.default = OutputStatement;
+
+},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/options/Option":15}],7:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Statement = /** @class */ (function () {
     function Statement(level) {
         this.statementId = '';
@@ -490,11 +658,13 @@ var Statement = /** @class */ (function () {
     Statement.prototype.updateChildStatement = function (childStatement) { };
     Statement.prototype.callClickEvent = function (canvas, x, y) { };
     Statement.prototype.findVariable = function (variable) { return undefined; };
+    Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
+    Statement.prototype.findStatement = function (statement) { return false; };
     return Statement;
 }());
 exports.default = Statement;
 
-},{}],7:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -513,6 +683,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var SwitchStatement = /** @class */ (function (_super) {
@@ -578,11 +749,35 @@ var SwitchStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    SwitchStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            statementFound = this.caseStatement[i].findStatement(statement);
+            if (statementFound)
+                return true;
+        }
+        return false;
+    };
+    SwitchStatement.prototype.cloneStatement = function (statementCount) {
+        var switchStatement = new SwitchStatement(this.level, statementCount++, this.variable, undefined);
+        var caseStatement = [];
+        var returnClone;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            returnClone = this.caseStatement[i].cloneStatement(statementCount++);
+            if (returnClone.result == false)
+                return returnClone;
+            caseStatement.push(returnClone.statement);
+            switchStatement.updateChildStatement(caseStatement);
+        }
+        return new ReturnClone_1.default(switchStatement, true);
+    };
     return SwitchStatement;
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"./Statement":6,"./helper/options/Option":14}],8:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/options/Option":15}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -601,6 +796,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var WhileStatement = /** @class */ (function (_super) {
@@ -701,11 +897,30 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    WhileStatement.prototype.cloneStatement = function (statementCount) {
+        var whileStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.logicalOperator != undefined)
+            whileStatement = new WhileStatement(this.level, statementCount++, this.isWhile, undefined, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition());
+        else
+            whileStatement = new WhileStatement(this.level, statementCount++, this.isWhile, undefined, this.firstCondition.cloneCondition());
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            whileStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(whileStatement, true);
+    };
     return WhileStatement;
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"./Statement":6,"./helper/options/Option":14}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/options/Option":15}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -724,6 +939,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
 var Case = /** @class */ (function (_super) {
@@ -800,11 +1016,43 @@ var Case = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    Case.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    Case.prototype.cloneStatement = function (statementCount) {
+        var caseStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.isDefault)
+            caseStatement = new Case(this.level, statementCount++, undefined, undefined, true);
+        else
+            caseStatement = new Case(this.level, statementCount++, this.condition.cloneCondition(), undefined, this.isDefault);
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+        }
+        caseStatement.updateChildStatement(childStatement);
+        return new ReturnClone_1.default(caseStatement, true);
+    };
     return Case;
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../Statement":6,"../options/Option":14}],10:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":27,"../../Statement":7,"../options/Option":15}],11:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -840,11 +1088,14 @@ var Condition = /** @class */ (function () {
         }
         return false;
     };
+    Condition.prototype.cloneCondition = function () {
+        return new Condition(this.firstVariable, this.operator, this.secondVariable, this.isCustomValue);
+    };
     return Condition;
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":16,"../../../variable/String":21}],11:[function(require,module,exports){
+},{"../../../variable/Char":17,"../../../variable/String":22}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -856,7 +1107,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -875,6 +1126,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
 var If_1 = __importDefault(require("./If"));
 var Elif = /** @class */ (function (_super) {
     __extends(Elif, _super);
@@ -906,11 +1158,31 @@ var Elif = /** @class */ (function (_super) {
         if (isClose)
             canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
     };
+    Elif.prototype.cloneStatement = function (statementCount) {
+        var ifStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.logicalOperator != undefined) {
+            ifStatement = new Elif(this.level, statementCount, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition());
+        }
+        else
+            ifStatement = new Elif(this.level, statementCount, this.firstCondition.cloneCondition());
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            ifStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(ifStatement, true);
+    };
     return Elif;
 }(If_1.default));
 exports.default = Elif;
 
-},{"./If":13}],13:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":27,"./If":14}],14:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -929,12 +1201,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
 var If = /** @class */ (function (_super) {
     __extends(If, _super);
     function If(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) {
         var _this = _super.call(this, level) || this;
+        _this.logicalOperator = undefined;
         _this.statementId = _this.generateId(statementId);
         _this.firstCondition = firstCondition;
         _this.logicalOperator = logicalOperator;
@@ -1013,11 +1287,44 @@ var If = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    If.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    If.prototype.cloneStatement = function (statementCount) {
+        var ifStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.logicalOperator != undefined) {
+            ifStatement = new If(this.level, statementCount, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition());
+        }
+        else
+            ifStatement = new If(this.level, statementCount, this.firstCondition.cloneCondition());
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            ifStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(ifStatement, true);
+    };
     return If;
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../Statement":6,"../options/Option":14}],14:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":27,"../../Statement":7,"../options/Option":15}],15:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1028,6 +1335,7 @@ var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var InputStatement_1 = __importDefault(require("../../InputStatement"));
+var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
@@ -1042,7 +1350,7 @@ var Option = /** @class */ (function () {
         var splitted = optionId.split('-');
         if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
             || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer')
-            || this.parent instanceof InputStatement_1.default) {
+            || this.parent instanceof InputStatement_1.default || this.parent instanceof OutputStatement_1.default) {
             this.optionSelection = this.generateCompleteOptions();
         }
         else
@@ -1109,7 +1417,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":25,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../SwitchStatement":7,"./OptionSelection":15}],15:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":26,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../OutputStatement":6,"../../SwitchStatement":8,"./OptionSelection":16}],16:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1121,6 +1429,7 @@ var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var InputStatement_1 = __importDefault(require("../../InputStatement"));
+var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
 var Case_1 = __importDefault(require("../case/Case"));
@@ -1154,9 +1463,23 @@ var OptionSelection = /** @class */ (function () {
                 return new ReturnPaste_1.default(false, mainListStatement);
         }
         // Statements must be added after declaration
-        if (!this.validateMainListPlacement(mainListStatement, newStatement, targetStatement, isInner))
+        if (!this.validateMainListStatement(mainListStatement, newStatement, targetStatement, isInner))
             return new ReturnPaste_1.default(false, mainListStatement);
         return this.paste(mainListStatement, newStatement, targetStatement, isInner);
+    };
+    OptionSelection.prototype.handleDelete = function (mainListStatement, clipboard) {
+        var parentStatement = clipboard.parent;
+        if (parentStatement == undefined) {
+            if (clipboard instanceof DeclareStatement_1.default) {
+                var clipboardIdx = mainListStatement.indexOf(clipboard);
+                if (this.isVariableExist(mainListStatement, clipboard, clipboardIdx, false))
+                    return new ReturnPaste_1.default(false, mainListStatement);
+            }
+            mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
+        }
+        else
+            parentStatement.updateChildStatement(this.removeSourceStatement(parentStatement.childStatement, clipboard));
+        return new ReturnPaste_1.default(true, mainListStatement);
     };
     OptionSelection.prototype.validateDeclarePlacement = function (targetStatement, isInner) {
         if (targetStatement != undefined) {
@@ -1172,49 +1495,100 @@ var OptionSelection = /** @class */ (function () {
         }
         return true;
     };
-    OptionSelection.prototype.validateMainListPlacement = function (mainListStatement, clipboard, targetStatement, isInner) {
+    OptionSelection.prototype.validateMainListStatement = function (mainListStatement, clipboard, targetStatement, isInner) {
         var returnPaste = undefined;
-        var mainListStatementClone = [];
-        if (mainListStatement != undefined)
-            for (var i = 0; i < mainListStatement.length; i++)
-                mainListStatementClone[i] = mainListStatement[i];
-        returnPaste = this.paste(mainListStatementClone, clipboard, targetStatement, isInner);
+        var result = true;
+        var parentStatement = undefined;
+        var pasteResult = [];
+        pasteResult = this.pasteTemp(mainListStatement, clipboard, targetStatement, isInner);
+        returnPaste = pasteResult[0];
+        parentStatement = pasteResult[1];
+        mainListStatement = returnPaste.listStatement;
         if (returnPaste.result) {
-            mainListStatementClone = returnPaste.listStatement;
+            mainListStatement = returnPaste.listStatement;
             var variableFound = false;
-            if (mainListStatementClone != undefined) {
-                for (var i = 0; i < mainListStatementClone.length; i++) {
-                    if (mainListStatementClone[i] instanceof DeclareStatement_1.default) {
-                        variableFound = this.isVariableExist(mainListStatementClone, mainListStatementClone[i], i);
-                        if (variableFound)
-                            return false;
+            if (mainListStatement != undefined) {
+                for (var i = 0; i < mainListStatement.length; i++) {
+                    if (mainListStatement[i] instanceof DeclareStatement_1.default) {
+                        variableFound = this.isVariableExist(mainListStatement, mainListStatement[i], i, true);
+                        if (variableFound) {
+                            result = false;
+                            break;
+                        }
                     }
                 }
             }
         }
-        return true;
+        if (parentStatement == undefined)
+            this.removeSourceStatement(mainListStatement, clipboard);
+        else
+            parentStatement.updateChildStatement(this.removeSourceStatement(parentStatement.childStatement, clipboard));
+        return result;
     };
-    OptionSelection.prototype.isVariableExist = function (mainListStatementClone, declareStatement, index) {
+    OptionSelection.prototype.isVariableExist = function (mainListStatement, declareStatement, index, isBackward) {
         var statement = undefined;
-        if (mainListStatementClone == undefined)
+        if (mainListStatement == undefined)
             return false;
-        for (var i = index; i >= 0; i--) {
-            statement = mainListStatementClone[i].findVariable(declareStatement.variable);
-            if (statement != undefined)
-                return true;
+        if (isBackward) {
+            for (var i = index; i >= 0; i--) {
+                statement = mainListStatement[i].findVariable(declareStatement.variable);
+                if (statement != undefined)
+                    return true;
+            }
+        }
+        else {
+            for (var i = index + 1; i < mainListStatement.length; i++) {
+                statement = mainListStatement[i].findVariable(declareStatement.variable);
+                if (statement != undefined)
+                    return true;
+            }
         }
         return false;
     };
-    OptionSelection.prototype.handlePaste = function (mainListStatement, clipboard, targetStatement, isInner) {
+    OptionSelection.prototype.handlePaste = function (mainListStatement, clipboard, targetStatement, isInner, lastSelectedOption) {
+        var returnClone = clipboard.cloneStatement(Math.floor(Math.random() * 1000) + 10000);
+        if (clipboard instanceof DeclareStatement_1.default) {
+            if (!this.validateDeclarePlacement(targetStatement, isInner))
+                return new ReturnPaste_1.default(false, mainListStatement);
+        }
         // Statements must be added after declaration
-        if (!this.validateMainListPlacement(mainListStatement, clipboard, targetStatement, isInner))
+        if (!this.validateMainListStatement(mainListStatement, returnClone.statement, targetStatement, isInner))
             return new ReturnPaste_1.default(false, mainListStatement);
         // Removing statement
-        if (clipboard.parent == undefined)
-            mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
-        else
-            clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard));
+        if (lastSelectedOption == 'MOV') {
+            if (clipboard.parent == undefined)
+                mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
+            else
+                clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard));
+        }
         return this.paste(mainListStatement, clipboard, targetStatement, isInner);
+    };
+    OptionSelection.prototype.pasteTemp = function (mainListStatement, clipboard, targetStatement, isInner) {
+        var parentStatement = undefined;
+        if (targetStatement == undefined || targetStatement.parent == undefined) {
+            if (targetStatement == undefined || (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
+                mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
+            }
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
+                parentStatement = targetStatement;
+                targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
+            }
+        }
+        else {
+            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
+                parentStatement = targetStatement.parent;
+                targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
+            }
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
+                parentStatement = targetStatement;
+                targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
+            }
+        }
+        return [new ReturnPaste_1.default(true, mainListStatement), parentStatement];
     };
     OptionSelection.prototype.paste = function (mainListStatement, clipboard, targetStatement, isInner) {
         /** List of possibilities:
@@ -1226,7 +1600,7 @@ var OptionSelection = /** @class */ (function () {
         // Target is located on level 1
         if (targetStatement == undefined || targetStatement.parent == undefined) {
             if (targetStatement == undefined || (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
-                || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
             }
             else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
@@ -1237,7 +1611,7 @@ var OptionSelection = /** @class */ (function () {
         // Target is a child of another statement
         else {
             if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
-                || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
             }
             else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
@@ -1265,11 +1639,19 @@ var OptionSelection = /** @class */ (function () {
             tempChildStatement.unshift(clipboard);
         return tempChildStatement;
     };
+    OptionSelection.prototype.purge = function (mainListStatement) {
+        if (mainListStatement == undefined || mainListStatement.length == 0)
+            return;
+        var statement = mainListStatement[0];
+        while (mainListStatement.length != 0) {
+            this.removeSourceStatement(mainListStatement, mainListStatement[0]);
+        }
+    };
     return OptionSelection;
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":25,"../../../../utilities/ReturnPaste":26,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../SwitchStatement":7,"../../WhileStatement":8,"../case/Case":9,"../ifs/If":13}],16:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":26,"../../../../utilities/ReturnPaste":28,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../OutputStatement":6,"../../SwitchStatement":8,"../../WhileStatement":9,"../case/Case":10,"../ifs/If":14}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1305,7 +1687,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":24,"./Variable":22}],17:[function(require,module,exports){
+},{"../../utilities/Return":25,"./Variable":23}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1347,7 +1729,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":24,"./Variable":22}],18:[function(require,module,exports){
+},{"../../utilities/Return":25,"./Variable":23}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1389,7 +1771,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":24,"./Variable":22}],19:[function(require,module,exports){
+},{"../../utilities/Return":25,"./Variable":23}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1431,7 +1813,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":24,"./Variable":22}],20:[function(require,module,exports){
+},{"../../utilities/Return":25,"./Variable":23}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1471,7 +1853,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":24,"./Variable":22}],21:[function(require,module,exports){
+},{"../../utilities/Return":25,"./Variable":23}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1504,7 +1886,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":24,"./Variable":22}],22:[function(require,module,exports){
+},{"../../utilities/Return":25,"./Variable":23}],23:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1533,7 +1915,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":24}],23:[function(require,module,exports){
+},{"../../utilities/Return":25}],24:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1557,6 +1939,7 @@ var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
 var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatement"));
 var Option_1 = __importDefault(require("../classes/statement/helper/options/Option"));
 var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
+var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -1704,20 +2087,20 @@ $(document).ready(function () {
         }
         return undefined;
     }
-    function createStatementClone(statement) {
+    function cloneStatement(statement) {
         if (statement instanceof DeclareStatement_1.default) {
             alert('Could not copy declare statement!');
             return undefined;
         }
-        else if (statement instanceof InputStatement_1.default) {
-        }
-        else if (statement instanceof IfStatement_1.default) {
-        }
-        else if (statement instanceof SwitchStatement_1.default) {
-        }
-        else if (statement instanceof ForStatement_1.default) {
-        }
-        else if (statement instanceof WhileStatement_1.default) {
+        else {
+            var returnClone = void 0;
+            returnClone = statement.cloneStatement(statementCount++);
+            if (returnClone.result == false) {
+                alert('Could not copy declare statement!');
+                return undefined;
+            }
+            else
+                return returnClone.statement;
         }
     }
     // Declare Variable
@@ -1830,22 +2213,27 @@ $(document).ready(function () {
         else if ($(this).data('value') == 'long') {
             initInput('Input Long');
             listVariable = listLong;
+            testing2();
         }
         else if ($(this).data('value') == 'float') {
             initInput('Input Float');
             listVariable = listFloat;
+            testing3();
         }
         else if ($(this).data('value') == 'double') {
             initInput('Input Double');
             listVariable = listDouble;
+            testing4();
         }
         else if ($(this).data('value') == 'char') {
             initInput('Input Char');
             listVariable = listChar;
+            testing5();
         }
         else if ($(this).data('value') == 'string') {
             initInput('Input String');
             listVariable = listString;
+            testing6();
         }
         var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
         var select = createSelect(listVariable, 7).attr('id', 'chosenVariable');
@@ -1887,6 +2275,30 @@ $(document).ready(function () {
                 restructureStatement();
                 drawCanvas();
             }
+        }
+    });
+    // Click template button
+    $(document).on('click', '.generateTemplate', function () {
+        if ($(this).data('value') == 'blank') {
+            blankTemplate();
+        }
+        else if ($(this).data('value') == 'declare') {
+            declareVariableTemplate();
+        }
+        else if ($(this).data('value') == 'print') {
+            simplyPrintTemplate();
+        }
+        else if ($(this).data('value') == 'io') {
+        }
+        else if ($(this).data('value') == 'nestedif') {
+        }
+        else if ($(this).data('value') == 'nestedfor') {
+        }
+        else if ($(this).data('value') == 'menu') {
+        }
+        else if ($(this).data('value') == 'drawsquare') {
+        }
+        else if ($(this).data('value') == 'oddeven') {
         }
     });
     function deleteVariable(variable) {
@@ -1981,13 +2393,25 @@ $(document).ready(function () {
                 else if (returnClick.option.optionName == 'PST') {
                     handlePaste();
                 }
-                else if (returnClick.option.optionName == 'MOV' || returnClick.option.optionName == 'CPY') {
+                else if (returnClick.option.optionName == 'MOV') {
                     clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
+                }
+                else if (returnClick.option.optionName == 'CPY') {
+                    if (returnClick.statement instanceof DeclareStatement_1.default) {
+                        alert('Could not copy declare statement!');
+                        finishAction();
+                        restructureStatement();
+                        drawCanvas();
+                        return;
+                    }
+                    clipboard = cloneStatement(returnClick.statement);
                     lastSelectedOption = returnClick.option.optionName;
                 }
                 else if (returnClick.option.optionName == 'DEL') {
                     clipboard = returnClick.statement;
                     lastSelectedOption = returnClick.option.optionName;
+                    handleDelete();
                 }
                 else if (returnClick.option.optionName == 'EDT') {
                     clipboard = returnClick.statement;
@@ -2023,23 +2447,37 @@ $(document).ready(function () {
             alert('Clipboard is empty!');
             return;
         }
+        if (clipboard.findStatement(returnClick.statement)) {
+            alert('Could not paste statement here!');
+            return;
+        }
         var splitted = returnClick.option.optionId.split('-');
         var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
-        if (lastSelectedOption == 'MOV') {
-            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner);
+        if (lastSelectedOption == 'MOV' || lastSelectedOption == 'CPY') {
+            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner, lastSelectedOption);
             listStatement = returnPaste.listStatement;
-            if (returnPaste.result == true) {
-                finishAction();
-                restructureStatement();
-                drawCanvas();
-            }
-            else {
+            if (returnPaste.result == false) {
                 alert('Could not paste statement here!');
-                finishAction();
-                restructureStatement();
-                drawCanvas();
             }
         }
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
+    function handleDelete() {
+        var returnPaste = undefined;
+        returnPaste = returnClick.option.handleDelete(listStatement, clipboard);
+        if (returnPaste.result == false) {
+            alert('Variable is used on another statement!');
+        }
+        else {
+            if (clipboard instanceof DeclareStatement_1.default) {
+                deleteVariable(clipboard.variable);
+            }
+        }
+        finishAction();
+        restructureStatement();
+        drawCanvas();
     }
     function finishAction() {
         returnClick = undefined;
@@ -2131,9 +2569,56 @@ $(document).ready(function () {
         whileStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(whileStatement);
     }
+    function testing6() {
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var temp = statementCount - 1;
+        var ifs = [];
+        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
+        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
+        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
+        var childStatements = [];
+        childStatements.push(child1);
+        childStatements.push(child2);
+        firstIf.updateChildStatement(childStatements);
+        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
+        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
+        ifs.push(firstIf);
+        ifStatement.updateIfOperations(ifs);
+        ifStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(ifStatement);
+    }
+    // Create template
+    function blankTemplate() {
+        for (var i = 0; i < listStatement.length; i++) {
+            if (listStatement[i] instanceof DeclareStatement_1.default)
+                deleteVariable(listStatement[i].variable);
+        }
+        listStatement = [];
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
+    function declareVariableTemplate() {
+        var variableName = 'myNumber';
+        var variable;
+        allVariableNames[variableName] = true;
+        variable = new Integer_1.default(variableName, 50);
+        listInteger.push(variable);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
+    function simplyPrintTemplate() {
+        var outputStatement = new OutputStatement_1.default(statementCount++, 1, true, 'text');
+        handleAdd(outputStatement);
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/InputStatement":5,"../classes/statement/SwitchStatement":7,"../classes/statement/WhileStatement":8,"../classes/statement/helper/case/Case":9,"../classes/statement/helper/general/Condition":10,"../classes/statement/helper/ifs/Elif":12,"../classes/statement/helper/ifs/If":13,"../classes/statement/helper/options/Option":14,"../classes/variable/Char":16,"../classes/variable/Double":17,"../classes/variable/Float":18,"../classes/variable/Integer":19,"../classes/variable/Long":20,"../classes/variable/String":21}],24:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/InputStatement":5,"../classes/statement/OutputStatement":6,"../classes/statement/SwitchStatement":8,"../classes/statement/WhileStatement":9,"../classes/statement/helper/case/Case":10,"../classes/statement/helper/general/Condition":11,"../classes/statement/helper/ifs/Elif":13,"../classes/statement/helper/ifs/If":14,"../classes/statement/helper/options/Option":15,"../classes/variable/Char":17,"../classes/variable/Double":18,"../classes/variable/Float":19,"../classes/variable/Integer":20,"../classes/variable/Long":21,"../classes/variable/String":22}],25:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -2145,7 +2630,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -2159,7 +2644,20 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone = /** @class */ (function () {
+    function ReturnClone(statement, result) {
+        this.statement = undefined;
+        this.statement = statement;
+        this.result = result;
+    }
+    return ReturnClone;
+}());
+exports.default = ReturnClone;
+
+},{}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -2171,4 +2669,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[23]);
+},{}]},{},[24]);

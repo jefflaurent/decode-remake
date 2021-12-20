@@ -9,6 +9,7 @@ var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var InputStatement_1 = __importDefault(require("../../InputStatement"));
+var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
 var Case_1 = __importDefault(require("../case/Case"));
@@ -42,9 +43,23 @@ var OptionSelection = /** @class */ (function () {
                 return new ReturnPaste_1.default(false, mainListStatement);
         }
         // Statements must be added after declaration
-        if (!this.validateMainListPlacement(mainListStatement, newStatement, targetStatement, isInner))
+        if (!this.validateMainListStatement(mainListStatement, newStatement, targetStatement, isInner))
             return new ReturnPaste_1.default(false, mainListStatement);
         return this.paste(mainListStatement, newStatement, targetStatement, isInner);
+    };
+    OptionSelection.prototype.handleDelete = function (mainListStatement, clipboard) {
+        var parentStatement = clipboard.parent;
+        if (parentStatement == undefined) {
+            if (clipboard instanceof DeclareStatement_1.default) {
+                var clipboardIdx = mainListStatement.indexOf(clipboard);
+                if (this.isVariableExist(mainListStatement, clipboard, clipboardIdx, false))
+                    return new ReturnPaste_1.default(false, mainListStatement);
+            }
+            mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
+        }
+        else
+            parentStatement.updateChildStatement(this.removeSourceStatement(parentStatement.childStatement, clipboard));
+        return new ReturnPaste_1.default(true, mainListStatement);
     };
     OptionSelection.prototype.validateDeclarePlacement = function (targetStatement, isInner) {
         if (targetStatement != undefined) {
@@ -60,49 +75,100 @@ var OptionSelection = /** @class */ (function () {
         }
         return true;
     };
-    OptionSelection.prototype.validateMainListPlacement = function (mainListStatement, clipboard, targetStatement, isInner) {
+    OptionSelection.prototype.validateMainListStatement = function (mainListStatement, clipboard, targetStatement, isInner) {
         var returnPaste = undefined;
-        var mainListStatementClone = [];
-        if (mainListStatement != undefined)
-            for (var i = 0; i < mainListStatement.length; i++)
-                mainListStatementClone[i] = mainListStatement[i];
-        returnPaste = this.paste(mainListStatementClone, clipboard, targetStatement, isInner);
+        var result = true;
+        var parentStatement = undefined;
+        var pasteResult = [];
+        pasteResult = this.pasteTemp(mainListStatement, clipboard, targetStatement, isInner);
+        returnPaste = pasteResult[0];
+        parentStatement = pasteResult[1];
+        mainListStatement = returnPaste.listStatement;
         if (returnPaste.result) {
-            mainListStatementClone = returnPaste.listStatement;
+            mainListStatement = returnPaste.listStatement;
             var variableFound = false;
-            if (mainListStatementClone != undefined) {
-                for (var i = 0; i < mainListStatementClone.length; i++) {
-                    if (mainListStatementClone[i] instanceof DeclareStatement_1.default) {
-                        variableFound = this.isVariableExist(mainListStatementClone, mainListStatementClone[i], i);
-                        if (variableFound)
-                            return false;
+            if (mainListStatement != undefined) {
+                for (var i = 0; i < mainListStatement.length; i++) {
+                    if (mainListStatement[i] instanceof DeclareStatement_1.default) {
+                        variableFound = this.isVariableExist(mainListStatement, mainListStatement[i], i, true);
+                        if (variableFound) {
+                            result = false;
+                            break;
+                        }
                     }
                 }
             }
         }
-        return true;
+        if (parentStatement == undefined)
+            this.removeSourceStatement(mainListStatement, clipboard);
+        else
+            parentStatement.updateChildStatement(this.removeSourceStatement(parentStatement.childStatement, clipboard));
+        return result;
     };
-    OptionSelection.prototype.isVariableExist = function (mainListStatementClone, declareStatement, index) {
+    OptionSelection.prototype.isVariableExist = function (mainListStatement, declareStatement, index, isBackward) {
         var statement = undefined;
-        if (mainListStatementClone == undefined)
+        if (mainListStatement == undefined)
             return false;
-        for (var i = index; i >= 0; i--) {
-            statement = mainListStatementClone[i].findVariable(declareStatement.variable);
-            if (statement != undefined)
-                return true;
+        if (isBackward) {
+            for (var i = index; i >= 0; i--) {
+                statement = mainListStatement[i].findVariable(declareStatement.variable);
+                if (statement != undefined)
+                    return true;
+            }
+        }
+        else {
+            for (var i = index + 1; i < mainListStatement.length; i++) {
+                statement = mainListStatement[i].findVariable(declareStatement.variable);
+                if (statement != undefined)
+                    return true;
+            }
         }
         return false;
     };
-    OptionSelection.prototype.handlePaste = function (mainListStatement, clipboard, targetStatement, isInner) {
+    OptionSelection.prototype.handlePaste = function (mainListStatement, clipboard, targetStatement, isInner, lastSelectedOption) {
+        var returnClone = clipboard.cloneStatement(Math.floor(Math.random() * 1000) + 10000);
+        if (clipboard instanceof DeclareStatement_1.default) {
+            if (!this.validateDeclarePlacement(targetStatement, isInner))
+                return new ReturnPaste_1.default(false, mainListStatement);
+        }
         // Statements must be added after declaration
-        if (!this.validateMainListPlacement(mainListStatement, clipboard, targetStatement, isInner))
+        if (!this.validateMainListStatement(mainListStatement, returnClone.statement, targetStatement, isInner))
             return new ReturnPaste_1.default(false, mainListStatement);
         // Removing statement
-        if (clipboard.parent == undefined)
-            mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
-        else
-            clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard));
+        if (lastSelectedOption == 'MOV') {
+            if (clipboard.parent == undefined)
+                mainListStatement = this.removeSourceStatement(mainListStatement, clipboard);
+            else
+                clipboard.parent.updateChildStatement(this.removeSourceStatement(clipboard.parent.childStatement, clipboard));
+        }
         return this.paste(mainListStatement, clipboard, targetStatement, isInner);
+    };
+    OptionSelection.prototype.pasteTemp = function (mainListStatement, clipboard, targetStatement, isInner) {
+        var parentStatement = undefined;
+        if (targetStatement == undefined || targetStatement.parent == undefined) {
+            if (targetStatement == undefined || (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
+                mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
+            }
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
+                parentStatement = targetStatement;
+                targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
+            }
+        }
+        else {
+            if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
+                parentStatement = targetStatement.parent;
+                targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
+            }
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+                || (targetStatement instanceof WhileStatement_1.default && isInner)) {
+                parentStatement = targetStatement;
+                targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
+            }
+        }
+        return [new ReturnPaste_1.default(true, mainListStatement), parentStatement];
     };
     OptionSelection.prototype.paste = function (mainListStatement, clipboard, targetStatement, isInner) {
         /** List of possibilities:
@@ -114,7 +180,7 @@ var OptionSelection = /** @class */ (function () {
         // Target is located on level 1
         if (targetStatement == undefined || targetStatement.parent == undefined) {
             if (targetStatement == undefined || (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
-                || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
             }
             else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
@@ -125,7 +191,7 @@ var OptionSelection = /** @class */ (function () {
         // Target is a child of another statement
         else {
             if (targetStatement instanceof DeclareStatement_1.default || targetStatement instanceof IfStatement_1.default || targetStatement instanceof SwitchStatement_1.default
-                || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
+                || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
             }
             else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
@@ -152,6 +218,14 @@ var OptionSelection = /** @class */ (function () {
         else
             tempChildStatement.unshift(clipboard);
         return tempChildStatement;
+    };
+    OptionSelection.prototype.purge = function (mainListStatement) {
+        if (mainListStatement == undefined || mainListStatement.length == 0)
+            return;
+        var statement = mainListStatement[0];
+        while (mainListStatement.length != 0) {
+            this.removeSourceStatement(mainListStatement, mainListStatement[0]);
+        }
     };
     return OptionSelection;
 }());

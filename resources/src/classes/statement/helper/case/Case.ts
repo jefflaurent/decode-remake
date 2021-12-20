@@ -1,4 +1,5 @@
 import ReturnClick from "../../../../utilities/ReturnClick";
+import ReturnClone from "../../../../utilities/ReturnClone";
 import Canvas from "../../../canvas/Canvas";
 import Variable from "../../../variable/Variable";
 import Statement from "../../Statement";
@@ -10,7 +11,7 @@ class Case extends Statement {
     condition: Condition
     isDefault: boolean
 
-    constructor(level: number, statementId: number, condition: Condition | undefined, childStatement: any[] | undefined, isDefault: boolean) {
+    constructor(level: number, statementId: number, condition: Condition, childStatement: Statement[] | undefined, isDefault: boolean) {
         super(level)
         this.childStatement = childStatement
         this.condition = condition
@@ -95,6 +96,47 @@ class Case extends Statement {
         }
 
         return undefined
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+        
+        let statementFound: boolean = false
+        
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement)
+                if(statementFound)
+                    return true
+            }
+        }
+
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let caseStatement: Case
+        let returnClone: ReturnClone
+        let childStatement: Statement[] = []
+
+        if(this.isDefault)
+            caseStatement = new Case(this.level, statementCount++, undefined, undefined, true)
+        else
+            caseStatement = new Case(this.level, statementCount++, this.condition.cloneCondition(), undefined, this.isDefault)
+        
+        if(this.childStatement) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++)
+                if(returnClone.result == false) 
+                    return returnClone
+
+                childStatement.push(returnClone.statement)
+             }
+        }
+        caseStatement.updateChildStatement(childStatement)
+        
+        return new ReturnClone(caseStatement, true)
     }
 }
 

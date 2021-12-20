@@ -1,5 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Statement = /** @class */ (function () {
     function Statement(level) {
         this.statementId = '';
@@ -27,6 +31,8 @@ var Statement = /** @class */ (function () {
     Statement.prototype.updateChildStatement = function (childStatement) { };
     Statement.prototype.callClickEvent = function (canvas, x, y) { };
     Statement.prototype.findVariable = function (variable) { return undefined; };
+    Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
+    Statement.prototype.findStatement = function (statement) { return false; };
     return Statement;
 }());
 exports.default = Statement;

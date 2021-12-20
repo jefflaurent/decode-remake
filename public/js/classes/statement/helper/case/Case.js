@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
 var Case = /** @class */ (function (_super) {
@@ -91,6 +92,38 @@ var Case = /** @class */ (function (_super) {
             }
         }
         return undefined;
+    };
+    Case.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    Case.prototype.cloneStatement = function (statementCount) {
+        var caseStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.isDefault)
+            caseStatement = new Case(this.level, statementCount++, undefined, undefined, true);
+        else
+            caseStatement = new Case(this.level, statementCount++, this.condition.cloneCondition(), undefined, this.isDefault);
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+        }
+        caseStatement.updateChildStatement(childStatement);
+        return new ReturnClone_1.default(caseStatement, true);
     };
     return Case;
 }(Statement_1.default));

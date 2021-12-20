@@ -1,3 +1,4 @@
+import ReturnClone from "../../utilities/ReturnClone"
 import ReturnFind from "../../utilities/ReturnFind"
 import Canvas from "../canvas/Canvas"
 import Variable from "../variable/Variable"
@@ -42,6 +43,8 @@ class Statement {
     updateChildStatement(childStatement: Statement[]): void {}
     callClickEvent(canvas: Canvas, x: number, y: number) {}
     findVariable(variable: Variable): Statement | undefined  { return undefined }
+    cloneStatement(statementCount: number): ReturnClone { return new ReturnClone(this, false) }
+    findStatement(statement: Statement): boolean { return false }
 }
 
 export default Statement

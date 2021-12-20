@@ -21,6 +21,8 @@ import WhileStatement from '../classes/statement/WhileStatement'
 import Option from '../classes/statement/helper/options/Option'
 import Variable from '../classes/variable/Variable'
 import InputStatement from '../classes/statement/InputStatement'
+import ReturnClone from '../utilities/ReturnClone'
+import OutputStatement from '../classes/statement/OutputStatement'
 
 $(document).ready(function() {
 
@@ -199,25 +201,20 @@ $(document).ready(function() {
         return undefined
     }
 
-    function createStatementClone(statement: Statement): Statement | undefined {
+    function cloneStatement(statement: Statement): Statement | undefined {       
         if(statement instanceof DeclareStatement) {
             alert('Could not copy declare statement!')
             return undefined 
         }
-        else if(statement instanceof InputStatement) {
-            
-        }
-        else if(statement instanceof IfStatement) {
-            
-        }
-        else if(statement instanceof SwitchStatement) {
-             
-        }
-        else if(statement instanceof ForStatement) {
-            
-        }
-        else if(statement instanceof WhileStatement) {
-             
+        else {
+            let returnClone: ReturnClone
+            returnClone = statement.cloneStatement(statementCount++)
+            if(returnClone.result == false) {
+                alert('Could not copy declare statement!')
+                return undefined
+            }
+            else
+                return returnClone.statement
         }
     }
 
@@ -350,22 +347,27 @@ $(document).ready(function() {
         else if($(this).data('value') == 'long') {
             initInput('Input Long')
             listVariable = listLong
+            testing2()
         }
         else if($(this).data('value') == 'float') {
             initInput('Input Float')
             listVariable = listFloat
+            testing3()
         }
         else if($(this).data('value') == 'double') {
             initInput('Input Double')
             listVariable = listDouble
+            testing4()
         }
         else if($(this).data('value') == 'char') {
             initInput('Input Char')
             listVariable = listChar
+            testing5()
         }
         else if($(this).data('value') == 'string') {
             initInput('Input String')
             listVariable = listString
+            testing6()
         }
 
         let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
@@ -418,7 +420,38 @@ $(document).ready(function() {
         }
     })
 
-    function deleteVariable(variable: Variable) {
+    // Click template button
+    $(document).on('click', '.generateTemplate', function() {
+        if($(this).data('value') == 'blank') {
+            blankTemplate()
+        }
+        else if($(this).data('value') == 'declare') {
+            declareVariableTemplate()
+        }
+        else if($(this).data('value') == 'print') {
+            simplyPrintTemplate()
+        }
+        else if($(this).data('value') == 'io') {
+
+        }
+        else if($(this).data('value') == 'nestedif') {
+
+        }
+        else if($(this).data('value') == 'nestedfor') {
+
+        }
+        else if($(this).data('value') == 'menu') {
+
+        }
+        else if($(this).data('value') == 'drawsquare') {
+
+        }
+        else if($(this).data('value') == 'oddeven') {
+
+        }
+    })
+
+    function deleteVariable(variable: Variable): void {
         allVariableNames[variable.name] = false
         if(variable instanceof Integer)
             listInteger.splice(listInteger.indexOf(variable), 1)
@@ -469,7 +502,7 @@ $(document).ready(function() {
     }
 
     // Resize Canvas
-    function resizeCanvas(){
+    function resizeCanvas(): void {
         let cv: any
         let con = $("#block-code-container")
         cv = $("#block-code-canvas")[0]
@@ -482,7 +515,7 @@ $(document).ready(function() {
         canvas.height = height * 10
     }
 
-    function drawCanvas() {
+    function drawCanvas(): void {
         blockCanvasInstance.clearCanvas()
         let statement
 
@@ -527,13 +560,25 @@ $(document).ready(function() {
                 else if(returnClick.option.optionName == 'PST') {
                     handlePaste()
                 }
-                else if(returnClick.option.optionName == 'MOV' || returnClick.option.optionName == 'CPY') {
+                else if(returnClick.option.optionName == 'MOV') {
                     clipboard = returnClick.statement
+                    lastSelectedOption = returnClick.option.optionName
+                }
+                else if(returnClick.option.optionName == 'CPY') {
+                    if(returnClick.statement instanceof DeclareStatement) {
+                        alert('Could not copy declare statement!')
+                        finishAction()
+                        restructureStatement()
+                        drawCanvas()
+                        return
+                    }
+                    clipboard = cloneStatement(returnClick.statement)
                     lastSelectedOption = returnClick.option.optionName
                 }
                 else if(returnClick.option.optionName == 'DEL') {
                     clipboard = returnClick.statement
                     lastSelectedOption = returnClick.option.optionName
+                    handleDelete()
                 }
                 else if(returnClick.option.optionName == 'EDT') {
                     clipboard = returnClick.statement
@@ -575,28 +620,47 @@ $(document).ready(function() {
             return
         }
         
+        if(clipboard.findStatement(returnClick.statement)) {
+            alert('Could not paste statement here!')
+            return
+        }
+        
         let splitted: string[] = returnClick.option.optionId.split('-')
         let isInner: boolean = splitted[splitted.length-1] == 'inner' ? true : false
 
-        if(lastSelectedOption == 'MOV') {
-            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner)
+        if(lastSelectedOption == 'MOV' || lastSelectedOption == 'CPY') {
+            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner, lastSelectedOption)
             listStatement = returnPaste.listStatement
 
-            if(returnPaste.result == true) {
-                finishAction()
-                restructureStatement()
-                drawCanvas()
-            }
-            else {
+            if(returnPaste.result == false) {
                 alert('Could not paste statement here!')
-                finishAction()
-                restructureStatement()
-                drawCanvas()
-            }
+            }    
         }
+
+        finishAction()
+        restructureStatement()
+        drawCanvas()
     }
 
-    function finishAction() {
+    function handleDelete(): void {
+        let returnPaste: ReturnPaste | undefined = undefined
+
+        returnPaste = returnClick.option.handleDelete(listStatement, clipboard)
+        if(returnPaste.result == false) {
+            alert('Variable is used on another statement!')
+        }
+        else {
+            if(clipboard instanceof DeclareStatement) {
+                deleteVariable((clipboard as DeclareStatement).variable)
+            }
+        }
+
+        finishAction()
+        restructureStatement()
+        drawCanvas()
+    }
+
+    function finishAction(): void {
         returnClick = undefined
         clipboard = undefined
         lastSelectedOption = undefined
@@ -711,5 +775,63 @@ $(document).ready(function() {
         whileStatement = new WhileStatement(1, statementCount++, true, undefined, new Condition(new Long('testLong', '15'), '<', new Long('testLong2', '500'), false), 'OR', new Condition(new Double('testDouble', '15'), '<', new Double('testDouble2', '500'), true))
         whileStatement.writeToCanvas(blockCanvasInstance)
         listStatement.push(whileStatement)
+    }
+
+    function testing6() {
+        let ifStatement = new IfStatement(1, statementCount++, undefined)
+        let temp = statementCount - 1
+        let ifs = []
+        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt5', 5), '==', new Integer('testInt10', 10), true), undefined, undefined, undefined)
+        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger2', 10))
+        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger2', 25))
+        let childStatements = []
+        childStatements.push(child1)
+        childStatements.push(child2)
+        firstIf.updateChildStatement(childStatements)
+
+        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt6', 10), '!=', new Integer('testInt8', 200), false), undefined, undefined, undefined)
+        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt7', 10), '!=', new Integer('testInt9', 200), false), undefined, undefined, undefined)
+
+        ifs.push(firstIf)
+        ifStatement.updateIfOperations(ifs)
+        ifStatement.writeToCanvas(blockCanvasInstance)
+
+        listStatement.push(ifStatement)
+    }
+
+    // Create template
+    function blankTemplate(): void {
+        for(let i = 0; i < listStatement.length; i++) {
+            if(listStatement[i] instanceof DeclareStatement) 
+                deleteVariable((listStatement[i] as DeclareStatement).variable)
+        }
+        listStatement = []
+
+        finishAction()
+        restructureStatement()
+        drawCanvas()
+    }
+
+    function declareVariableTemplate(): void {
+        let variableName = 'myNumber'
+        let variable: any
+
+        allVariableNames[variableName] = true
+        variable = new Integer(variableName, 50)
+        listInteger.push(variable)
+            
+        handleAdd(new DeclareStatement(statementCount++, 1, variable))
+
+        finishAction()
+        restructureStatement()
+        drawCanvas()
+    }
+
+    function simplyPrintTemplate(): void {
+        let outputStatement = new OutputStatement(statementCount++, 1, true, 'text')
+        handleAdd(outputStatement)
+        finishAction()
+        restructureStatement()
+        drawCanvas()
     }
 })

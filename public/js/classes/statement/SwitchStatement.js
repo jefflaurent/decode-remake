@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var SwitchStatement = /** @class */ (function (_super) {
@@ -80,6 +81,30 @@ var SwitchStatement = /** @class */ (function (_super) {
                 return temp;
         }
         return undefined;
+    };
+    SwitchStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            statementFound = this.caseStatement[i].findStatement(statement);
+            if (statementFound)
+                return true;
+        }
+        return false;
+    };
+    SwitchStatement.prototype.cloneStatement = function (statementCount) {
+        var switchStatement = new SwitchStatement(this.level, statementCount++, this.variable, undefined);
+        var caseStatement = [];
+        var returnClone;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            returnClone = this.caseStatement[i].cloneStatement(statementCount++);
+            if (returnClone.result == false)
+                return returnClone;
+            caseStatement.push(returnClone.statement);
+            switchStatement.updateChildStatement(caseStatement);
+        }
+        return new ReturnClone_1.default(switchStatement, true);
     };
     return SwitchStatement;
 }(Statement_1.default));

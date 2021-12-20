@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var DeclareStatement_1 = __importDefault(require("./DeclareStatement"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
@@ -113,6 +114,34 @@ var ForStatement = /** @class */ (function (_super) {
             }
         }
         return undefined;
+    };
+    ForStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    ForStatement.prototype.cloneStatement = function (statementCount) {
+        var forStatement = new ForStatement(this.level, statementCount++, undefined, this.variable, this.variableIsNew, this.isIncrement, this.addValueBy, this.condition.cloneCondition());
+        var childStatement = [];
+        var returnClone;
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            forStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(forStatement, true);
     };
     return ForStatement;
 }(Statement_1.default));

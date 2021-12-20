@@ -1,4 +1,5 @@
 import ReturnClick from "../../utilities/ReturnClick";
+import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
 import Variable from "../variable/Variable";
 import Case from "./helper/case/Case";
@@ -82,6 +83,38 @@ class SwitchStatement extends Statement {
         }
 
         return undefined
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+
+        let statementFound: boolean = false
+    
+        for(let i = 0; i < this.caseStatement.length; i++) {
+            statementFound = this.caseStatement[i].findStatement(statement)
+            if(statementFound)
+                return true
+        }
+
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let switchStatement: SwitchStatement = new SwitchStatement(this.level, statementCount++, this.variable, undefined)
+        let caseStatement: Statement[] = []
+        let returnClone: ReturnClone
+
+        for(let i = 0; i < this.caseStatement.length; i++) {
+            returnClone = this.caseStatement[i].cloneStatement(statementCount++)
+            if(returnClone.result == false)
+                return returnClone
+                
+            caseStatement.push(returnClone.statement)
+            switchStatement.updateChildStatement(caseStatement)
+        }
+
+        return new ReturnClone(switchStatement, true)
     }
 }
 

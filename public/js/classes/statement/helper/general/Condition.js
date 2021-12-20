@@ -33,6 +33,9 @@ var Condition = /** @class */ (function () {
         }
         return false;
     };
+    Condition.prototype.cloneCondition = function () {
+        return new Condition(this.firstVariable, this.operator, this.secondVariable, this.isCustomValue);
+    };
     return Condition;
 }());
 exports.default = Condition;

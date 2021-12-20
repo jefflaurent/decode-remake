@@ -1,4 +1,5 @@
 import ReturnClick from "../../../../utilities/ReturnClick"
+import ReturnClone from "../../../../utilities/ReturnClone"
 import ReturnFind from "../../../../utilities/ReturnFind"
 import Canvas from "../../../canvas/Canvas"
 import Variable from "../../../variable/Variable"
@@ -8,7 +9,7 @@ import Option from "../options/Option"
 
 class If extends Statement {
     
-    logicalOperator: string | undefined
+    logicalOperator: string | undefined = undefined
     firstCondition: Condition
     secondCondition: Condition | undefined
     childStatement: Statement[] | undefined
@@ -112,6 +113,49 @@ class If extends Statement {
         }
 
         return undefined
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+        
+        let statementFound: boolean = false
+        
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement)
+                if(statementFound)
+                    return true
+            }
+        }
+
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let ifStatement: If
+        let returnClone: ReturnClone
+        let childStatement: Statement[] = []
+
+        if(this.logicalOperator != undefined) {
+            ifStatement =  new If(this.level, statementCount, 
+                this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition())
+        }
+        else
+            ifStatement = new If(this.level, statementCount, this.firstCondition.cloneCondition())
+
+        if(this.childStatement) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++)
+                if(returnClone.result == false) 
+                    return returnClone
+                
+                childStatement.push(returnClone.statement)
+            }
+            ifStatement.updateChildStatement(childStatement)
+        }
+
+        return new ReturnClone(ifStatement, true)
     }
 }
 

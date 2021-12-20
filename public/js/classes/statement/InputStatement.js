@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Char_1 = __importDefault(require("../variable/Char"));
 var Double_1 = __importDefault(require("../variable/Double"));
 var Float_1 = __importDefault(require("../variable/Float"));
@@ -34,17 +35,17 @@ var InputStatement = /** @class */ (function (_super) {
     }
     InputStatement.prototype.generateId = function (number) {
         if (this.variable instanceof Integer_1.default)
-            return 'declare-integer-' + number;
+            return 'input-integer-' + number;
         else if (this.variable instanceof Long_1.default)
-            return 'declare-long-' + number;
+            return 'input-long-' + number;
         else if (this.variable instanceof Float_1.default)
-            return 'declare-float-' + number;
+            return 'input-float-' + number;
         else if (this.variable instanceof Double_1.default)
-            return 'declare-double-' + number;
+            return 'input-double-' + number;
         else if (this.variable instanceof Char_1.default)
-            return 'declare-char-' + number;
+            return 'input-char-' + number;
         else
-            return 'declare-string-' + number;
+            return 'input-string-' + number;
     };
     InputStatement.prototype.writeToCanvas = function (canvas) {
         var text = 'INPUT ' + this.variable.name;
@@ -63,6 +64,14 @@ var InputStatement = /** @class */ (function (_super) {
         if (this.variable.name == variable.name)
             return this;
         return undefined;
+    };
+    InputStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
+    };
+    InputStatement.prototype.cloneStatement = function (statementCount) {
+        return new ReturnClone_1.default(new InputStatement(statementCount, this.level, this.variable), true);
     };
     return InputStatement;
 }(Statement_1.default));

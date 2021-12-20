@@ -16,6 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var WhileStatement = /** @class */ (function (_super) {
@@ -115,6 +116,25 @@ var WhileStatement = /** @class */ (function (_super) {
             }
         }
         return undefined;
+    };
+    WhileStatement.prototype.cloneStatement = function (statementCount) {
+        var whileStatement;
+        var returnClone;
+        var childStatement = [];
+        if (this.logicalOperator != undefined)
+            whileStatement = new WhileStatement(this.level, statementCount++, this.isWhile, undefined, this.firstCondition.cloneCondition(), this.logicalOperator, this.secondCondition.cloneCondition());
+        else
+            whileStatement = new WhileStatement(this.level, statementCount++, this.isWhile, undefined, this.firstCondition.cloneCondition());
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            whileStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(whileStatement, true);
     };
     return WhileStatement;
 }(Statement_1.default));

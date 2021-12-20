@@ -1,4 +1,5 @@
 import ReturnClick from "../../utilities/ReturnClick";
+import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
 import Double from "../variable/Double";
 import Float from "../variable/Float";
@@ -129,6 +130,44 @@ class ForStatement extends Statement {
         }
 
         return undefined
+    }
+
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+        
+        let statementFound: boolean = false
+        
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement)
+                if(statementFound)
+                    return true
+            }
+        }
+
+        return false
+    }
+
+    cloneStatement(statementCount: number): ReturnClone {
+        let forStatement = new ForStatement(this.level, statementCount++, undefined, 
+            this.variable, this.variableIsNew, this.isIncrement, this.addValueBy, this.condition.cloneCondition())
+        
+        let childStatement = []
+        let returnClone: ReturnClone | undefined
+
+        if(this.childStatement) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++)
+                if(returnClone.result == false) 
+                    return returnClone
+
+                childStatement.push(returnClone.statement)
+            }
+            forStatement.updateChildStatement(childStatement)
+        }
+
+        return new ReturnClone(forStatement, true)
     }
 }
 

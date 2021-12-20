@@ -21,6 +21,7 @@ var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
 var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatement"));
 var Option_1 = __importDefault(require("../classes/statement/helper/options/Option"));
 var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
+var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -168,20 +169,20 @@ $(document).ready(function () {
         }
         return undefined;
     }
-    function createStatementClone(statement) {
+    function cloneStatement(statement) {
         if (statement instanceof DeclareStatement_1.default) {
             alert('Could not copy declare statement!');
             return undefined;
         }
-        else if (statement instanceof InputStatement_1.default) {
-        }
-        else if (statement instanceof IfStatement_1.default) {
-        }
-        else if (statement instanceof SwitchStatement_1.default) {
-        }
-        else if (statement instanceof ForStatement_1.default) {
-        }
-        else if (statement instanceof WhileStatement_1.default) {
+        else {
+            var returnClone = void 0;
+            returnClone = statement.cloneStatement(statementCount++);
+            if (returnClone.result == false) {
+                alert('Could not copy declare statement!');
+                return undefined;
+            }
+            else
+                return returnClone.statement;
         }
     }
     // Declare Variable
@@ -294,22 +295,27 @@ $(document).ready(function () {
         else if ($(this).data('value') == 'long') {
             initInput('Input Long');
             listVariable = listLong;
+            testing2();
         }
         else if ($(this).data('value') == 'float') {
             initInput('Input Float');
             listVariable = listFloat;
+            testing3();
         }
         else if ($(this).data('value') == 'double') {
             initInput('Input Double');
             listVariable = listDouble;
+            testing4();
         }
         else if ($(this).data('value') == 'char') {
             initInput('Input Char');
             listVariable = listChar;
+            testing5();
         }
         else if ($(this).data('value') == 'string') {
             initInput('Input String');
             listVariable = listString;
+            testing6();
         }
         var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
         var select = createSelect(listVariable, 7).attr('id', 'chosenVariable');
@@ -351,6 +357,30 @@ $(document).ready(function () {
                 restructureStatement();
                 drawCanvas();
             }
+        }
+    });
+    // Click template button
+    $(document).on('click', '.generateTemplate', function () {
+        if ($(this).data('value') == 'blank') {
+            blankTemplate();
+        }
+        else if ($(this).data('value') == 'declare') {
+            declareVariableTemplate();
+        }
+        else if ($(this).data('value') == 'print') {
+            simplyPrintTemplate();
+        }
+        else if ($(this).data('value') == 'io') {
+        }
+        else if ($(this).data('value') == 'nestedif') {
+        }
+        else if ($(this).data('value') == 'nestedfor') {
+        }
+        else if ($(this).data('value') == 'menu') {
+        }
+        else if ($(this).data('value') == 'drawsquare') {
+        }
+        else if ($(this).data('value') == 'oddeven') {
         }
     });
     function deleteVariable(variable) {
@@ -445,13 +475,25 @@ $(document).ready(function () {
                 else if (returnClick.option.optionName == 'PST') {
                     handlePaste();
                 }
-                else if (returnClick.option.optionName == 'MOV' || returnClick.option.optionName == 'CPY') {
+                else if (returnClick.option.optionName == 'MOV') {
                     clipboard = returnClick.statement;
+                    lastSelectedOption = returnClick.option.optionName;
+                }
+                else if (returnClick.option.optionName == 'CPY') {
+                    if (returnClick.statement instanceof DeclareStatement_1.default) {
+                        alert('Could not copy declare statement!');
+                        finishAction();
+                        restructureStatement();
+                        drawCanvas();
+                        return;
+                    }
+                    clipboard = cloneStatement(returnClick.statement);
                     lastSelectedOption = returnClick.option.optionName;
                 }
                 else if (returnClick.option.optionName == 'DEL') {
                     clipboard = returnClick.statement;
                     lastSelectedOption = returnClick.option.optionName;
+                    handleDelete();
                 }
                 else if (returnClick.option.optionName == 'EDT') {
                     clipboard = returnClick.statement;
@@ -487,23 +529,37 @@ $(document).ready(function () {
             alert('Clipboard is empty!');
             return;
         }
+        if (clipboard.findStatement(returnClick.statement)) {
+            alert('Could not paste statement here!');
+            return;
+        }
         var splitted = returnClick.option.optionId.split('-');
         var isInner = splitted[splitted.length - 1] == 'inner' ? true : false;
-        if (lastSelectedOption == 'MOV') {
-            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner);
+        if (lastSelectedOption == 'MOV' || lastSelectedOption == 'CPY') {
+            returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner, lastSelectedOption);
             listStatement = returnPaste.listStatement;
-            if (returnPaste.result == true) {
-                finishAction();
-                restructureStatement();
-                drawCanvas();
-            }
-            else {
+            if (returnPaste.result == false) {
                 alert('Could not paste statement here!');
-                finishAction();
-                restructureStatement();
-                drawCanvas();
             }
         }
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
+    function handleDelete() {
+        var returnPaste = undefined;
+        returnPaste = returnClick.option.handleDelete(listStatement, clipboard);
+        if (returnPaste.result == false) {
+            alert('Variable is used on another statement!');
+        }
+        else {
+            if (clipboard instanceof DeclareStatement_1.default) {
+                deleteVariable(clipboard.variable);
+            }
+        }
+        finishAction();
+        restructureStatement();
+        drawCanvas();
     }
     function finishAction() {
         returnClick = undefined;
@@ -594,5 +650,52 @@ $(document).ready(function () {
         whileStatement = new WhileStatement_1.default(1, statementCount++, true, undefined, new Condition_1.default(new Long_1.default('testLong', '15'), '<', new Long_1.default('testLong2', '500'), false), 'OR', new Condition_1.default(new Double_1.default('testDouble', '15'), '<', new Double_1.default('testDouble2', '500'), true));
         whileStatement.writeToCanvas(blockCanvasInstance);
         listStatement.push(whileStatement);
+    }
+    function testing6() {
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var temp = statementCount - 1;
+        var ifs = [];
+        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
+        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
+        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
+        var childStatements = [];
+        childStatements.push(child1);
+        childStatements.push(child2);
+        firstIf.updateChildStatement(childStatements);
+        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
+        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
+        ifs.push(firstIf);
+        ifStatement.updateIfOperations(ifs);
+        ifStatement.writeToCanvas(blockCanvasInstance);
+        listStatement.push(ifStatement);
+    }
+    // Create template
+    function blankTemplate() {
+        for (var i = 0; i < listStatement.length; i++) {
+            if (listStatement[i] instanceof DeclareStatement_1.default)
+                deleteVariable(listStatement[i].variable);
+        }
+        listStatement = [];
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
+    function declareVariableTemplate() {
+        var variableName = 'myNumber';
+        var variable;
+        allVariableNames[variableName] = true;
+        variable = new Integer_1.default(variableName, 50);
+        listInteger.push(variable);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        finishAction();
+        restructureStatement();
+        drawCanvas();
+    }
+    function simplyPrintTemplate() {
+        var outputStatement = new OutputStatement_1.default(statementCount++, 1, true, 'text');
+        handleAdd(outputStatement);
+        finishAction();
+        restructureStatement();
+        drawCanvas();
     }
 });

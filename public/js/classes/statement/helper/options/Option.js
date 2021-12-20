@@ -8,6 +8,7 @@ var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var InputStatement_1 = __importDefault(require("../../InputStatement"));
+var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
@@ -22,7 +23,7 @@ var Option = /** @class */ (function () {
         var splitted = optionId.split('-');
         if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
             || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer')
-            || this.parent instanceof InputStatement_1.default) {
+            || this.parent instanceof InputStatement_1.default || this.parent instanceof OutputStatement_1.default) {
             this.optionSelection = this.generateCompleteOptions();
         }
         else
