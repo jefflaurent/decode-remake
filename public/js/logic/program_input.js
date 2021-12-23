@@ -89,7 +89,7 @@ $(document).ready(function () {
         container.append(inputContainer);
         $('#pcInputContainer').append(container);
     }
-    function createSelect(listVariable, length) {
+    function createSelect(listVariable, length, isAllVariable) {
         var className = 'col-sm-' + length;
         var className2 = 'col-xs-' + length;
         var container = $('<div></div>').addClass(className).addClass(className2);
@@ -98,7 +98,24 @@ $(document).ready(function () {
         select.append($('<option></option>').val(null).text('Choose Variable'));
         for (var _i = 0, listVariable_1 = listVariable; _i < listVariable_1.length; _i++) {
             var variable = listVariable_1[_i];
-            option = $('<option></option>').val(variable.name).text(variable.name);
+            if (!isAllVariable)
+                option = $('<option></option>').val(variable.name).text(variable.name);
+            else {
+                var dataType = void 0;
+                if (variable instanceof Integer_1.default)
+                    dataType = 'Integer';
+                else if (variable instanceof Long_1.default)
+                    dataType = 'Long';
+                else if (variable instanceof Float_1.default)
+                    dataType = 'Float';
+                else if (variable instanceof Double_1.default)
+                    dataType = 'Double';
+                else if (variable instanceof Char_1.default)
+                    dataType = 'Char';
+                else
+                    dataType = 'String';
+                option = $('<option></option>').val(variable.name).text(variable.name + ' (' + dataType + ')');
+            }
             select.append(option);
         }
         container.append(select);
@@ -115,6 +132,7 @@ $(document).ready(function () {
             $('.' + varValue).removeClass('input-error');
         }
         $('#chosenVariable').removeClass('input-error');
+        $('#chosenOutputVariable').removeClass('input-error');
     }
     function initInput(title) {
         $('#pcInputErrorContainer').empty();
@@ -359,33 +377,24 @@ $(document).ready(function () {
     });
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
-        if ($(this).data('value') == 'blank') {
+        if ($(this).data('value') == 'blank')
             blankTemplate();
-        }
-        else if ($(this).data('value') == 'declare') {
+        else if ($(this).data('value') == 'declare')
             declareVariableTemplate();
-        }
-        else if ($(this).data('value') == 'print') {
+        else if ($(this).data('value') == 'print')
             simplyPrintTemplate();
-        }
-        else if ($(this).data('value') == 'io') {
+        else if ($(this).data('value') == 'io')
             inputOutputTemplate();
-        }
-        else if ($(this).data('value') == 'nestedif') {
+        else if ($(this).data('value') == 'nestedif')
             nestedIfTemplate();
-        }
-        else if ($(this).data('value') == 'nestedfor') {
+        else if ($(this).data('value') == 'nestedfor')
             nestedForTemplate();
-        }
-        else if ($(this).data('value') == 'menu') {
+        else if ($(this).data('value') == 'menu')
             menuTemplate();
-        }
-        else if ($(this).data('value') == 'drawsquare') {
+        else if ($(this).data('value') == 'drawsquare')
             drawSquareTemplate();
-        }
-        else if ($(this).data('value') == 'oddeven') {
+        else if ($(this).data('value') == 'oddeven')
             oddEvenTemplate();
-        }
         finishAction();
         restructureStatement();
         drawCanvas();
@@ -408,6 +417,67 @@ $(document).ready(function () {
     // Click output
     $(document).on('click', '.output', function () {
         if ($(this).data('value') == 'variable') {
+            initInput('Output Variable');
+            var listVariable = getAllVariables();
+            var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
+            var select = createSelect(listVariable, 7, true).attr('id', 'chosenOutputVariable');
+            container.append(createHint('Variable Name', 5));
+            container.append(select);
+            container.addClass('mb-3');
+            $('#pcInputContainer').append(container);
+            var inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+                addClass('col-xs-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select');
+            $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'));
+            $('#pcInputContainerLower').append(inputBtn);
+        }
+        else {
+        }
+    });
+    function getAllVariables() {
+        var allVariables = [];
+        for (var i = 0; i < listInteger.length; i++)
+            allVariables.push(listInteger[i]);
+        for (var i = 0; i < listLong.length; i++)
+            allVariables.push(listLong[i]);
+        for (var i = 0; i < listFloat.length; i++)
+            allVariables.push(listFloat[i]);
+        for (var i = 0; i < listDouble.length; i++)
+            allVariables.push(listDouble[i]);
+        for (var i = 0; i < listChar.length; i++)
+            allVariables.push(listChar[i]);
+        for (var i = 0; i < listString.length; i++)
+            allVariables.push(listString[i]);
+        return allVariables;
+    }
+    $(document).on('click', '#outputVariableBtn', function () {
+        clearError();
+        if ($('#chosenOutputVariable').find('option').filter(':selected').val() == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer');
+            $('#chosenOutputVariable').addClass('input-error');
+        }
+        else {
+            var variableName = $('#chosenOutputVariable').find('option').filter(':selected').val();
+            var text = $('#chosenOutputVariable').find('option').filter(':selected').text().split(' ')[1];
+            var variable = undefined;
+            var statement = void 0;
+            if (text == '(Integer)')
+                variable = getVariable(listInteger, variableName);
+            else if (text == '(Long)')
+                variable = getVariable(listLong, variableName);
+            else if (text == '(Float)')
+                variable = getVariable(listFloat, variableName);
+            else if (text == '(Double)')
+                variable = getVariable(listDouble, variableName);
+            else if (text == '(Char)')
+                variable = getVariable(listChar, variableName);
+            else
+                variable = getVariable(listString, variableName);
+            if (variable != undefined) {
+                statement = new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable);
+                handleAdd(statement);
+                restructureStatement();
+                drawCanvas();
+            }
         }
     });
     // Canvas logic

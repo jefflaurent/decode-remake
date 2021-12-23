@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick_1 = __importDefault(require("../../../../utilities/ReturnClick"));
+var AssignmentStatement_1 = __importDefault(require("../../AssignmentStatement"));
 var DeclareStatement_1 = __importDefault(require("../../DeclareStatement"));
 var ForStatement_1 = __importDefault(require("../../ForStatement"));
 var IfStatement_1 = __importDefault(require("../../IfStatement"));
@@ -25,7 +26,8 @@ var Option = /** @class */ (function () {
         if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
             || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer')
             || (this.parent instanceof WhileStatement_1.default && splitted[splitted.length - 1] == 'outer')
-            || this.parent instanceof InputStatement_1.default || this.parent instanceof OutputStatement_1.default) {
+            || this.parent instanceof InputStatement_1.default || this.parent instanceof OutputStatement_1.default
+            || this.parent instanceof AssignmentStatement_1.default) {
             this.optionSelection = this.generateCompleteOptions();
         }
         else

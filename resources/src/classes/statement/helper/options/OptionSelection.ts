@@ -3,6 +3,7 @@ import ReturnClone from "../../../../utilities/ReturnClone"
 import ReturnPaste from "../../../../utilities/ReturnPaste"
 import Canvas from "../../../canvas/Canvas"
 import Variable from "../../../variable/Variable"
+import AssignmentStatement from "../../AssignmentStatement"
 import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
@@ -87,6 +88,8 @@ export default class OptionSelection {
     validateDeclarePlacement(targetStatement: Statement | undefined, isInner: boolean): boolean {
         if(targetStatement != undefined) {
             if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
+                || targetStatement instanceof InputStatement || targetStatement instanceof DeclareStatement || targetStatement instanceof AssignmentStatement
+                || targetStatement instanceof OutputStatement
                 || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
                 if(targetStatement.level > 1) 
                     return false
@@ -190,7 +193,8 @@ export default class OptionSelection {
         
         if(targetStatement == undefined || targetStatement.parent == undefined) {
             if(targetStatement == undefined || (targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
-                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
+                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement 
+                || targetStatement instanceof AssignmentStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard)
             }
             else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
@@ -201,7 +205,8 @@ export default class OptionSelection {
         }
         else {
             if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement ||  targetStatement instanceof SwitchStatement 
-                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
+                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement 
+                || targetStatement instanceof AssignmentStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
                 parentStatement = targetStatement.parent
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard)) 
             }
@@ -226,7 +231,8 @@ export default class OptionSelection {
         // Target is located on level 1
         if(targetStatement == undefined || targetStatement.parent == undefined) {
             if(targetStatement == undefined || (targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement || targetStatement instanceof SwitchStatement
-                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
+                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement 
+                || targetStatement instanceof AssignmentStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard)
             }
             else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
@@ -237,7 +243,8 @@ export default class OptionSelection {
         // Target is a child of another statement
         else {
             if(targetStatement instanceof DeclareStatement || targetStatement instanceof IfStatement ||  targetStatement instanceof SwitchStatement 
-                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
+                || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement 
+                || targetStatement instanceof AssignmentStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard)) 
             }
             else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 

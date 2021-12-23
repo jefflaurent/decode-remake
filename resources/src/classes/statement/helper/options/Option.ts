@@ -1,5 +1,6 @@
 import ReturnClick from "../../../../utilities/ReturnClick"
 import Canvas from "../../../canvas/Canvas"
+import AssignmentStatement from "../../AssignmentStatement"
 import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
@@ -34,7 +35,8 @@ class Option {
         if(this.parent instanceof IfStatement || this.parent instanceof DeclareStatement 
             || this.parent instanceof SwitchStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer') 
             || (this.parent instanceof WhileStatement && splitted[splitted.length-1] == 'outer') 
-            || this.parent instanceof InputStatement || this.parent instanceof OutputStatement) {
+            || this.parent instanceof InputStatement || this.parent instanceof OutputStatement
+            || this.parent instanceof AssignmentStatement) {
             this.optionSelection = this.generateCompleteOptions()
         }
         else

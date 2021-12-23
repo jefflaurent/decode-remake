@@ -107,7 +107,7 @@ $(document).ready(function() {
         $('#pcInputContainer').append(container)
     }
 
-    function createSelect(listVariable: Variable[], length: number) {
+    function createSelect(listVariable: Variable[], length: number, isAllVariable?: boolean) {
         let className = 'col-sm-' + length
         let className2 = 'col-xs-' + length
         let container = $('<div></div>').addClass(className).addClass(className2)
@@ -117,7 +117,25 @@ $(document).ready(function() {
         select.append($('<option></option>').val(null).text('Choose Variable'))
 
         for(let variable of listVariable) {
-            option = $('<option></option>').val(variable.name).text(variable.name)
+            if(!isAllVariable)
+                option = $('<option></option>').val(variable.name).text(variable.name)
+            else {
+                let dataType: string
+                if(variable instanceof Integer)
+                    dataType = 'Integer'
+                else if(variable instanceof Long)
+                    dataType = 'Long'
+                else if(variable instanceof Float)
+                    dataType = 'Float'
+                else if(variable instanceof Double)
+                    dataType = 'Double'
+                else if(variable instanceof Char)
+                    dataType = 'Char'
+                else
+                    dataType = 'String'
+                option = $('<option></option>').val(variable.name).text(variable.name + ' (' + dataType + ')')
+            }
+                
             select.append(option)
         }
 
@@ -136,6 +154,7 @@ $(document).ready(function() {
             $('.' + varValue).removeClass('input-error')
 
         $('#chosenVariable').removeClass('input-error')
+        $('#chosenOutputVariable').removeClass('input-error')
     }
 
     function initInput(title: string) {
@@ -419,33 +438,24 @@ $(document).ready(function() {
 
     // Click template button
     $(document).on('click', '.generateTemplate', function() {
-        if($(this).data('value') == 'blank') {
+        if($(this).data('value') == 'blank')
             blankTemplate()
-        }
-        else if($(this).data('value') == 'declare') {
+        else if($(this).data('value') == 'declare')
             declareVariableTemplate()
-        }
-        else if($(this).data('value') == 'print') {
+        else if($(this).data('value') == 'print')
             simplyPrintTemplate()
-        }
-        else if($(this).data('value') == 'io') {
+        else if($(this).data('value') == 'io')
             inputOutputTemplate() 
-        }
-        else if($(this).data('value') == 'nestedif') {
+        else if($(this).data('value') == 'nestedif')
             nestedIfTemplate()
-        }
-        else if($(this).data('value') == 'nestedfor') {
+        else if($(this).data('value') == 'nestedfor')
             nestedForTemplate()
-        }
-        else if($(this).data('value') == 'menu') {
+        else if($(this).data('value') == 'menu')
             menuTemplate()
-        }
-        else if($(this).data('value') == 'drawsquare') {
+        else if($(this).data('value') == 'drawsquare')
             drawSquareTemplate()
-        }
-        else if($(this).data('value') == 'oddeven') {
+        else if($(this).data('value') == 'oddeven')
             oddEvenTemplate()
-        }
 
         finishAction()
         restructureStatement()
@@ -471,7 +481,78 @@ $(document).ready(function() {
     // Click output
     $(document).on('click', '.output', function() {
         if($(this).data('value') == 'variable') {
+            initInput('Output Variable')
+            let listVariable: Variable[] = getAllVariables()
+            let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
+            let select = createSelect(listVariable, 7, true).attr('id', 'chosenOutputVariable')
+
+            container.append(createHint('Variable Name', 5))
+            container.append(select)
+            container.addClass('mb-3')
+            $('#pcInputContainer').append(container)
+
+            let inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
+                                addClass('col-xs-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select')
+
+            $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'))
+            $('#pcInputContainerLower').append(inputBtn)
+        }
+        else {
+
+        }
+    })
+
+    function getAllVariables(): Variable[] {
+        let allVariables: Variable[] = []
+
+        for(let i = 0; i < listInteger.length; i++)
+            allVariables.push(listInteger[i])
+        for(let i = 0; i < listLong.length; i++)
+            allVariables.push(listLong[i])
+        for(let i = 0; i < listFloat.length; i++)
+            allVariables.push(listFloat[i])
+        for(let i = 0; i < listDouble.length; i++)
+            allVariables.push(listDouble[i])
+        for(let i = 0; i < listChar.length; i++)
+            allVariables.push(listChar[i])
+        for(let i = 0; i < listString.length; i++)
+            allVariables.push(listString[i])
+        
+        return allVariables
+    }
+
+    $(document).on('click', '#outputVariableBtn', function() {
+        clearError()
+
+        if($('#chosenOutputVariable').find('option').filter(':selected').val() == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+            $('#chosenOutputVariable').addClass('input-error')
+        }
+        else {
+            let variableName = $('#chosenOutputVariable').find('option').filter(':selected').val() as string
+            let text = $('#chosenOutputVariable').find('option').filter(':selected').text().split(' ')[1] as string
+            let variable: Variable | undefined = undefined
+            let statement: Statement
+
+            if(text == '(Integer)') 
+                variable = getVariable(listInteger, variableName)
+            else if(text == '(Long)')
+                variable = getVariable(listLong, variableName)
+            else if(text == '(Float)') 
+                variable = getVariable(listFloat, variableName)
+            else if(text == '(Double)') 
+                variable = getVariable(listDouble, variableName)
+            else if(text == '(Char)') 
+                variable = getVariable(listChar, variableName)
+            else 
+                variable = getVariable(listString, variableName)
             
+            if(variable != undefined) {
+                statement = new OutputStatement(statementCount++, 1, true, 'variable', variable)
+                handleAdd(statement)
+                restructureStatement()
+                drawCanvas()
+            }
         }
     })
 
