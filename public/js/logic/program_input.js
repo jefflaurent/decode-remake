@@ -15,6 +15,7 @@ var If_1 = __importDefault(require("../classes/statement/helper/ifs/If"));
 var Elif_1 = __importDefault(require("../classes/statement/helper/ifs/Elif"));
 var Condition_1 = __importDefault(require("../classes/statement/helper/general/Condition"));
 var Canvas_1 = __importDefault(require("../classes/canvas/Canvas"));
+var Else_1 = __importDefault(require("../classes/statement/helper/ifs/Else"));
 var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"));
 var SwitchStatement_1 = __importDefault(require("../classes/statement/SwitchStatement"));
 var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
@@ -22,6 +23,7 @@ var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatem
 var Option_1 = __importDefault(require("../classes/statement/helper/options/Option"));
 var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
 var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
+var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -123,9 +125,10 @@ $(document).ready(function () {
         declareVariableValueList = [];
         variableIndex = 0;
     }
-    function createErrorMessage(message) {
+    function createErrorMessage(message, targetClass) {
         var container = $('<div></div>').addClass('col-xs-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(message);
-        $('#pcInputErrorContainer').append(container);
+        targetClass = '#' + targetClass;
+        $(targetClass).append(container);
     }
     function insertToVariableList() {
         for (var i = 0; i < declareVariableNameList.length; i++) {
@@ -171,14 +174,14 @@ $(document).ready(function () {
     }
     function cloneStatement(statement) {
         if (statement instanceof DeclareStatement_1.default) {
-            alert('Could not copy declare statement!');
+            createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
             return undefined;
         }
         else {
             var returnClone = void 0;
             returnClone = statement.cloneStatement(statementCount++);
             if (returnClone.result == false) {
-                alert('Could not copy declare statement!');
+                createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
                 return undefined;
             }
             else
@@ -258,24 +261,24 @@ $(document).ready(function () {
             var sameVariableName = allVariableNames[variableName] ? true : false;
             if (tempSameVariableName) {
                 $('.' + declareVariableNameList[i]).addClass('input-error');
-                createErrorMessage('Variable name must be unique');
+                createErrorMessage('Variable name must be unique', 'pcInputErrorContainer');
                 return;
             }
             else
                 tempAllVariableNames[variableName] = true;
             if (!returnName.bool) {
                 $('.' + declareVariableNameList[i]).addClass('input-error');
-                createErrorMessage(returnName.message);
+                createErrorMessage(returnName.message, 'pcInputErrorContainer');
                 return;
             }
             if (sameVariableName) {
                 $('.' + declareVariableNameList[i]).addClass('input-error');
-                createErrorMessage('Variable name has been declared before');
+                createErrorMessage('Variable name has been declared before', 'pcInputErrorContainer');
                 return;
             }
             if (!returnValue.bool) {
                 $('.' + declareVariableValueList[i]).addClass('input-error');
-                createErrorMessage(returnValue.message);
+                createErrorMessage(returnValue.message, 'pcInputErrorContainer');
                 return;
             }
         }
@@ -295,27 +298,22 @@ $(document).ready(function () {
         else if ($(this).data('value') == 'long') {
             initInput('Input Long');
             listVariable = listLong;
-            testing2();
         }
         else if ($(this).data('value') == 'float') {
             initInput('Input Float');
             listVariable = listFloat;
-            testing3();
         }
         else if ($(this).data('value') == 'double') {
             initInput('Input Double');
             listVariable = listDouble;
-            testing4();
         }
         else if ($(this).data('value') == 'char') {
             initInput('Input Char');
             listVariable = listChar;
-            testing5();
         }
         else if ($(this).data('value') == 'string') {
             initInput('Input String');
             listVariable = listString;
-            testing6();
         }
         var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
         var select = createSelect(listVariable, 7).attr('id', 'chosenVariable');
@@ -332,7 +330,7 @@ $(document).ready(function () {
     $(document).on('click', '#inputVariableBtn', function () {
         clearError();
         if ($('#chosenVariable').find('option').filter(':selected').val() == '') {
-            createErrorMessage('Please select a variable');
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer');
             $('#chosenVariable').addClass('input-error');
         }
         else {
@@ -371,17 +369,26 @@ $(document).ready(function () {
             simplyPrintTemplate();
         }
         else if ($(this).data('value') == 'io') {
+            inputOutputTemplate();
         }
         else if ($(this).data('value') == 'nestedif') {
+            nestedIfTemplate();
         }
         else if ($(this).data('value') == 'nestedfor') {
+            nestedForTemplate();
         }
         else if ($(this).data('value') == 'menu') {
+            menuTemplate();
         }
         else if ($(this).data('value') == 'drawsquare') {
+            drawSquareTemplate();
         }
         else if ($(this).data('value') == 'oddeven') {
+            oddEvenTemplate();
         }
+        finishAction();
+        restructureStatement();
+        drawCanvas();
     });
     function deleteVariable(variable) {
         allVariableNames[variable.name] = false;
@@ -401,7 +408,6 @@ $(document).ready(function () {
     // Click output
     $(document).on('click', '.output', function () {
         if ($(this).data('value') == 'variable') {
-            testing3();
         }
     });
     // Canvas logic
@@ -450,6 +456,7 @@ $(document).ready(function () {
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', function (event) {
+            $('#bcErrorContainer').empty();
             var rect = canvas.getBoundingClientRect();
             var x = event.clientX - rect.left;
             var y = event.clientY - rect.top;
@@ -481,7 +488,7 @@ $(document).ready(function () {
                 }
                 else if (returnClick.option.optionName == 'CPY') {
                     if (returnClick.statement instanceof DeclareStatement_1.default) {
-                        alert('Could not copy declare statement!');
+                        createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
                         finishAction();
                         restructureStatement();
                         drawCanvas();
@@ -518,7 +525,7 @@ $(document).ready(function () {
             else {
                 if (statement instanceof DeclareStatement_1.default)
                     deleteVariable(statement.variable);
-                alert('Could not add statement here');
+                createErrorMessage('Could not add statement here', 'bcErrorContainer');
                 finishAction();
             }
         }
@@ -526,11 +533,11 @@ $(document).ready(function () {
     function handlePaste() {
         var returnPaste;
         if (clipboard == undefined) {
-            alert('Clipboard is empty!');
+            createErrorMessage('Clipboard is empty!', 'bcErrorContainer');
             return;
         }
         if (clipboard.findStatement(returnClick.statement)) {
-            alert('Could not paste statement here!');
+            createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
             return;
         }
         var splitted = returnClick.option.optionId.split('-');
@@ -539,7 +546,7 @@ $(document).ready(function () {
             returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner, lastSelectedOption);
             listStatement = returnPaste.listStatement;
             if (returnPaste.result == false) {
-                alert('Could not paste statement here!');
+                createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
             }
         }
         finishAction();
@@ -550,7 +557,7 @@ $(document).ready(function () {
         var returnPaste = undefined;
         returnPaste = returnClick.option.handleDelete(listStatement, clipboard);
         if (returnPaste.result == false) {
-            alert('Variable is used on another statement!');
+            createErrorMessage('Variable is used on another statement!', 'bcErrorContainer');
         }
         else {
             if (clipboard instanceof DeclareStatement_1.default) {
@@ -574,101 +581,6 @@ $(document).ready(function () {
             listStatement[i].updateChildLevel();
         }
     }
-    function testing() {
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt', 5), '==', new Integer_1.default('testInt2', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifs.push(secondIf);
-        ifs.push(thirdIf);
-        ifStatement.updateIfOperations(ifs);
-        ifStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(ifStatement);
-    }
-    function testing2() {
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifStatement.updateIfOperations(ifs);
-        ifStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(ifStatement);
-    }
-    function testing3() {
-        var temp = [];
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt', 5), '==', new Integer_1.default('testInt2', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifs.push(secondIf);
-        ifs.push(thirdIf);
-        ifStatement.updateIfOperations(ifs);
-        temp.push(ifStatement);
-        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, new Integer_1.default('testInt', 5), true, true, 1, new Condition_1.default(new Integer_1.default('testInt', 5), '<', new Integer_1.default('testInt2', 10), true));
-        forStatement.updateChildStatement(temp);
-        forStatement.updateChildLevel();
-        forStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(forStatement);
-    }
-    function testing4() {
-        var temp = [];
-        var switchStatement;
-        temp.push(new Case_1.default(2, statementCount++, new Condition_1.default(new Integer_1.default('tempInt', 5), '==', new Integer_1.default('tempInt2', 10), true), undefined, false));
-        temp.push(new Case_1.default(2, statementCount++, undefined, undefined, true));
-        switchStatement = new SwitchStatement_1.default(1, statementCount++, new Integer_1.default('tempInt', 5), undefined);
-        switchStatement.updateChildStatement(temp);
-        switchStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(switchStatement);
-    }
-    function testing5() {
-        var temp = [];
-        var whileStatement;
-        whileStatement = new WhileStatement_1.default(1, statementCount++, true, undefined, new Condition_1.default(new Long_1.default('testLong', '15'), '<', new Long_1.default('testLong2', '500'), false), 'OR', new Condition_1.default(new Double_1.default('testDouble', '15'), '<', new Double_1.default('testDouble2', '500'), true));
-        whileStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(whileStatement);
-    }
-    function testing6() {
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var temp = statementCount - 1;
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifStatement.updateIfOperations(ifs);
-        ifStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(ifStatement);
-    }
     // Create template
     function blankTemplate() {
         for (var i = 0; i < listStatement.length; i++) {
@@ -676,9 +588,6 @@ $(document).ready(function () {
                 deleteVariable(listStatement[i].variable);
         }
         listStatement = [];
-        finishAction();
-        restructureStatement();
-        drawCanvas();
     }
     function declareVariableTemplate() {
         var variableName = 'myNumber';
@@ -687,15 +596,171 @@ $(document).ready(function () {
         variable = new Integer_1.default(variableName, 50);
         listInteger.push(variable);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
-        finishAction();
-        restructureStatement();
-        drawCanvas();
     }
     function simplyPrintTemplate() {
-        var outputStatement = new OutputStatement_1.default(statementCount++, 1, true, 'text');
+        var outputStatement = new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Hello World!");
         handleAdd(outputStatement);
-        finishAction();
-        restructureStatement();
-        drawCanvas();
+    }
+    function inputOutputTemplate() {
+        var variableName = 'myNumber';
+        var variable;
+        allVariableNames[variableName] = true;
+        variable = new Integer_1.default(variableName, 0);
+        listInteger.push(variable);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'Input number: '));
+        handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'The number is: '));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable));
+    }
+    function nestedIfTemplate() {
+        var variableName = 'myScore';
+        var variable;
+        allVariableNames[variableName] = true;
+        variable = new Integer_1.default(variableName, 0);
+        listInteger.push(variable);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'Input score: '));
+        handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '<', new Integer_1.default('x', 65), true));
+        var secondIf = new Else_1.default(1, statementCount++, undefined);
+        var failInnerIf;
+        var successInnerIf;
+        var temp = [];
+        failInnerIf = createIf(variable, 30, 45, ['F', 'E', 'D']);
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'You failed'));
+        temp.push(failInnerIf);
+        firstIf.updateChildStatement(temp);
+        successInnerIf = createIf(variable, 75, 85, ['C', 'B', 'A']);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'You passed!'));
+        temp.push(successInnerIf);
+        secondIf.updateChildStatement(temp);
+        var ifOperations = [];
+        ifOperations.push(firstIf);
+        ifOperations.push(secondIf);
+        ifStatement.updateIfOperations(ifOperations);
+        handleAdd(ifStatement);
+    }
+    function createIf(variable, lower, upper, grades) {
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '<', new Integer_1.default('x', lower), true));
+        var secondIf = new Elif_1.default(1, statementCount++, new Condition_1.default(variable, '>=', new Integer_1.default('x', lower), true), 'AND', new Condition_1.default(variable, '<', new Integer_1.default('x', upper), true));
+        var thirdIf = new Else_1.default(1, statementCount, undefined);
+        var statements = [];
+        statements.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[0]));
+        firstIf.updateChildStatement(statements);
+        statements = [];
+        statements.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[1]));
+        secondIf.updateChildStatement(statements);
+        statements = [];
+        statements.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[2]));
+        thirdIf.updateChildStatement(statements);
+        var ifOperations = [];
+        ifOperations.push(firstIf);
+        ifOperations.push(secondIf);
+        ifOperations.push(thirdIf);
+        ifStatement.updateIfOperations(ifOperations);
+        return ifStatement;
+    }
+    function nestedForTemplate() {
+        var variable = new Integer_1.default('i', 0);
+        var variable2 = new Integer_1.default('j', 0);
+        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, true, true, 1, new Condition_1.default(variable, '<', new Integer_1.default('x', 2), true));
+        var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, variable2, true, true, 1, new Condition_1.default(variable2, '<', new Integer_1.default('x', 3), true));
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'i: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'j: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable2));
+        nestedForStatement.updateChildStatement(temp);
+        temp = [];
+        temp.push(nestedForStatement);
+        forStatement.updateChildStatement(temp);
+        handleAdd(forStatement);
+    }
+    function menuTemplate() {
+        var variable = new Integer_1.default('choice', 0);
+        allVariableNames['choice'] = true;
+        listInteger.push(variable);
+        var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var whileStatement = new WhileStatement_1.default(1, statementCount, false, undefined, new Condition_1.default(variable, '!=', new Integer_1.default('x', 4), true));
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "1. Print 'Hello'"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "2. Print 'World'"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "3. Print 'Lorem'"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "4. Exit"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, "Choice: "));
+        temp.push(new InputStatement_1.default(statementCount++, 1, variable));
+        temp.push(createSwitchStatement(variable));
+        whileStatement.updateChildStatement(temp);
+        handleAdd(declareStatement);
+        handleAdd(whileStatement);
+    }
+    function createSwitchStatement(variable) {
+        var switchStatement = new SwitchStatement_1.default(1, statementCount++, variable, undefined);
+        var temp = [];
+        var caseStatements = [];
+        var firstCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        var secondCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        var thirdCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Hello"));
+        firstCase.updateChildStatement(temp);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "World"));
+        secondCase.updateChildStatement(temp);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Lorem"));
+        thirdCase.updateChildStatement(temp);
+        temp = [];
+        caseStatements.push(firstCase);
+        caseStatements.push(secondCase);
+        caseStatements.push(thirdCase);
+        switchStatement.updateCaseStatement(caseStatements);
+        return switchStatement;
+    }
+    function drawSquareTemplate() {
+        var variable = new Integer_1.default('count', 0);
+        allVariableNames['count'] = true;
+        listInteger.push(variable);
+        var i = new Integer_1.default('i', 0);
+        var j = new Integer_1.default('j', 0);
+        var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var inputStatement = new InputStatement_1.default(statementCount++, 1, variable);
+        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, i, true, true, 1, new Condition_1.default(i, '<', variable, false));
+        var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, j, true, true, 1, new Condition_1.default(j, '<', variable, false));
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, '*'));
+        nestedForStatement.updateChildStatement(temp);
+        temp = [];
+        temp.push(nestedForStatement);
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, ''));
+        forStatement.updateChildStatement(temp);
+        handleAdd(declareStatement);
+        handleAdd(inputStatement);
+        handleAdd(forStatement);
+    }
+    function oddEvenTemplate() {
+        var variable = new Integer_1.default('number', 0);
+        allVariableNames['number'] = true;
+        listInteger.push(variable);
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 0), true));
+        var secondIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
+        var ifOperations = [];
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'The number is an even number'));
+        firstIf.updateChildStatement(temp);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'The number is an odd number'));
+        secondIf.updateChildStatement(temp);
+        ifOperations.push(firstIf);
+        ifOperations.push(secondIf);
+        ifStatement.updateIfOperations(ifOperations);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new AssignmentStatement_1.default(statementCount++, 1, variable, new Integer_1.default('x', 2), '%', true));
+        handleAdd(ifStatement);
     }
 });

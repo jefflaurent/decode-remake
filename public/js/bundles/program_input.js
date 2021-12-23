@@ -85,7 +85,82 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":12}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":13}],2:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Option_1 = __importDefault(require("./helper/options/Option"));
+var Statement_1 = __importDefault(require("./Statement"));
+var AssignmentStatement = /** @class */ (function (_super) {
+    __extends(AssignmentStatement, _super);
+    function AssignmentStatement(statementId, level, firstVariable, secondVariable, operator, isCustomValue) {
+        var _this = _super.call(this, level) || this;
+        _this.statementId = _this.generateId(statementId);
+        _this.firstVariable = firstVariable;
+        _this.secondVariable = secondVariable;
+        _this.operator = operator;
+        _this.isCustomValue = isCustomValue;
+        _this.color = '#f4be0b';
+        return _this;
+    }
+    AssignmentStatement.prototype.generateId = function (number) {
+        return 'assignment-statement-' + number;
+    };
+    AssignmentStatement.prototype.writeToCanvas = function (canvas) {
+        var text = 'SET ' + this.firstVariable.name + ' = ' + this.generateBlockCodeText();
+        var coordinate = canvas.writeText(this.level, text, this.color);
+        this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
+    };
+    AssignmentStatement.prototype.generateBlockCodeText = function () {
+        return this.isCustomValue ? this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value :
+            this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+    };
+    AssignmentStatement.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
+        this.option.parent = this;
+        this.option.draw(canvas);
+    };
+    AssignmentStatement.prototype.callClickEvent = function (canvas, x, y) {
+        return this.option.clickOption(canvas, x, y);
+    };
+    AssignmentStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        return false;
+    };
+    AssignmentStatement.prototype.findVariable = function (variable) {
+        if (variable.name == this.firstVariable.name)
+            return this;
+        if (!this.isCustomValue) {
+            if (variable.name == this.secondVariable.name)
+                return this;
+        }
+        return undefined;
+    };
+    AssignmentStatement.prototype.cloneStatement = function (statementCount) {
+        return new ReturnClone_1.default(new AssignmentStatement(statementCount, this.level, this.firstVariable, this.secondVariable, this.operator, this.isCustomValue), true);
+    };
+    return AssignmentStatement;
+}(Statement_1.default));
+exports.default = AssignmentStatement;
+
+},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -196,7 +271,7 @@ var DeclareStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../../utilities/ReturnClone":27,"../variable/Char":17,"../variable/Double":18,"../variable/Float":19,"../variable/Integer":20,"../variable/Long":21,"../variable/String":22,"./Statement":7,"./helper/options/Option":15}],3:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"../variable/Char":19,"../variable/Double":20,"../variable/Float":21,"../variable/Integer":22,"../variable/Long":23,"../variable/String":24,"./Statement":8,"./helper/options/Option":17}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -346,7 +421,7 @@ var ForStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":27,"./DeclareStatement":2,"./Statement":7,"./helper/options/Option":15}],4:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"./DeclareStatement":3,"./Statement":8,"./helper/options/Option":17}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -460,7 +535,7 @@ var IfStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/ifs/If":14}],5:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/ifs/If":16}],6:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -540,7 +615,7 @@ var InputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../../utilities/ReturnClone":27,"../variable/Char":17,"../variable/Double":18,"../variable/Float":19,"../variable/Integer":20,"../variable/Long":21,"./Statement":7,"./helper/options/Option":15}],6:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"../variable/Char":19,"../variable/Double":20,"../variable/Float":21,"../variable/Integer":22,"../variable/Long":23,"./Statement":8,"./helper/options/Option":17}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -564,13 +639,15 @@ var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
     __extends(OutputStatement, _super);
-    function OutputStatement(statementId, level, isNewLine, type, variable) {
+    function OutputStatement(statementId, level, isNewLine, type, variable, text) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
+        _this.text = undefined;
         _this.variable = variable;
         _this.statementId = _this.generateId(statementId);
         _this.isNewLine = isNewLine;
         _this.type = type;
+        _this.text = text;
         _this.color = '#f4be0b';
         return _this;
     }
@@ -588,10 +665,10 @@ var OutputStatement = /** @class */ (function (_super) {
             text += this.variable.name;
         }
         else if (this.type == 'text') {
-            text += "\"Hello World!\"";
+            text += "\"" + this.text + "\"";
         }
-        if (this.isNewLine)
-            text += ' \n';
+        if (this.isNewLine == true)
+            text += '\t[ENTER]';
         return text;
     };
     OutputStatement.prototype.createOption = function (canvas, coorX, coorY) {
@@ -618,13 +695,13 @@ var OutputStatement = /** @class */ (function (_super) {
         if (this.type == 'variable')
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, this.variable), true);
         else
-            return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type), true);
+            return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true);
     };
     return OutputStatement;
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/options/Option":15}],7:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],8:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -664,7 +741,7 @@ var Statement = /** @class */ (function () {
 }());
 exports.default = Statement;
 
-},{"../../utilities/ReturnClone":27}],8:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -697,6 +774,10 @@ var SwitchStatement = /** @class */ (function (_super) {
         _this.init();
         return _this;
     }
+    SwitchStatement.prototype.updateCaseStatement = function (caseStatement) {
+        this.caseStatement = caseStatement;
+        this.init();
+    };
     SwitchStatement.prototype.updateChildLevel = function () {
         if (this.caseStatement != undefined)
             for (var i = 0; i < this.caseStatement.length; i++) {
@@ -777,7 +858,7 @@ var SwitchStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/options/Option":15}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -920,7 +1001,7 @@ var WhileStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"../../utilities/ReturnClone":27,"./Statement":7,"./helper/options/Option":15}],10:[function(require,module,exports){
+},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -976,9 +1057,9 @@ var Case = /** @class */ (function (_super) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
         var text = '';
         if (!this.isDefault)
-            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t';
+            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
         else
-            text = 'DEFAULT:' + '\t\t\t\t\t\t';
+            text = 'DEFAULT:' + '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
         canvas.updateLastPosition();
@@ -1052,7 +1133,7 @@ var Case = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":27,"../../Statement":7,"../options/Option":15}],11:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":29,"../../Statement":8,"../options/Option":17}],12:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1095,7 +1176,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":17,"../../../variable/String":22}],12:[function(require,module,exports){
+},{"../../../variable/Char":19,"../../../variable/String":24}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -1107,7 +1188,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1182,7 +1263,127 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"../../../../utilities/ReturnClone":27,"./If":14}],14:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":29,"./If":16}],15:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
+var Statement_1 = __importDefault(require("../../Statement"));
+var Option_1 = __importDefault(require("../options/Option"));
+var Else = /** @class */ (function (_super) {
+    __extends(Else, _super);
+    function Else(level, statementId, childStatement) {
+        var _this = _super.call(this, level) || this;
+        _this.statementId = _this.generateId(statementId);
+        _this.childStatement = childStatement;
+        _this.color = '#2bea15';
+        _this.option = undefined;
+        _this.init();
+        return _this;
+    }
+    Else.prototype.generateId = function (number) {
+        return 'else-' + number;
+    };
+    Else.prototype.init = function () {
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].parent = this;
+    };
+    Else.prototype.updateChildStatement = function (childStatement) {
+        this.childStatement = childStatement;
+        this.init();
+    };
+    Else.prototype.writeToCanvas = function (canvas, isClose) {
+        var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
+        var text = 'ELSE\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
+        // ELSE
+        var coordinate = canvas.writeText(this.level, text, this.color);
+        // Create option button for If
+        this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE);
+        canvas.updateLastPosition();
+        if (this.childStatement != undefined)
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].writeToCanvas(canvas);
+        canvas.createBridge(this.color, this.level, upper, canvas.LAST_POSITION);
+        if (isClose)
+            canvas.writeClosingBlock(this.level, text, 'END IF', this.color);
+    };
+    Else.prototype.createOption = function (canvas, coorX, coorY) {
+        this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
+        this.option.draw(canvas);
+    };
+    Else.prototype.callClickEvent = function (canvas, x, y) {
+        var temp = this.option.clickOption(canvas, x, y);
+        var tempChild = undefined;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                tempChild = this.childStatement[i].callClickEvent(canvas, x, y);
+                if (tempChild != undefined)
+                    break;
+            }
+        }
+        return temp ? temp : tempChild;
+    };
+    Else.prototype.findVariable = function (variable) {
+        var temp = undefined;
+        if (this.childStatement == undefined)
+            return undefined;
+        for (var i = 0; i < this.childStatement.length; i++) {
+            temp = this.childStatement[i].findVariable(variable);
+            if (temp != undefined)
+                return temp;
+        }
+        return undefined;
+    };
+    Else.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
+        }
+        return false;
+    };
+    Else.prototype.cloneStatement = function (statementCount) {
+        var elseStatement;
+        var returnClone;
+        var childStatement = [];
+        elseStatement = new Else(this.level, statementCount++);
+        if (this.childStatement) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                returnClone = this.childStatement[i].cloneStatement(statementCount++);
+                if (returnClone.result == false)
+                    return returnClone;
+                childStatement.push(returnClone.statement);
+            }
+            elseStatement.updateChildStatement(childStatement);
+        }
+        return new ReturnClone_1.default(elseStatement, true);
+    };
+    return Else;
+}(Statement_1.default));
+exports.default = Else;
+
+},{"../../../../utilities/ReturnClone":29,"../../Statement":8,"../options/Option":17}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1324,7 +1525,7 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../../../utilities/ReturnClone":27,"../../Statement":7,"../options/Option":15}],15:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":29,"../../Statement":8,"../options/Option":17}],17:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1337,6 +1538,7 @@ var IfStatement_1 = __importDefault(require("../../IfStatement"));
 var InputStatement_1 = __importDefault(require("../../InputStatement"));
 var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
+var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
 var OptionSelection_1 = __importDefault(require("./OptionSelection"));
 var Option = /** @class */ (function () {
     function Option(optionId, coorX, coorY, width, height, parent) {
@@ -1350,6 +1552,7 @@ var Option = /** @class */ (function () {
         var splitted = optionId.split('-');
         if (this.parent instanceof IfStatement_1.default || this.parent instanceof DeclareStatement_1.default
             || this.parent instanceof SwitchStatement_1.default || (this.parent instanceof ForStatement_1.default && splitted[splitted.length - 1] == 'outer')
+            || (this.parent instanceof WhileStatement_1.default && splitted[splitted.length - 1] == 'outer')
             || this.parent instanceof InputStatement_1.default || this.parent instanceof OutputStatement_1.default) {
             this.optionSelection = this.generateCompleteOptions();
         }
@@ -1417,7 +1620,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":26,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../OutputStatement":6,"../../SwitchStatement":8,"./OptionSelection":16}],16:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":28,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"./OptionSelection":18}],18:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1433,6 +1636,7 @@ var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
 var Case_1 = __importDefault(require("../case/Case"));
+var Else_1 = __importDefault(require("../ifs/Else"));
 var If_1 = __importDefault(require("../ifs/If"));
 var OptionSelection = /** @class */ (function () {
     function OptionSelection(optionId, optionName, optionColor, coorX, currentX, coorY, width, height, parent) {
@@ -1488,7 +1692,7 @@ var OptionSelection = /** @class */ (function () {
                 if (targetStatement.level > 1)
                     return false;
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 return false;
             }
@@ -1570,7 +1774,7 @@ var OptionSelection = /** @class */ (function () {
                 || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 parentStatement = targetStatement;
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
@@ -1582,7 +1786,7 @@ var OptionSelection = /** @class */ (function () {
                 parentStatement = targetStatement.parent;
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 parentStatement = targetStatement;
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
@@ -1603,7 +1807,7 @@ var OptionSelection = /** @class */ (function () {
                 || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
             }
@@ -1614,7 +1818,7 @@ var OptionSelection = /** @class */ (function () {
                 || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
             }
@@ -1651,7 +1855,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":26,"../../../../utilities/ReturnPaste":28,"../../DeclareStatement":2,"../../ForStatement":3,"../../IfStatement":4,"../../InputStatement":5,"../../OutputStatement":6,"../../SwitchStatement":8,"../../WhileStatement":9,"../case/Case":10,"../ifs/If":14}],17:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":28,"../../../../utilities/ReturnPaste":30,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"../case/Case":11,"../ifs/Else":15,"../ifs/If":16}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1687,7 +1891,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":25,"./Variable":23}],18:[function(require,module,exports){
+},{"../../utilities/Return":27,"./Variable":25}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1729,7 +1933,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":25,"./Variable":23}],19:[function(require,module,exports){
+},{"../../utilities/Return":27,"./Variable":25}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1771,7 +1975,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":25,"./Variable":23}],20:[function(require,module,exports){
+},{"../../utilities/Return":27,"./Variable":25}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1813,7 +2017,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":25,"./Variable":23}],21:[function(require,module,exports){
+},{"../../utilities/Return":27,"./Variable":25}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1853,7 +2057,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":25,"./Variable":23}],22:[function(require,module,exports){
+},{"../../utilities/Return":27,"./Variable":25}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1886,7 +2090,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":25,"./Variable":23}],23:[function(require,module,exports){
+},{"../../utilities/Return":27,"./Variable":25}],25:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1915,7 +2119,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":25}],24:[function(require,module,exports){
+},{"../../utilities/Return":27}],26:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1933,6 +2137,7 @@ var If_1 = __importDefault(require("../classes/statement/helper/ifs/If"));
 var Elif_1 = __importDefault(require("../classes/statement/helper/ifs/Elif"));
 var Condition_1 = __importDefault(require("../classes/statement/helper/general/Condition"));
 var Canvas_1 = __importDefault(require("../classes/canvas/Canvas"));
+var Else_1 = __importDefault(require("../classes/statement/helper/ifs/Else"));
 var ForStatement_1 = __importDefault(require("../classes/statement/ForStatement"));
 var SwitchStatement_1 = __importDefault(require("../classes/statement/SwitchStatement"));
 var Case_1 = __importDefault(require("../classes/statement/helper/case/Case"));
@@ -1940,6 +2145,7 @@ var WhileStatement_1 = __importDefault(require("../classes/statement/WhileStatem
 var Option_1 = __importDefault(require("../classes/statement/helper/options/Option"));
 var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
 var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
+var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -2041,9 +2247,10 @@ $(document).ready(function () {
         declareVariableValueList = [];
         variableIndex = 0;
     }
-    function createErrorMessage(message) {
+    function createErrorMessage(message, targetClass) {
         var container = $('<div></div>').addClass('col-xs-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(message);
-        $('#pcInputErrorContainer').append(container);
+        targetClass = '#' + targetClass;
+        $(targetClass).append(container);
     }
     function insertToVariableList() {
         for (var i = 0; i < declareVariableNameList.length; i++) {
@@ -2089,14 +2296,14 @@ $(document).ready(function () {
     }
     function cloneStatement(statement) {
         if (statement instanceof DeclareStatement_1.default) {
-            alert('Could not copy declare statement!');
+            createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
             return undefined;
         }
         else {
             var returnClone = void 0;
             returnClone = statement.cloneStatement(statementCount++);
             if (returnClone.result == false) {
-                alert('Could not copy declare statement!');
+                createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
                 return undefined;
             }
             else
@@ -2176,24 +2383,24 @@ $(document).ready(function () {
             var sameVariableName = allVariableNames[variableName] ? true : false;
             if (tempSameVariableName) {
                 $('.' + declareVariableNameList[i]).addClass('input-error');
-                createErrorMessage('Variable name must be unique');
+                createErrorMessage('Variable name must be unique', 'pcInputErrorContainer');
                 return;
             }
             else
                 tempAllVariableNames[variableName] = true;
             if (!returnName.bool) {
                 $('.' + declareVariableNameList[i]).addClass('input-error');
-                createErrorMessage(returnName.message);
+                createErrorMessage(returnName.message, 'pcInputErrorContainer');
                 return;
             }
             if (sameVariableName) {
                 $('.' + declareVariableNameList[i]).addClass('input-error');
-                createErrorMessage('Variable name has been declared before');
+                createErrorMessage('Variable name has been declared before', 'pcInputErrorContainer');
                 return;
             }
             if (!returnValue.bool) {
                 $('.' + declareVariableValueList[i]).addClass('input-error');
-                createErrorMessage(returnValue.message);
+                createErrorMessage(returnValue.message, 'pcInputErrorContainer');
                 return;
             }
         }
@@ -2213,27 +2420,22 @@ $(document).ready(function () {
         else if ($(this).data('value') == 'long') {
             initInput('Input Long');
             listVariable = listLong;
-            testing2();
         }
         else if ($(this).data('value') == 'float') {
             initInput('Input Float');
             listVariable = listFloat;
-            testing3();
         }
         else if ($(this).data('value') == 'double') {
             initInput('Input Double');
             listVariable = listDouble;
-            testing4();
         }
         else if ($(this).data('value') == 'char') {
             initInput('Input Char');
             listVariable = listChar;
-            testing5();
         }
         else if ($(this).data('value') == 'string') {
             initInput('Input String');
             listVariable = listString;
-            testing6();
         }
         var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
         var select = createSelect(listVariable, 7).attr('id', 'chosenVariable');
@@ -2250,7 +2452,7 @@ $(document).ready(function () {
     $(document).on('click', '#inputVariableBtn', function () {
         clearError();
         if ($('#chosenVariable').find('option').filter(':selected').val() == '') {
-            createErrorMessage('Please select a variable');
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer');
             $('#chosenVariable').addClass('input-error');
         }
         else {
@@ -2289,17 +2491,26 @@ $(document).ready(function () {
             simplyPrintTemplate();
         }
         else if ($(this).data('value') == 'io') {
+            inputOutputTemplate();
         }
         else if ($(this).data('value') == 'nestedif') {
+            nestedIfTemplate();
         }
         else if ($(this).data('value') == 'nestedfor') {
+            nestedForTemplate();
         }
         else if ($(this).data('value') == 'menu') {
+            menuTemplate();
         }
         else if ($(this).data('value') == 'drawsquare') {
+            drawSquareTemplate();
         }
         else if ($(this).data('value') == 'oddeven') {
+            oddEvenTemplate();
         }
+        finishAction();
+        restructureStatement();
+        drawCanvas();
     });
     function deleteVariable(variable) {
         allVariableNames[variable.name] = false;
@@ -2319,7 +2530,6 @@ $(document).ready(function () {
     // Click output
     $(document).on('click', '.output', function () {
         if ($(this).data('value') == 'variable') {
-            testing3();
         }
     });
     // Canvas logic
@@ -2368,6 +2578,7 @@ $(document).ready(function () {
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', function (event) {
+            $('#bcErrorContainer').empty();
             var rect = canvas.getBoundingClientRect();
             var x = event.clientX - rect.left;
             var y = event.clientY - rect.top;
@@ -2399,7 +2610,7 @@ $(document).ready(function () {
                 }
                 else if (returnClick.option.optionName == 'CPY') {
                     if (returnClick.statement instanceof DeclareStatement_1.default) {
-                        alert('Could not copy declare statement!');
+                        createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
                         finishAction();
                         restructureStatement();
                         drawCanvas();
@@ -2436,7 +2647,7 @@ $(document).ready(function () {
             else {
                 if (statement instanceof DeclareStatement_1.default)
                     deleteVariable(statement.variable);
-                alert('Could not add statement here');
+                createErrorMessage('Could not add statement here', 'bcErrorContainer');
                 finishAction();
             }
         }
@@ -2444,11 +2655,11 @@ $(document).ready(function () {
     function handlePaste() {
         var returnPaste;
         if (clipboard == undefined) {
-            alert('Clipboard is empty!');
+            createErrorMessage('Clipboard is empty!', 'bcErrorContainer');
             return;
         }
         if (clipboard.findStatement(returnClick.statement)) {
-            alert('Could not paste statement here!');
+            createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
             return;
         }
         var splitted = returnClick.option.optionId.split('-');
@@ -2457,7 +2668,7 @@ $(document).ready(function () {
             returnPaste = returnClick.option.handlePaste(listStatement, clipboard, returnClick.statement, isInner, lastSelectedOption);
             listStatement = returnPaste.listStatement;
             if (returnPaste.result == false) {
-                alert('Could not paste statement here!');
+                createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
             }
         }
         finishAction();
@@ -2468,7 +2679,7 @@ $(document).ready(function () {
         var returnPaste = undefined;
         returnPaste = returnClick.option.handleDelete(listStatement, clipboard);
         if (returnPaste.result == false) {
-            alert('Variable is used on another statement!');
+            createErrorMessage('Variable is used on another statement!', 'bcErrorContainer');
         }
         else {
             if (clipboard instanceof DeclareStatement_1.default) {
@@ -2492,101 +2703,6 @@ $(document).ready(function () {
             listStatement[i].updateChildLevel();
         }
     }
-    function testing() {
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt', 5), '==', new Integer_1.default('testInt2', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifs.push(secondIf);
-        ifs.push(thirdIf);
-        ifStatement.updateIfOperations(ifs);
-        ifStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(ifStatement);
-    }
-    function testing2() {
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifStatement.updateIfOperations(ifs);
-        ifStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(ifStatement);
-    }
-    function testing3() {
-        var temp = [];
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt', 5), '==', new Integer_1.default('testInt2', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt3', 10), '!=', new Integer_1.default('testInt4', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt4', 10), '!=', new Integer_1.default('testInt6', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifs.push(secondIf);
-        ifs.push(thirdIf);
-        ifStatement.updateIfOperations(ifs);
-        temp.push(ifStatement);
-        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, new Integer_1.default('testInt', 5), true, true, 1, new Condition_1.default(new Integer_1.default('testInt', 5), '<', new Integer_1.default('testInt2', 10), true));
-        forStatement.updateChildStatement(temp);
-        forStatement.updateChildLevel();
-        forStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(forStatement);
-    }
-    function testing4() {
-        var temp = [];
-        var switchStatement;
-        temp.push(new Case_1.default(2, statementCount++, new Condition_1.default(new Integer_1.default('tempInt', 5), '==', new Integer_1.default('tempInt2', 10), true), undefined, false));
-        temp.push(new Case_1.default(2, statementCount++, undefined, undefined, true));
-        switchStatement = new SwitchStatement_1.default(1, statementCount++, new Integer_1.default('tempInt', 5), undefined);
-        switchStatement.updateChildStatement(temp);
-        switchStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(switchStatement);
-    }
-    function testing5() {
-        var temp = [];
-        var whileStatement;
-        whileStatement = new WhileStatement_1.default(1, statementCount++, true, undefined, new Condition_1.default(new Long_1.default('testLong', '15'), '<', new Long_1.default('testLong2', '500'), false), 'OR', new Condition_1.default(new Double_1.default('testDouble', '15'), '<', new Double_1.default('testDouble2', '500'), true));
-        whileStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(whileStatement);
-    }
-    function testing6() {
-        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
-        var temp = statementCount - 1;
-        var ifs = [];
-        var firstIf = new If_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt5', 5), '==', new Integer_1.default('testInt10', 10), true), undefined, undefined, undefined);
-        var child1 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('myInteger2', 10));
-        var child2 = new DeclareStatement_1.default(statementCount++, firstIf.level + 1, new Integer_1.default('mySecondInteger2', 25));
-        var childStatements = [];
-        childStatements.push(child1);
-        childStatements.push(child2);
-        firstIf.updateChildStatement(childStatements);
-        var secondIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt6', 10), '!=', new Integer_1.default('testInt8', 200), false), undefined, undefined, undefined);
-        var thirdIf = new Elif_1.default(ifStatement.level, statementCount++, new Condition_1.default(new Integer_1.default('testInt7', 10), '!=', new Integer_1.default('testInt9', 200), false), undefined, undefined, undefined);
-        ifs.push(firstIf);
-        ifStatement.updateIfOperations(ifs);
-        ifStatement.writeToCanvas(blockCanvasInstance);
-        listStatement.push(ifStatement);
-    }
     // Create template
     function blankTemplate() {
         for (var i = 0; i < listStatement.length; i++) {
@@ -2594,9 +2710,6 @@ $(document).ready(function () {
                 deleteVariable(listStatement[i].variable);
         }
         listStatement = [];
-        finishAction();
-        restructureStatement();
-        drawCanvas();
     }
     function declareVariableTemplate() {
         var variableName = 'myNumber';
@@ -2605,20 +2718,176 @@ $(document).ready(function () {
         variable = new Integer_1.default(variableName, 50);
         listInteger.push(variable);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
-        finishAction();
-        restructureStatement();
-        drawCanvas();
     }
     function simplyPrintTemplate() {
-        var outputStatement = new OutputStatement_1.default(statementCount++, 1, true, 'text');
+        var outputStatement = new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Hello World!");
         handleAdd(outputStatement);
-        finishAction();
-        restructureStatement();
-        drawCanvas();
+    }
+    function inputOutputTemplate() {
+        var variableName = 'myNumber';
+        var variable;
+        allVariableNames[variableName] = true;
+        variable = new Integer_1.default(variableName, 0);
+        listInteger.push(variable);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'Input number: '));
+        handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'The number is: '));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable));
+    }
+    function nestedIfTemplate() {
+        var variableName = 'myScore';
+        var variable;
+        allVariableNames[variableName] = true;
+        variable = new Integer_1.default(variableName, 0);
+        listInteger.push(variable);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'Input score: '));
+        handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '<', new Integer_1.default('x', 65), true));
+        var secondIf = new Else_1.default(1, statementCount++, undefined);
+        var failInnerIf;
+        var successInnerIf;
+        var temp = [];
+        failInnerIf = createIf(variable, 30, 45, ['F', 'E', 'D']);
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'You failed'));
+        temp.push(failInnerIf);
+        firstIf.updateChildStatement(temp);
+        successInnerIf = createIf(variable, 75, 85, ['C', 'B', 'A']);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'You passed!'));
+        temp.push(successInnerIf);
+        secondIf.updateChildStatement(temp);
+        var ifOperations = [];
+        ifOperations.push(firstIf);
+        ifOperations.push(secondIf);
+        ifStatement.updateIfOperations(ifOperations);
+        handleAdd(ifStatement);
+    }
+    function createIf(variable, lower, upper, grades) {
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '<', new Integer_1.default('x', lower), true));
+        var secondIf = new Elif_1.default(1, statementCount++, new Condition_1.default(variable, '>=', new Integer_1.default('x', lower), true), 'AND', new Condition_1.default(variable, '<', new Integer_1.default('x', upper), true));
+        var thirdIf = new Else_1.default(1, statementCount, undefined);
+        var statements = [];
+        statements.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[0]));
+        firstIf.updateChildStatement(statements);
+        statements = [];
+        statements.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[1]));
+        secondIf.updateChildStatement(statements);
+        statements = [];
+        statements.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[2]));
+        thirdIf.updateChildStatement(statements);
+        var ifOperations = [];
+        ifOperations.push(firstIf);
+        ifOperations.push(secondIf);
+        ifOperations.push(thirdIf);
+        ifStatement.updateIfOperations(ifOperations);
+        return ifStatement;
+    }
+    function nestedForTemplate() {
+        var variable = new Integer_1.default('i', 0);
+        var variable2 = new Integer_1.default('j', 0);
+        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, true, true, 1, new Condition_1.default(variable, '<', new Integer_1.default('x', 2), true));
+        var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, variable2, true, true, 1, new Condition_1.default(variable2, '<', new Integer_1.default('x', 3), true));
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'i: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'j: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable2));
+        nestedForStatement.updateChildStatement(temp);
+        temp = [];
+        temp.push(nestedForStatement);
+        forStatement.updateChildStatement(temp);
+        handleAdd(forStatement);
+    }
+    function menuTemplate() {
+        var variable = new Integer_1.default('choice', 0);
+        allVariableNames['choice'] = true;
+        listInteger.push(variable);
+        var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var whileStatement = new WhileStatement_1.default(1, statementCount, false, undefined, new Condition_1.default(variable, '!=', new Integer_1.default('x', 4), true));
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "1. Print 'Hello'"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "2. Print 'World'"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "3. Print 'Lorem'"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "4. Exit"));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, "Choice: "));
+        temp.push(new InputStatement_1.default(statementCount++, 1, variable));
+        temp.push(createSwitchStatement(variable));
+        whileStatement.updateChildStatement(temp);
+        handleAdd(declareStatement);
+        handleAdd(whileStatement);
+    }
+    function createSwitchStatement(variable) {
+        var switchStatement = new SwitchStatement_1.default(1, statementCount++, variable, undefined);
+        var temp = [];
+        var caseStatements = [];
+        var firstCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        var secondCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        var thirdCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Hello"));
+        firstCase.updateChildStatement(temp);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "World"));
+        secondCase.updateChildStatement(temp);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Lorem"));
+        thirdCase.updateChildStatement(temp);
+        temp = [];
+        caseStatements.push(firstCase);
+        caseStatements.push(secondCase);
+        caseStatements.push(thirdCase);
+        switchStatement.updateCaseStatement(caseStatements);
+        return switchStatement;
+    }
+    function drawSquareTemplate() {
+        var variable = new Integer_1.default('count', 0);
+        allVariableNames['count'] = true;
+        listInteger.push(variable);
+        var i = new Integer_1.default('i', 0);
+        var j = new Integer_1.default('j', 0);
+        var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var inputStatement = new InputStatement_1.default(statementCount++, 1, variable);
+        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, i, true, true, 1, new Condition_1.default(i, '<', variable, false));
+        var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, j, true, true, 1, new Condition_1.default(j, '<', variable, false));
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, '*'));
+        nestedForStatement.updateChildStatement(temp);
+        temp = [];
+        temp.push(nestedForStatement);
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, ''));
+        forStatement.updateChildStatement(temp);
+        handleAdd(declareStatement);
+        handleAdd(inputStatement);
+        handleAdd(forStatement);
+    }
+    function oddEvenTemplate() {
+        var variable = new Integer_1.default('number', 0);
+        allVariableNames['number'] = true;
+        listInteger.push(variable);
+        var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+        var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 0), true));
+        var secondIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
+        var ifOperations = [];
+        var temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'The number is an even number'));
+        firstIf.updateChildStatement(temp);
+        temp = [];
+        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'The number is an odd number'));
+        secondIf.updateChildStatement(temp);
+        ifOperations.push(firstIf);
+        ifOperations.push(secondIf);
+        ifStatement.updateIfOperations(ifOperations);
+        handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
+        handleAdd(new AssignmentStatement_1.default(statementCount++, 1, variable, new Integer_1.default('x', 2), '%', true));
+        handleAdd(ifStatement);
     }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/DeclareStatement":2,"../classes/statement/ForStatement":3,"../classes/statement/IfStatement":4,"../classes/statement/InputStatement":5,"../classes/statement/OutputStatement":6,"../classes/statement/SwitchStatement":8,"../classes/statement/WhileStatement":9,"../classes/statement/helper/case/Case":10,"../classes/statement/helper/general/Condition":11,"../classes/statement/helper/ifs/Elif":13,"../classes/statement/helper/ifs/If":14,"../classes/statement/helper/options/Option":15,"../classes/variable/Char":17,"../classes/variable/Double":18,"../classes/variable/Float":19,"../classes/variable/Integer":20,"../classes/variable/Long":21,"../classes/variable/String":22}],25:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/AssignmentStatement":2,"../classes/statement/DeclareStatement":3,"../classes/statement/ForStatement":4,"../classes/statement/IfStatement":5,"../classes/statement/InputStatement":6,"../classes/statement/OutputStatement":7,"../classes/statement/SwitchStatement":9,"../classes/statement/WhileStatement":10,"../classes/statement/helper/case/Case":11,"../classes/statement/helper/general/Condition":12,"../classes/statement/helper/ifs/Elif":14,"../classes/statement/helper/ifs/Else":15,"../classes/statement/helper/ifs/If":16,"../classes/statement/helper/options/Option":17,"../classes/variable/Char":19,"../classes/variable/Double":20,"../classes/variable/Float":21,"../classes/variable/Integer":22,"../classes/variable/Long":23,"../classes/variable/String":24}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -2630,7 +2899,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -2644,7 +2913,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone = /** @class */ (function () {
@@ -2657,7 +2926,7 @@ var ReturnClone = /** @class */ (function () {
 }());
 exports.default = ReturnClone;
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -2669,4 +2938,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[24]);
+},{}]},{},[26]);

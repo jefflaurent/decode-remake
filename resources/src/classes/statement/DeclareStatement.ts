@@ -91,7 +91,7 @@ class DeclareStatement extends Statement {
 
     findVariable(variable: Variable): Statement | undefined {
         return undefined
-    }   
+    }
 
     findStatement(statement: Statement): boolean {
         if(statement == this)

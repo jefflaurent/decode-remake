@@ -13,6 +13,7 @@ var OutputStatement_1 = __importDefault(require("../../OutputStatement"));
 var SwitchStatement_1 = __importDefault(require("../../SwitchStatement"));
 var WhileStatement_1 = __importDefault(require("../../WhileStatement"));
 var Case_1 = __importDefault(require("../case/Case"));
+var Else_1 = __importDefault(require("../ifs/Else"));
 var If_1 = __importDefault(require("../ifs/If"));
 var OptionSelection = /** @class */ (function () {
     function OptionSelection(optionId, optionName, optionColor, coorX, currentX, coorY, width, height, parent) {
@@ -68,7 +69,7 @@ var OptionSelection = /** @class */ (function () {
                 if (targetStatement.level > 1)
                     return false;
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 return false;
             }
@@ -150,7 +151,7 @@ var OptionSelection = /** @class */ (function () {
                 || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 parentStatement = targetStatement;
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
@@ -162,7 +163,7 @@ var OptionSelection = /** @class */ (function () {
                 parentStatement = targetStatement.parent;
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 parentStatement = targetStatement;
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
@@ -183,7 +184,7 @@ var OptionSelection = /** @class */ (function () {
                 || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard);
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
             }
@@ -194,7 +195,7 @@ var OptionSelection = /** @class */ (function () {
                 || targetStatement instanceof OutputStatement_1.default || targetStatement instanceof InputStatement_1.default || (targetStatement instanceof ForStatement_1.default && !isInner) || (targetStatement instanceof WhileStatement_1.default && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard));
             }
-            else if (targetStatement instanceof If_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
+            else if (targetStatement instanceof If_1.default || targetStatement instanceof Else_1.default || targetStatement instanceof Case_1.default || (targetStatement instanceof ForStatement_1.default && isInner)
                 || (targetStatement instanceof WhileStatement_1.default && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard));
             }

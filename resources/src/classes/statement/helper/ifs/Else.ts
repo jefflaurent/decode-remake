@@ -35,7 +35,7 @@ class Else extends Statement {
 
     writeToCanvas(canvas: Canvas, isClose: boolean): void {
         let upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE
-        let text = 'ELSE\t\t\t\t\t\t'
+        let text = 'ELSE\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
         
         // ELSE
         let coordinate = canvas.writeText(this.level, text, this.color)

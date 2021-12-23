@@ -13,15 +13,17 @@ import Statement from "./Statement";
 class OutputStatement extends Statement { 
 
     variable: Variable | undefined = undefined
+    text: string | undefined = undefined
     isNewLine: boolean
     type: string
 
-    constructor(statementId: number, level: number, isNewLine: boolean, type: string, variable?: Variable) {
+    constructor(statementId: number, level: number, isNewLine: boolean, type: string, variable?: Variable, text?: string) {
         super(level)
         this.variable = variable
         this.statementId = this.generateId(statementId)
         this.isNewLine = isNewLine
         this.type = type
+        this.text = text
         this.color = '#f4be0b'
     }
 
@@ -42,11 +44,11 @@ class OutputStatement extends Statement {
             text += this.variable.name
         }
         else if(this.type == 'text') {
-            text += `"Hello World!"`
+            text += `"` + this.text + `"`
         }
 
-        if(this.isNewLine)
-            text += ' \n'
+        if(this.isNewLine == true)
+            text += '\t[ENTER]'
         
         return text
     }
@@ -81,7 +83,7 @@ class OutputStatement extends Statement {
         if(this.type == 'variable')
             return new ReturnClone(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, this.variable), true)
         else
-            return new ReturnClone(new OutputStatement(statementCount, this.level, this.isNewLine, this.type), true)
+            return new ReturnClone(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true)
     }
 }
 

@@ -21,13 +21,15 @@ var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
     __extends(OutputStatement, _super);
-    function OutputStatement(statementId, level, isNewLine, type, variable) {
+    function OutputStatement(statementId, level, isNewLine, type, variable, text) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
+        _this.text = undefined;
         _this.variable = variable;
         _this.statementId = _this.generateId(statementId);
         _this.isNewLine = isNewLine;
         _this.type = type;
+        _this.text = text;
         _this.color = '#f4be0b';
         return _this;
     }
@@ -45,10 +47,10 @@ var OutputStatement = /** @class */ (function (_super) {
             text += this.variable.name;
         }
         else if (this.type == 'text') {
-            text += "\"Hello World!\"";
+            text += "\"" + this.text + "\"";
         }
-        if (this.isNewLine)
-            text += ' \n';
+        if (this.isNewLine == true)
+            text += '\t[ENTER]';
         return text;
     };
     OutputStatement.prototype.createOption = function (canvas, coorX, coorY) {
@@ -75,7 +77,7 @@ var OutputStatement = /** @class */ (function (_super) {
         if (this.type == 'variable')
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, this.variable), true);
         else
-            return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type), true);
+            return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true);
     };
     return OutputStatement;
 }(Statement_1.default));

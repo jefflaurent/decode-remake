@@ -91,7 +91,7 @@ export default class OptionSelection {
                 if(targetStatement.level > 1) 
                     return false
             }
-            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+            else if(targetStatement instanceof If || targetStatement instanceof Else ||targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
                 || (targetStatement instanceof WhileStatement && isInner)) {
                 return false
             }
@@ -193,7 +193,7 @@ export default class OptionSelection {
                 || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard)
             }
-            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+            else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
                 || (targetStatement instanceof WhileStatement && isInner)) {
                 parentStatement = targetStatement
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
@@ -205,7 +205,7 @@ export default class OptionSelection {
                 parentStatement = targetStatement.parent
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard)) 
             }
-            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+            else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
                 || (targetStatement instanceof WhileStatement && isInner)) {
                 parentStatement = targetStatement
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
@@ -229,7 +229,7 @@ export default class OptionSelection {
                 || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner))) {
                 mainListStatement = this.pasteStatement(mainListStatement, targetStatement, clipboard)
             }
-            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+            else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
                 || (targetStatement instanceof WhileStatement && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
             }
@@ -240,7 +240,7 @@ export default class OptionSelection {
                 || targetStatement instanceof OutputStatement || targetStatement instanceof InputStatement || (targetStatement instanceof ForStatement && !isInner) || (targetStatement instanceof WhileStatement && !isInner)) {
                 targetStatement.parent.updateChildStatement(this.pasteStatement(targetStatement.parent.childStatement, targetStatement, clipboard)) 
             }
-            else if(targetStatement instanceof If || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+            else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
                 || (targetStatement instanceof WhileStatement && isInner)) {
                 targetStatement.updateChildStatement(this.pasteStatement(targetStatement.childStatement, undefined, clipboard))
             }

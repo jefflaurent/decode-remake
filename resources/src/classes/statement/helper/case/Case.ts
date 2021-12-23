@@ -48,9 +48,9 @@ class Case extends Statement {
         let text = ''
 
         if(!this.isDefault)
-            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t'
+            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
         else
-            text = 'DEFAULT:' + '\t\t\t\t\t\t'
+            text = 'DEFAULT:' + '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
         let coordinate = canvas.writeText(this.level, text, this.color)
         this.createOption(canvas, canvas.PADDING + (this.level * canvas.SPACE) + (this.level * canvas.LINE_HEIGHT), coordinate.y + canvas.SPACE)
         canvas.updateLastPosition()

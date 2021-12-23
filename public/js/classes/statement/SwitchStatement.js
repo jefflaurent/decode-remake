@@ -30,6 +30,10 @@ var SwitchStatement = /** @class */ (function (_super) {
         _this.init();
         return _this;
     }
+    SwitchStatement.prototype.updateCaseStatement = function (caseStatement) {
+        this.caseStatement = caseStatement;
+        this.init();
+    };
     SwitchStatement.prototype.updateChildLevel = function () {
         if (this.caseStatement != undefined)
             for (var i = 0; i < this.caseStatement.length; i++) {

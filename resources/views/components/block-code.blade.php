@@ -8,6 +8,11 @@
         <div id="collapseBlockCode" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
             <div class="accordion-body">
                 <div class="container-fluid">
+                    <!-- Error container -->
+                    <div id="bcErrorContainer">
+                        
+                    </div>
+
                     <!-- Block of Code -->
                     <div class="col-sm-12 p-2">
                         <div class="col-sm-12" id="block-code-container" style="overflow: auto">

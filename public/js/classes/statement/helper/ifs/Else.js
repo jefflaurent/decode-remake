@@ -44,7 +44,7 @@ var Else = /** @class */ (function (_super) {
     };
     Else.prototype.writeToCanvas = function (canvas, isClose) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
-        var text = 'ELSE\t\t\t\t\t\t';
+        var text = 'ELSE\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
         // ELSE
         var coordinate = canvas.writeText(this.level, text, this.color);
         // Create option button for If

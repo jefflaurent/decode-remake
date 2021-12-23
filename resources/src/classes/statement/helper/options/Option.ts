@@ -7,6 +7,7 @@ import InputStatement from "../../InputStatement"
 import OutputStatement from "../../OutputStatement"
 import Statement from "../../Statement"
 import SwitchStatement from "../../SwitchStatement"
+import WhileStatement from "../../WhileStatement"
 import OptionSelection from "./OptionSelection"
 
 class Option {
@@ -32,6 +33,7 @@ class Option {
         let splitted: string[] = optionId.split('-')
         if(this.parent instanceof IfStatement || this.parent instanceof DeclareStatement 
             || this.parent instanceof SwitchStatement || (this.parent instanceof ForStatement && splitted[splitted.length-1] == 'outer') 
+            || (this.parent instanceof WhileStatement && splitted[splitted.length-1] == 'outer') 
             || this.parent instanceof InputStatement || this.parent instanceof OutputStatement) {
             this.optionSelection = this.generateCompleteOptions()
         }

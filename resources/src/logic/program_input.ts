@@ -23,6 +23,7 @@ import Variable from '../classes/variable/Variable'
 import InputStatement from '../classes/statement/InputStatement'
 import ReturnClone from '../utilities/ReturnClone'
 import OutputStatement from '../classes/statement/OutputStatement'
+import AssignmentStatement from '../classes/statement/AssignmentStatement'
 
 $(document).ready(function() {
 
@@ -148,9 +149,10 @@ $(document).ready(function() {
         variableIndex = 0
     }
 
-    function createErrorMessage(message: string) {
+    function createErrorMessage(message: string, targetClass: string) {
         let container = $('<div></div>').addClass('col-xs-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(message)
-        $('#pcInputErrorContainer').append(container)
+        targetClass = '#' + targetClass
+        $(targetClass).append(container)
     }
 
     function insertToVariableList() {
@@ -203,14 +205,14 @@ $(document).ready(function() {
 
     function cloneStatement(statement: Statement): Statement | undefined {       
         if(statement instanceof DeclareStatement) {
-            alert('Could not copy declare statement!')
+            createErrorMessage('Could not copy declare statement!', 'bcErrorContainer')
             return undefined 
         }
         else {
             let returnClone: ReturnClone
             returnClone = statement.cloneStatement(statementCount++)
             if(returnClone.result == false) {
-                alert('Could not copy declare statement!')
+                createErrorMessage('Could not copy declare statement!', 'bcErrorContainer')
                 return undefined
             }
             else
@@ -304,7 +306,7 @@ $(document).ready(function() {
 
             if(tempSameVariableName) {
                 $('.' + declareVariableNameList[i]).addClass('input-error')
-                createErrorMessage('Variable name must be unique')
+                createErrorMessage('Variable name must be unique', 'pcInputErrorContainer')
                 return
             }
             else
@@ -312,19 +314,19 @@ $(document).ready(function() {
 
             if(!returnName.bool) {
                 $('.' + declareVariableNameList[i]).addClass('input-error')
-                createErrorMessage(returnName.message)
+                createErrorMessage(returnName.message, 'pcInputErrorContainer')
                 return
             }
 
             if(sameVariableName) {
                 $('.' + declareVariableNameList[i]).addClass('input-error')
-                createErrorMessage('Variable name has been declared before')
+                createErrorMessage('Variable name has been declared before', 'pcInputErrorContainer')
                 return
             }
 
             if(!returnValue.bool) {
                 $('.' + declareVariableValueList[i]).addClass('input-error')
-                createErrorMessage(returnValue.message)
+                createErrorMessage(returnValue.message, 'pcInputErrorContainer')
                 return
             }
         }
@@ -347,27 +349,22 @@ $(document).ready(function() {
         else if($(this).data('value') == 'long') {
             initInput('Input Long')
             listVariable = listLong
-            testing2()
         }
         else if($(this).data('value') == 'float') {
             initInput('Input Float')
             listVariable = listFloat
-            testing3()
         }
         else if($(this).data('value') == 'double') {
             initInput('Input Double')
             listVariable = listDouble
-            testing4()
         }
         else if($(this).data('value') == 'char') {
             initInput('Input Char')
             listVariable = listChar
-            testing5()
         }
         else if($(this).data('value') == 'string') {
             initInput('Input String')
             listVariable = listString
-            testing6()
         }
 
         let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
@@ -390,7 +387,7 @@ $(document).ready(function() {
         clearError()
 
         if($('#chosenVariable').find('option').filter(':selected').val() == '') {
-            createErrorMessage('Please select a variable')
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
             $('#chosenVariable').addClass('input-error')
         }
         else {
@@ -432,23 +429,27 @@ $(document).ready(function() {
             simplyPrintTemplate()
         }
         else if($(this).data('value') == 'io') {
-
+            inputOutputTemplate() 
         }
         else if($(this).data('value') == 'nestedif') {
-
+            nestedIfTemplate()
         }
         else if($(this).data('value') == 'nestedfor') {
-
+            nestedForTemplate()
         }
         else if($(this).data('value') == 'menu') {
-
+            menuTemplate()
         }
         else if($(this).data('value') == 'drawsquare') {
-
+            drawSquareTemplate()
         }
         else if($(this).data('value') == 'oddeven') {
-
+            oddEvenTemplate()
         }
+
+        finishAction()
+        restructureStatement()
+        drawCanvas()
     })
 
     function deleteVariable(variable: Variable): void {
@@ -470,7 +471,7 @@ $(document).ready(function() {
     // Click output
     $(document).on('click', '.output', function() {
         if($(this).data('value') == 'variable') {
-            testing3()
+            
         }
     })
 
@@ -531,6 +532,7 @@ $(document).ready(function() {
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', (event: any) => {
+            $('#bcErrorContainer').empty()
             const rect = canvas.getBoundingClientRect()
             let x = event.clientX - rect.left
             let y = event.clientY - rect.top
@@ -566,7 +568,7 @@ $(document).ready(function() {
                 }
                 else if(returnClick.option.optionName == 'CPY') {
                     if(returnClick.statement instanceof DeclareStatement) {
-                        alert('Could not copy declare statement!')
+                        createErrorMessage('Could not copy declare statement!', 'bcErrorContainer')
                         finishAction()
                         restructureStatement()
                         drawCanvas()
@@ -606,7 +608,7 @@ $(document).ready(function() {
             else {
                 if(statement instanceof DeclareStatement) 
                     deleteVariable(statement.variable)
-                alert('Could not add statement here')
+                createErrorMessage('Could not add statement here', 'bcErrorContainer')
                 finishAction()
             }
         }
@@ -616,12 +618,12 @@ $(document).ready(function() {
         let returnPaste: ReturnPaste
 
         if(clipboard == undefined) {
-            alert('Clipboard is empty!')
+            createErrorMessage('Clipboard is empty!', 'bcErrorContainer')
             return
         }
         
         if(clipboard.findStatement(returnClick.statement)) {
-            alert('Could not paste statement here!')
+            createErrorMessage('Could not paste statement here!', 'bcErrorContainer')
             return
         }
         
@@ -633,7 +635,7 @@ $(document).ready(function() {
             listStatement = returnPaste.listStatement
 
             if(returnPaste.result == false) {
-                alert('Could not paste statement here!')
+                createErrorMessage('Could not paste statement here!', 'bcErrorContainer')
             }    
         }
 
@@ -647,7 +649,7 @@ $(document).ready(function() {
 
         returnPaste = returnClick.option.handleDelete(listStatement, clipboard)
         if(returnPaste.result == false) {
-            alert('Variable is used on another statement!')
+            createErrorMessage('Variable is used on another statement!', 'bcErrorContainer')
         }
         else {
             if(clipboard instanceof DeclareStatement) {
@@ -676,129 +678,6 @@ $(document).ready(function() {
         }
     }
 
-    function testing() {
-        let ifStatement = new IfStatement(1, statementCount++, undefined)
-        let ifs = []
-        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt', 5), '==', new Integer('testInt2', 10), true), undefined, undefined, undefined)
-        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger', 10))
-        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger', 25))
-        let childStatements = []
-        childStatements.push(child1)
-        childStatements.push(child2)
-        firstIf.updateChildStatement(childStatements)
-
-        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt3', 10), '!=', new Integer('testInt4', 200), false), undefined, undefined, undefined)
-        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt4', 10), '!=', new Integer('testInt6', 200), false), undefined, undefined, undefined)
-
-        ifs.push(firstIf)
-        ifs.push(secondIf)
-        ifs.push(thirdIf)
-        
-        ifStatement.updateIfOperations(ifs)
-        ifStatement.writeToCanvas(blockCanvasInstance)
-
-        listStatement.push(ifStatement)
-    }
-
-    function testing2() {
-        let ifStatement = new IfStatement(1, statementCount++, undefined)
-        let ifs = []
-        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt5', 5), '==', new Integer('testInt10', 10), true), undefined, undefined, undefined)
-        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger2', 10))
-        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger2', 25))
-        let childStatements = []
-        childStatements.push(child1)
-        childStatements.push(child2)
-        firstIf.updateChildStatement(childStatements)
-
-        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt6', 10), '!=', new Integer('testInt8', 200), false), undefined, undefined, undefined)
-        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt7', 10), '!=', new Integer('testInt9', 200), false), undefined, undefined, undefined)
-
-        ifs.push(firstIf)
-        
-        ifStatement.updateIfOperations(ifs)
-
-        ifStatement.writeToCanvas(blockCanvasInstance)
-
-        listStatement.push(ifStatement)
-    }
-
-    function testing3() {
-        let temp: Statement[] = []
-        let ifStatement = new IfStatement(1, statementCount++, undefined)
-        let ifs = []
-        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt', 5), '==', new Integer('testInt2', 10), true), undefined, undefined, undefined)
-        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger', 10))
-        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger', 25))
-        let childStatements = []
-        childStatements.push(child1)
-        childStatements.push(child2)
-        firstIf.updateChildStatement(childStatements)
-
-        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt3', 10), '!=', new Integer('testInt4', 200), false), undefined, undefined, undefined)
-        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt4', 10), '!=', new Integer('testInt6', 200), false), undefined, undefined, undefined)
-
-        ifs.push(firstIf)
-        ifs.push(secondIf)
-        ifs.push(thirdIf)
-        
-        ifStatement.updateIfOperations(ifs)
-        temp.push(ifStatement)
-
-        let forStatement = new ForStatement(1, statementCount++, undefined, 
-            new Integer('testInt', 5), true, true, 1, new Condition(new Integer('testInt', 5), '<', new Integer('testInt2', 10), true))
-        
-        forStatement.updateChildStatement(temp)
-        forStatement.updateChildLevel()
-
-        forStatement.writeToCanvas(blockCanvasInstance)
-        listStatement.push(forStatement)
-    }
-
-    function testing4() {
-        let temp: Statement[] = []
-
-        let switchStatement: SwitchStatement
-        temp.push(new Case(2, statementCount++, new Condition(new Integer('tempInt', 5), '==', new Integer('tempInt2', 10), true), undefined, false))
-        temp.push(new Case(2, statementCount++, undefined, undefined, true))
-        switchStatement = new SwitchStatement(1, statementCount++, new Integer('tempInt', 5), undefined)
-        switchStatement.updateChildStatement(temp)
-
-        switchStatement.writeToCanvas(blockCanvasInstance)
-        listStatement.push(switchStatement)
-    }
-
-    function testing5() {
-        let temp: Statement[] = []  
-        let whileStatement: WhileStatement
-
-        whileStatement = new WhileStatement(1, statementCount++, true, undefined, new Condition(new Long('testLong', '15'), '<', new Long('testLong2', '500'), false), 'OR', new Condition(new Double('testDouble', '15'), '<', new Double('testDouble2', '500'), true))
-        whileStatement.writeToCanvas(blockCanvasInstance)
-        listStatement.push(whileStatement)
-    }
-
-    function testing6() {
-        let ifStatement = new IfStatement(1, statementCount++, undefined)
-        let temp = statementCount - 1
-        let ifs = []
-        let firstIf = new If(ifStatement.level, statementCount++, new Condition(new Integer('testInt5', 5), '==', new Integer('testInt10', 10), true), undefined, undefined, undefined)
-        let child1 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('myInteger2', 10))
-        let child2 = new DeclareStatement(statementCount++, firstIf.level + 1, new Integer('mySecondInteger2', 25))
-        let childStatements = []
-        childStatements.push(child1)
-        childStatements.push(child2)
-        firstIf.updateChildStatement(childStatements)
-
-        let secondIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt6', 10), '!=', new Integer('testInt8', 200), false), undefined, undefined, undefined)
-        let thirdIf = new Elif(ifStatement.level, statementCount++, new Condition(new Integer('testInt7', 10), '!=', new Integer('testInt9', 200), false), undefined, undefined, undefined)
-
-        ifs.push(firstIf)
-        ifStatement.updateIfOperations(ifs)
-        ifStatement.writeToCanvas(blockCanvasInstance)
-
-        listStatement.push(ifStatement)
-    }
-
     // Create template
     function blankTemplate(): void {
         for(let i = 0; i < listStatement.length; i++) {
@@ -806,10 +685,6 @@ $(document).ready(function() {
                 deleteVariable((listStatement[i] as DeclareStatement).variable)
         }
         listStatement = []
-
-        finishAction()
-        restructureStatement()
-        drawCanvas()
     }
 
     function declareVariableTemplate(): void {
@@ -821,17 +696,216 @@ $(document).ready(function() {
         listInteger.push(variable)
             
         handleAdd(new DeclareStatement(statementCount++, 1, variable))
-
-        finishAction()
-        restructureStatement()
-        drawCanvas()
     }
 
     function simplyPrintTemplate(): void {
-        let outputStatement = new OutputStatement(statementCount++, 1, true, 'text')
+        let outputStatement = new OutputStatement(statementCount++, 1, true, 'text', undefined, "Hello World!")
         handleAdd(outputStatement)
-        finishAction()
-        restructureStatement()
-        drawCanvas()
+    }
+
+    function inputOutputTemplate(): void {
+        let variableName = 'myNumber'
+        let variable: any
+
+        allVariableNames[variableName] = true
+        variable = new Integer(variableName, 0)
+        listInteger.push(variable)
+
+        handleAdd(new DeclareStatement(statementCount++, 1, variable))
+        handleAdd(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'Input number: '))
+        handleAdd(new InputStatement(statementCount++, 1, variable))
+        handleAdd(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'The number is: '))
+        handleAdd(new OutputStatement(statementCount++, 1, true, 'variable', variable))
+    }
+
+    function nestedIfTemplate(): void {
+        let variableName = 'myScore'
+        let variable: any
+
+        allVariableNames[variableName] = true
+        variable = new Integer(variableName, 0)
+        listInteger.push(variable)
+        handleAdd(new DeclareStatement(statementCount++, 1, variable))
+        handleAdd(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'Input score: '))
+        handleAdd(new InputStatement(statementCount++, 1, variable))
+
+        let ifStatement = new IfStatement(1, statementCount++, undefined)
+        let firstIf = new If(1, statementCount++, new Condition(variable, '<', new Integer('x', 65), true))
+        let secondIf = new Else(1, statementCount++, undefined)
+        let failInnerIf: Statement
+        let successInnerIf: Statement
+        let temp = []
+
+        failInnerIf = createIf(variable, 30, 45, ['F', 'E', 'D'])
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'You failed'))
+        temp.push(failInnerIf)
+        firstIf.updateChildStatement(temp)
+
+        successInnerIf = createIf(variable, 75, 85, ['C', 'B', 'A'])
+        temp = []
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'You passed!'))
+        temp.push(successInnerIf)
+        secondIf.updateChildStatement(temp)
+
+        let ifOperations = []
+        ifOperations.push(firstIf)
+        ifOperations.push(secondIf)
+        ifStatement.updateIfOperations(ifOperations)
+
+        handleAdd(ifStatement)
+    }
+
+    function createIf(variable: Variable, lower: number, upper: number, grades: string[]): Statement {
+        let ifStatement = new IfStatement(1, statementCount++, undefined)
+        let firstIf = new If(1, statementCount++, new Condition(variable, '<', new Integer('x', lower), true))
+        let secondIf = new Elif(1, statementCount++, new Condition(variable, '>=', new Integer('x', lower), true), 'AND', new Condition(variable, '<', new Integer('x', upper), true))
+        let thirdIf = new Else(1, statementCount, undefined)
+
+        let statements = []
+        statements.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[0]))
+        firstIf.updateChildStatement(statements)
+
+        statements = []
+        statements.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[1]))
+        secondIf.updateChildStatement(statements)
+
+        statements = []
+        statements.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'Your grade is ' + grades[2]))
+        thirdIf.updateChildStatement(statements)
+
+        let ifOperations = []
+        ifOperations.push(firstIf)
+        ifOperations.push(secondIf)
+        ifOperations.push(thirdIf)
+
+        ifStatement.updateIfOperations(ifOperations)
+
+        return ifStatement
+    }
+
+    function nestedForTemplate() {
+        let variable = new Integer('i', 0)
+        let variable2 = new Integer('j', 0)
+
+        let forStatement = new ForStatement(1, statementCount++, undefined, variable, true, true, 1, new Condition(variable, '<', new Integer('x', 2), true))
+        let nestedForStatement = new ForStatement(1, statementCount++, undefined, variable2, true, true, 1, new Condition(variable2, '<', new Integer('x', 3), true))
+        let temp = []
+
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'i: '))
+        temp.push(new OutputStatement(statementCount++, 1, true, 'variable', variable))
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'j: '))
+        temp.push(new OutputStatement(statementCount++, 1, true, 'variable', variable2))
+        nestedForStatement.updateChildStatement(temp)
+
+        temp = []
+        temp.push(nestedForStatement)
+        forStatement.updateChildStatement(temp)
+
+        handleAdd(forStatement)
+    }
+
+    function menuTemplate(): void {
+        let variable = new Integer('choice', 0)
+        allVariableNames['choice'] = true
+        listInteger.push(variable)
+
+        let declareStatement = new DeclareStatement(statementCount++, 1, variable)
+        let whileStatement = new WhileStatement(1, statementCount, false, undefined, new Condition(variable, '!=', new Integer('x', 4), true))
+        let temp = []
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "1. Print 'Hello'"))
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "2. Print 'World'"))
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "3. Print 'Lorem'"))
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "4. Exit"))
+        temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, "Choice: "))
+        temp.push(new InputStatement(statementCount++, 1, variable))
+        temp.push(createSwitchStatement(variable))
+        whileStatement.updateChildStatement(temp)
+
+        handleAdd(declareStatement)
+        handleAdd(whileStatement)
+    }
+
+    function createSwitchStatement(variable: Variable): Statement {
+        let switchStatement = new SwitchStatement(1, statementCount++, variable, undefined)
+        let temp = []
+        let caseStatements = []
+        let firstCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true), undefined, false)
+        let secondCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true), undefined, false)
+        let thirdCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true), undefined, false)
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "Hello"))
+        firstCase.updateChildStatement(temp)
+        temp = []
+
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "World"))
+        secondCase.updateChildStatement(temp)
+        temp = []
+
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "Lorem"))
+        thirdCase.updateChildStatement(temp)
+        temp = []
+        
+        caseStatements.push(firstCase)
+        caseStatements.push(secondCase)
+        caseStatements.push(thirdCase)
+
+        switchStatement.updateCaseStatement(caseStatements)
+        
+        return switchStatement
+    }
+
+    function drawSquareTemplate() {
+        let variable = new Integer('count', 0)
+        allVariableNames['count'] = true
+        listInteger.push(variable)
+
+        let i = new Integer('i', 0)
+        let j = new Integer('j', 0)
+
+        let declareStatement = new DeclareStatement(statementCount++, 1, variable)
+        let inputStatement = new InputStatement(statementCount++, 1, variable)
+
+        let forStatement = new ForStatement(1, statementCount++, undefined, i, true, true, 1, new Condition(i, '<', variable, false))
+        let nestedForStatement = new ForStatement(1, statementCount++, undefined, j, true, true, 1, new Condition(j, '<', variable, false))
+        let temp = []
+
+        temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, '*'))
+        nestedForStatement.updateChildStatement(temp)
+
+        temp = []
+        temp.push(nestedForStatement)
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, ''))
+        forStatement.updateChildStatement(temp)
+
+        handleAdd(declareStatement)
+        handleAdd(inputStatement)
+        handleAdd(forStatement)
+    }
+
+    function oddEvenTemplate() { 
+        let variable = new Integer('number', 0)
+        allVariableNames['number'] = true
+        listInteger.push(variable)
+
+        let ifStatement = new IfStatement(1, statementCount++, undefined)
+        let firstIf = new If(1, statementCount++, new Condition(variable, '==', new Integer('x', 0), true))
+        let secondIf = new If(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true))
+        let ifOperations = []
+        let temp = []
+
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'The number is an even number'))
+        firstIf.updateChildStatement(temp)
+
+        temp = []
+        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'The number is an odd number'))
+        secondIf.updateChildStatement(temp)
+
+        ifOperations.push(firstIf)
+        ifOperations.push(secondIf)
+        ifStatement.updateIfOperations(ifOperations)
+
+        handleAdd(new DeclareStatement(statementCount++, 1, variable))
+        handleAdd(new InputStatement(statementCount++, 1, variable))
+        handleAdd(new AssignmentStatement(statementCount++, 1, variable, new Integer('x', 2), '%', true))
+        handleAdd(ifStatement)
     }
 })

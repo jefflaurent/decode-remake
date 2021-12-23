@@ -20,6 +20,11 @@ class SwitchStatement extends Statement {
         this.init()
     }
 
+    updateCaseStatement(caseStatement: Statement[] | undefined): void {
+        this.caseStatement = caseStatement
+        this.init()
+    }
+
     updateChildLevel(): void {
         if(this.caseStatement != undefined)
             for(let i = 0; i < this.caseStatement.length; i++) {
