@@ -379,6 +379,8 @@ var ForStatement = /** @class */ (function (_super) {
             if (this.variable.name == variable.name)
                 return this;
         }
+        if (!this.condition.findVariable(variable))
+            return this;
         var temp = undefined;
         if (this.childStatement) {
             for (var i = 0; i < this.childStatement.length; i++) {
@@ -639,7 +641,7 @@ var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
     __extends(OutputStatement, _super);
-    function OutputStatement(statementId, level, isNewLine, type, variable, text) {
+    function OutputStatement(statementId, level, isNewLine, type, variable, text, asciiCode, escapeSequence) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
         _this.text = undefined;
@@ -648,6 +650,8 @@ var OutputStatement = /** @class */ (function (_super) {
         _this.isNewLine = isNewLine;
         _this.type = type;
         _this.text = text;
+        _this.asciiCode = asciiCode;
+        _this.escapeSequence = escapeSequence;
         _this.color = '#f4be0b';
         return _this;
     }
@@ -666,6 +670,12 @@ var OutputStatement = /** @class */ (function (_super) {
         }
         else if (this.type == 'text') {
             text += "\"" + this.text + "\"";
+        }
+        else if (this.type == 'ascii') {
+            text += "ASCII CODE " + this.asciiCode;
+        }
+        else {
+            text += "ESCAPE SEQUENCE " + "\"" + this.escapeSequence + "\"";
         }
         if (this.isNewLine == true)
             text += '\t[ENTER]';
@@ -977,6 +987,17 @@ var WhileStatement = /** @class */ (function (_super) {
             }
         }
         return undefined;
+    };
+    WhileStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        for (var i = 0; i < this.childStatement.length; i++) {
+            statementFound = this.childStatement[i].findStatement(statement);
+            if (statementFound)
+                return true;
+        }
+        return false;
     };
     WhileStatement.prototype.cloneStatement = function (statementCount) {
         var whileStatement;
@@ -2562,8 +2583,94 @@ $(document).ready(function () {
             $('#pcInputContainerLower').append(inputBtn);
         }
         else {
+            initInput('Output Text');
+            createOutputTextSelection();
         }
     });
+    function createOutputTextSelection() {
+        var row = $('<div></div>').addClass('row');
+        var leftSide = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('mb-2');
+        var rightSide = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8');
+        var listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab').attr('role', 'tablist');
+        var listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-home-list').attr('data-bs-toggle', 'list').attr('href', '#list-home').text('Text');
+        var listGroupItem2 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-profile-list').attr('data-bs-toggle', 'list').attr('href', '#list-profile').text('ASCII Code');
+        var listGroupItem3 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-messages-list').attr('data-bs-toggle', 'list').attr('href', '#list-messages').text('Escape Sequence');
+        listGroup.append(listGroupItem1);
+        listGroup.append(listGroupItem2);
+        listGroup.append(listGroupItem3);
+        leftSide.append(listGroup);
+        var tabContent = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContent');
+        var tabPane1 = $('<div></div>').addClass('tab-pane').addClass('fade').addClass('show').addClass('active').attr('id', 'list-home').attr('role', 'tabpanel');
+        var tabPane2 = $('<div></div>').addClass('tab-pane').addClass('fade').attr('id', 'list-profile').attr('role', 'tabpanel');
+        var tabPane3 = $('<div></div>').addClass('tab-pane').addClass('fade').attr('id', 'list-messages').attr('role', 'tabpanel');
+        var desc1 = $('<strong></strong>').text('Input Text');
+        var desc2 = $('<strong></strong>').text('ASCII Code');
+        var desc3 = $('<strong></strong>').text('Escape Sequence');
+        var inputText = $('<input>').attr('type', 'text').addClass('form-control').addClass('mt-2').attr('id', 'output-text-box');
+        var selectEscape = $('<select></select>').addClass('form-select').addClass('mt-2').attr('id', 'select-escape-seq');
+        selectEscape.append($('<option></option>').val('a').text('\\a'));
+        selectEscape.append($('<option></option>').val('b').text('\\b'));
+        selectEscape.append($('<option></option>').val('f').text('\\f'));
+        selectEscape.append($('<option></option>').val('n').text('\\n'));
+        selectEscape.append($('<option></option>').val('r').text('\\r'));
+        selectEscape.append($('<option></option>').val('t').text('\\t'));
+        selectEscape.append($('<option></option>').val('v').text('\\v'));
+        selectEscape.append($('<option></option>').val('bs').text("\\\\"));
+        selectEscape.append($('<option></option>').val("tick").text("\\'"));
+        selectEscape.append($('<option></option>').val("dtick").text("\\\""));
+        selectEscape.append($('<option></option>').val("qmark").text("\\?"));
+        var selectAscii = $('<select></select>').addClass('form-select').addClass('mt-2').attr('id', 'select-ascii-code');
+        for (var i = 0; i <= 255; i++)
+            selectAscii.append($('<option></option>').val(i).text(i));
+        var container1 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex');
+        var container2 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex');
+        var container3 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex');
+        var leftContainer1 = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8').addClass('d-flex').addClass('align-items-center');
+        var placeholder1 = $('<div></div>');
+        var cb1 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-text');
+        var lbl1 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-text').text('Add new line');
+        var leftContainer2 = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8').addClass('d-flex').addClass('align-items-center');
+        var placeholder2 = $('<div></div>');
+        var cb2 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-ascii');
+        var lbl2 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-ascii').text('Add new line');
+        var innerContainer1 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end');
+        var innerContainer2 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end');
+        var innerContainer3 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end');
+        var btn1 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'text');
+        var btn2 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'ascii');
+        var btn3 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'escape');
+        innerContainer1.append(btn1);
+        placeholder1.append(cb1);
+        placeholder1.append(lbl1);
+        leftContainer1.append(placeholder1);
+        container1.append(leftContainer1);
+        container1.append(innerContainer1);
+        tabPane1.append(desc1);
+        tabPane1.append(inputText);
+        tabPane1.append(container1);
+        innerContainer2.append(btn2);
+        placeholder2.append(cb2);
+        placeholder2.append(lbl2);
+        leftContainer2.append(placeholder2);
+        container2.append(leftContainer2);
+        container2.append(innerContainer2);
+        tabPane2.append(desc2);
+        tabPane2.append(selectAscii);
+        tabPane2.append(container2);
+        innerContainer3.append(btn3);
+        container3.append($('<div></div>').addClass('col-sm-8').addClass('col-xs-8'));
+        container3.append(innerContainer3);
+        tabPane3.append(desc3);
+        tabPane3.append(selectEscape);
+        tabPane3.append(container3);
+        tabContent.append(tabPane1);
+        tabContent.append(tabPane2);
+        tabContent.append(tabPane3);
+        rightSide.append(tabContent);
+        row.append(leftSide);
+        row.append(rightSide);
+        $('#pcInputContainer').append(row);
+    }
     function getAllVariables() {
         var allVariables = [];
         for (var i = 0; i < listInteger.length; i++)
@@ -2610,6 +2717,26 @@ $(document).ready(function () {
                 drawCanvas();
             }
         }
+    });
+    $(document).on('click', '#btn-submit-output', function () {
+        var output;
+        if ($(this).data('value') == 'text') {
+            var text = $('#output-text-box').val();
+            var newLine = $('#new-line-text').is(':checked');
+            output = new OutputStatement_1.default(statementCount++, 1, newLine, 'text', undefined, text);
+        }
+        else if ($(this).data('value') == 'ascii') {
+            var num = $('#select-ascii-code').find('option').filter(':selected').val();
+            var newLine = $('#new-line-ascii').is(':checked');
+            output = new OutputStatement_1.default(statementCount++, 1, newLine, 'ascii', undefined, undefined, num, undefined);
+        }
+        else {
+            var text = $('#select-escape-seq').find('option').filter(':selected').text();
+            output = new OutputStatement_1.default(statementCount++, 1, false, 'escapeseq', undefined, undefined, undefined, text);
+        }
+        handleAdd(output);
+        restructureStatement();
+        drawCanvas();
     });
     // Canvas logic
     initializeCanvas();
@@ -2737,6 +2864,8 @@ $(document).ready(function () {
             createErrorMessage('Clipboard is empty!', 'bcErrorContainer');
             return;
         }
+        console.log(clipboard);
+        console.log(returnClick.statement);
         if (clipboard.findStatement(returnClick.statement)) {
             createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
             return;
@@ -2871,9 +3000,9 @@ $(document).ready(function () {
         var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, true, true, 1, new Condition_1.default(variable, '<', new Integer_1.default('x', 2), true));
         var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, variable2, true, true, 1, new Condition_1.default(variable2, '<', new Integer_1.default('x', 3), true));
         var temp = [];
-        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'i: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'i: '));
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable));
-        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'j: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'j: '));
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable2));
         nestedForStatement.updateChildStatement(temp);
         temp = [];

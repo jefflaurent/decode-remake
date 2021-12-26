@@ -117,6 +117,17 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    WhileStatement.prototype.findStatement = function (statement) {
+        if (statement == this)
+            return true;
+        var statementFound = false;
+        for (var i = 0; i < this.childStatement.length; i++) {
+            statementFound = this.childStatement[i].findStatement(statement);
+            if (statementFound)
+                return true;
+        }
+        return false;
+    };
     WhileStatement.prototype.cloneStatement = function (statementCount) {
         var whileStatement;
         var returnClone;

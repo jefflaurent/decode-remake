@@ -21,7 +21,7 @@ var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
     __extends(OutputStatement, _super);
-    function OutputStatement(statementId, level, isNewLine, type, variable, text) {
+    function OutputStatement(statementId, level, isNewLine, type, variable, text, asciiCode, escapeSequence) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
         _this.text = undefined;
@@ -30,6 +30,8 @@ var OutputStatement = /** @class */ (function (_super) {
         _this.isNewLine = isNewLine;
         _this.type = type;
         _this.text = text;
+        _this.asciiCode = asciiCode;
+        _this.escapeSequence = escapeSequence;
         _this.color = '#f4be0b';
         return _this;
     }
@@ -48,6 +50,12 @@ var OutputStatement = /** @class */ (function (_super) {
         }
         else if (this.type == 'text') {
             text += "\"" + this.text + "\"";
+        }
+        else if (this.type == 'ascii') {
+            text += "ASCII CODE " + this.asciiCode;
+        }
+        else {
+            text += "ESCAPE SEQUENCE " + "\"" + this.escapeSequence + "\"";
         }
         if (this.isNewLine == true)
             text += '\t[ENTER]';

@@ -16,14 +16,19 @@ class OutputStatement extends Statement {
     text: string | undefined = undefined
     isNewLine: boolean
     type: string
+    asciiCode: number
+    escapeSequence: string
 
-    constructor(statementId: number, level: number, isNewLine: boolean, type: string, variable?: Variable, text?: string) {
+    constructor(statementId: number, level: number, isNewLine: boolean, type: string, 
+        variable?: Variable, text?: string, asciiCode?: number, escapeSequence?: string) {
         super(level)
         this.variable = variable
         this.statementId = this.generateId(statementId)
         this.isNewLine = isNewLine
         this.type = type
         this.text = text
+        this.asciiCode = asciiCode
+        this.escapeSequence = escapeSequence
         this.color = '#f4be0b'
     }
 
@@ -45,6 +50,12 @@ class OutputStatement extends Statement {
         }
         else if(this.type == 'text') {
             text += `"` + this.text + `"`
+        }
+        else if(this.type == 'ascii') {
+            text += "ASCII CODE " + this.asciiCode
+        }
+        else {
+            text += "ESCAPE SEQUENCE " + `"` + this.escapeSequence + `"`
         }
 
         if(this.isNewLine == true)

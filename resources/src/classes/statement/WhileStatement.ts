@@ -129,6 +129,21 @@ class WhileStatement extends Statement {
         return undefined
     }
 
+    findStatement(statement: Statement): boolean {
+        if(statement == this)
+            return true
+
+        let statementFound: boolean = false
+    
+        for(let i = 0; i < this.childStatement.length; i++) {
+            statementFound = this.childStatement[i].findStatement(statement)
+            if(statementFound)
+                return true
+        }
+
+        return false
+    }
+
     cloneStatement(statementCount: number): ReturnClone {
         let whileStatement: WhileStatement
         let returnClone: ReturnClone

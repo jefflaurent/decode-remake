@@ -105,6 +105,8 @@ var ForStatement = /** @class */ (function (_super) {
             if (this.variable.name == variable.name)
                 return this;
         }
+        if (!this.condition.findVariable(variable))
+            return this;
         var temp = undefined;
         if (this.childStatement) {
             for (var i = 0; i < this.childStatement.length; i++) {

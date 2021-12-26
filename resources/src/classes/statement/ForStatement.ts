@@ -119,6 +119,9 @@ class ForStatement extends Statement {
                 return this
         }
 
+        if(!this.condition.findVariable(variable))
+            return this
+
         let temp: Statement | undefined = undefined
 
         if(this.childStatement) {

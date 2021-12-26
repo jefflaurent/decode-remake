@@ -498,9 +498,110 @@ $(document).ready(function() {
             $('#pcInputContainerLower').append(inputBtn)
         }
         else {
-
+            initInput('Output Text')
+            createOutputTextSelection()
         }
     })
+
+    function createOutputTextSelection(): void {
+        let row = $('<div></div>').addClass('row')
+        let leftSide = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('mb-2')
+        let rightSide = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8')
+        let listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab').attr('role', 'tablist')
+        let listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-home-list').attr('data-bs-toggle', 'list').attr('href', '#list-home').text('Text')
+        let listGroupItem2 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-profile-list').attr('data-bs-toggle', 'list').attr('href', '#list-profile').text('ASCII Code')
+        let listGroupItem3 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-messages-list').attr('data-bs-toggle', 'list').attr('href', '#list-messages').text('Escape Sequence')
+
+        listGroup.append(listGroupItem1)
+        listGroup.append(listGroupItem2)
+        listGroup.append(listGroupItem3)
+        leftSide.append(listGroup)
+
+        let tabContent = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContent')
+        let tabPane1 = $('<div></div>').addClass('tab-pane').addClass('fade').addClass('show').addClass('active').attr('id', 'list-home').attr('role', 'tabpanel')
+        let tabPane2 = $('<div></div>').addClass('tab-pane').addClass('fade').attr('id', 'list-profile').attr('role', 'tabpanel')
+        let tabPane3 = $('<div></div>').addClass('tab-pane').addClass('fade').attr('id', 'list-messages').attr('role', 'tabpanel')
+
+        let desc1 = $('<strong></strong>').text('Input Text')
+        let desc2 = $('<strong></strong>').text('ASCII Code')
+        let desc3 = $('<strong></strong>').text('Escape Sequence')
+
+        let inputText = $('<input>').attr('type', 'text').addClass('form-control').addClass('mt-2').attr('id', 'output-text-box')
+        let selectEscape = $('<select></select>').addClass('form-select').addClass('mt-2').attr('id', 'select-escape-seq')
+        selectEscape.append($('<option></option>').val('a').text('\\a'))
+        selectEscape.append($('<option></option>').val('b').text('\\b'))
+        selectEscape.append($('<option></option>').val('f').text('\\f'))
+        selectEscape.append($('<option></option>').val('n').text('\\n'))
+        selectEscape.append($('<option></option>').val('r').text('\\r'))
+        selectEscape.append($('<option></option>').val('t').text('\\t'))
+        selectEscape.append($('<option></option>').val('v').text('\\v'))
+        selectEscape.append($('<option></option>').val('bs').text(`\\\\`))
+        selectEscape.append($('<option></option>').val(`tick`).text(`\\'`))
+        selectEscape.append($('<option></option>').val(`dtick`).text(`\\"`))
+        selectEscape.append($('<option></option>').val(`qmark`).text(`\\?`))
+
+        let selectAscii = $('<select></select>').addClass('form-select').addClass('mt-2').attr('id', 'select-ascii-code')
+        for(let i = 0; i <= 255; i++) 
+            selectAscii.append($('<option></option>').val(i).text(i))
+        
+        let container1 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex')
+        let container2 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex')
+        let container3 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex')
+
+        let leftContainer1 = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8').addClass('d-flex').addClass('align-items-center')
+        let placeholder1 = $('<div></div>')
+        let cb1 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-text')
+        let lbl1 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-text').text('Add new line')
+
+        let leftContainer2 = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8').addClass('d-flex').addClass('align-items-center')
+        let placeholder2 = $('<div></div>')
+        let cb2 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-ascii')
+        let lbl2 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-ascii').text('Add new line')
+
+        let innerContainer1 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end')
+        let innerContainer2 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end')
+        let innerContainer3 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end')
+
+        let btn1 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'text')
+        let btn2 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'ascii')
+        let btn3 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'escape')
+
+        innerContainer1.append(btn1)
+        placeholder1.append(cb1)
+        placeholder1.append(lbl1)
+        leftContainer1.append(placeholder1)
+        container1.append(leftContainer1)
+        container1.append(innerContainer1)
+        tabPane1.append(desc1)
+        tabPane1.append(inputText)
+        tabPane1.append(container1)
+
+        innerContainer2.append(btn2)
+        placeholder2.append(cb2)
+        placeholder2.append(lbl2)
+        leftContainer2.append(placeholder2)
+        container2.append(leftContainer2)
+        container2.append(innerContainer2)
+        tabPane2.append(desc2)
+        tabPane2.append(selectAscii)
+        tabPane2.append(container2)
+
+        innerContainer3.append(btn3)
+        container3.append($('<div></div>').addClass('col-sm-8').addClass('col-xs-8'))
+        container3.append(innerContainer3)
+        tabPane3.append(desc3)
+        tabPane3.append(selectEscape)
+        tabPane3.append(container3)
+
+        tabContent.append(tabPane1)
+        tabContent.append(tabPane2)
+        tabContent.append(tabPane3)
+        rightSide.append(tabContent)
+
+        row.append(leftSide)
+        row.append(rightSide)
+        $('#pcInputContainer').append(row)
+    }
 
     function getAllVariables(): Variable[] {
         let allVariables: Variable[] = []
@@ -554,6 +655,28 @@ $(document).ready(function() {
                 drawCanvas()
             }
         }
+    })
+
+    $(document).on('click', '#btn-submit-output', function() {
+        let output
+        if($(this).data('value') == 'text') {
+            let text = $('#output-text-box').val() as string
+            let newLine: boolean = $('#new-line-text').is(':checked')
+            output = new OutputStatement(statementCount++, 1, newLine, 'text', undefined, text)
+        }
+        else if($(this).data('value') == 'ascii') {
+            let num =  $('#select-ascii-code').find('option').filter(':selected').val() as number
+            let newLine: boolean = $('#new-line-ascii').is(':checked')
+            output = new OutputStatement(statementCount++, 1, newLine, 'ascii', undefined, undefined, num, undefined)
+        }
+        else {
+            let text = $('#select-escape-seq').find('option').filter(':selected').text()
+            output = new OutputStatement(statementCount++, 1, false, 'escapeseq', undefined, undefined, undefined, text)
+        }
+        
+        handleAdd(output)
+        restructureStatement()
+        drawCanvas()
     })
 
     // Canvas logic
@@ -702,6 +825,9 @@ $(document).ready(function() {
             createErrorMessage('Clipboard is empty!', 'bcErrorContainer')
             return
         }
+
+        console.log(clipboard)
+        console.log(returnClick.statement)
         
         if(clipboard.findStatement(returnClick.statement)) {
             createErrorMessage('Could not paste statement here!', 'bcErrorContainer')
@@ -872,14 +998,14 @@ $(document).ready(function() {
         let nestedForStatement = new ForStatement(1, statementCount++, undefined, variable2, true, true, 1, new Condition(variable2, '<', new Integer('x', 3), true))
         let temp = []
 
-        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'i: '))
+        temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'i: '))
         temp.push(new OutputStatement(statementCount++, 1, true, 'variable', variable))
-        temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, 'j: '))
+        temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'j: '))
         temp.push(new OutputStatement(statementCount++, 1, true, 'variable', variable2))
         nestedForStatement.updateChildStatement(temp)
 
         temp = []
-        temp.push(nestedForStatement)
+        temp.push(nestedForStatement)   
         forStatement.updateChildStatement(temp)
 
         handleAdd(forStatement)
