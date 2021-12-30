@@ -21,7 +21,7 @@ var Variable = /** @class */ (function () {
         else
             return new Return_1.default(true, '');
     };
-    Variable.prototype.validateValue = function () { };
+    Variable.prototype.validateValue = function () { return new Return_1.default(true, ''); };
     return Variable;
 }());
 exports.default = Variable;

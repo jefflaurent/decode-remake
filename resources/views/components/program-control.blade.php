@@ -88,10 +88,10 @@
                             <strong>Selection</strong>
                         </div>
                         <div class="col-12 d-flex justify-content-between mt-2" style="width: 100%;">
-                            <div class="col-4 d-flex justify-content-start">
+                            <div class="col-4 d-flex justify-content-start selection" data-value="if-else">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn text-center">If-Else</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-center">
+                            <div class="col-4 d-flex justify-content-center selection" data-value="switch-case">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn text-center">Switch-Case</div>
                             </div>
                             <div class="col-4 d-flex justify-content-end"></div>

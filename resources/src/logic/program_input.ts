@@ -24,6 +24,8 @@ import InputStatement from '../classes/statement/InputStatement'
 import ReturnClone from '../utilities/ReturnClone'
 import OutputStatement from '../classes/statement/OutputStatement'
 import AssignmentStatement from '../classes/statement/AssignmentStatement'
+import Return from '../utilities/Return'
+declare var bootstrap: any
 
 $(document).ready(function() {
 
@@ -52,7 +54,7 @@ $(document).ready(function() {
     // Helper Functions
     function createHint(text: string, length: number) {
         let className = "col-sm-" + length 
-        let className2 = 'col-xs-' + length
+        let className2 = 'col-' + length
         let strong = $('<strong></strong>').text(text)
         let div = $('<div></div>').addClass(className).addClass(className2).css('color', 'black').addClass('align-items-center')
         div.append(strong)
@@ -69,22 +71,22 @@ $(document).ready(function() {
     }
 
     function createWhiteSpace(length: number) { 
-        return $('<div></div>').addClass('col-sm-' + length).addClass('col-xs-' + length)
+        return $('<div></div>').addClass('col-sm-' + length).addClass('col-' + length)
     }
 
     function createDeclareDataVariable(isRequired: boolean, isNumber: boolean) {
-        let container = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12')
-        let hintContainer = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('mb-2').addClass('d-flex')
+        let container = $('<div></div>').addClass('col-sm-12').addClass('col-12')
+        let hintContainer = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('mb-2').addClass('d-flex')
         hintContainer.append(createHint('Variable Name', 5))
         hintContainer.append(createWhiteSpace(1))
         hintContainer.append(createHint('Initial Value', 5))
         
-        let inputContainer = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('mb-4').addClass('d-flex').addClass('align-items-center')
+        let inputContainer = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('mb-4').addClass('d-flex').addClass('align-items-center')
         let variableClassName = 'var-name-' + variableIndex
         let inputClassName = 'input-val-' + variableIndex
-        let container1 = $('<div></div>').addClass('col-sm-5').addClass('col-xs-5')
-        let container2 = $('<div></div>').addClass('col-sm-5').addClass('col-xs-5')
-        let container3 = $('<div></div>').addClass('col-sm-1').addClass('col-xs-1').addClass('d-flex').addClass('justify-content-center')
+        let container1 = $('<div></div>').addClass('col-sm-5').addClass('col-5')
+        let container2 = $('<div></div>').addClass('col-sm-5').addClass('col-5')
+        let container3 = $('<div></div>').addClass('col-sm-1').addClass('col-1').addClass('d-flex').addClass('justify-content-center')
         container1.append(createInputField('text').addClass(variableClassName))
         if(isNumber)
             container2.append(createInputField('number').addClass(inputClassName))
@@ -109,9 +111,9 @@ $(document).ready(function() {
 
     function createSelect(listVariable: Variable[], length: number, isAllVariable?: boolean) {
         let className = 'col-sm-' + length
-        let className2 = 'col-xs-' + length
+        let className2 = 'col-' + length
         let container = $('<div></div>').addClass(className).addClass(className2)
-        let select = $('<select></select>').addClass('form-select').addClass('col-sm-12').addClass('col-xs-12')
+        let select = $('<select></select>').addClass('form-select').addClass('col-sm-12').addClass('col-12')
         let option
 
         select.append($('<option></option>').val(null).text('Choose Variable'))
@@ -155,6 +157,15 @@ $(document).ready(function() {
 
         $('#chosenVariable').removeClass('input-error')
         $('#chosenOutputVariable').removeClass('input-error')
+
+        for(let i = 0; i < ifToBeValidated.length; i++) {
+            $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
+            $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+            $('#first-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+            $('#second-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
+            $('#second-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+            $('#second-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+        }
     }
 
     function initInput(title: string) {
@@ -169,7 +180,7 @@ $(document).ready(function() {
     }
 
     function createErrorMessage(message: string, targetClass: string) {
-        let container = $('<div></div>').addClass('col-xs-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(message)
+        let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(message)
         targetClass = '#' + targetClass
         $(targetClass).append(container)
     }
@@ -284,12 +295,12 @@ $(document).ready(function() {
         }
 
         let btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-                    addClass('col-xs-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable')
+                    addClass('col-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable')
         let createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                            addClass('col-xs-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create')
+                            addClass('col-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create')
 
         $('#pcInputContainerLower').append(btn)
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-xs-7'))
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-7'))
         $('#pcInputContainerLower').append(createBtn)
     })
 
@@ -395,9 +406,9 @@ $(document).ready(function() {
         $('#pcInputContainer').append(container)
 
         let inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                            addClass('col-xs-2').attr('id', 'inputVariableBtn').data('value', $(this).data('value')).text('Select')
+                            addClass('col-2').attr('id', 'inputVariableBtn').data('value', $(this).data('value')).text('Select')
 
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'))
+        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-10'))
         $('#pcInputContainerLower').append(inputBtn)
     })
 
@@ -478,6 +489,15 @@ $(document).ready(function() {
             listString.splice(listString.indexOf(variable), 1)
     }
 
+    function findVariable(variableName: string): Variable | undefined {
+        let tempList = getAllVariables()
+        for(let i = 0; i < tempList.length; i++)
+            if(tempList[i].name == variableName)
+                return tempList[i]
+        
+        return undefined
+    }
+
     // Click output
     $(document).on('click', '.output', function() {
         if($(this).data('value') == 'variable') {
@@ -492,9 +512,9 @@ $(document).ready(function() {
             $('#pcInputContainer').append(container)
 
             let inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                                addClass('col-xs-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select')
+                                addClass('col-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select')
 
-            $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-xs-10'))
+            $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-10'))
             $('#pcInputContainerLower').append(inputBtn)
         }
         else {
@@ -505,8 +525,8 @@ $(document).ready(function() {
 
     function createOutputTextSelection(): void {
         let row = $('<div></div>').addClass('row')
-        let leftSide = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('mb-2')
-        let rightSide = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8')
+        let leftSide = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('mb-2')
+        let rightSide = $('<div></div>').addClass('col-sm-8').addClass('col-8')
         let listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab').attr('role', 'tablist')
         let listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-home-list').attr('data-bs-toggle', 'list').attr('href', '#list-home').text('Text')
         let listGroupItem2 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-profile-list').attr('data-bs-toggle', 'list').attr('href', '#list-profile').text('ASCII Code')
@@ -518,9 +538,9 @@ $(document).ready(function() {
         leftSide.append(listGroup)
 
         let tabContent = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContent')
-        let tabPane1 = $('<div></div>').addClass('tab-pane').addClass('fade').addClass('show').addClass('active').attr('id', 'list-home').attr('role', 'tabpanel')
-        let tabPane2 = $('<div></div>').addClass('tab-pane').addClass('fade').attr('id', 'list-profile').attr('role', 'tabpanel')
-        let tabPane3 = $('<div></div>').addClass('tab-pane').addClass('fade').attr('id', 'list-messages').attr('role', 'tabpanel')
+        let tabPane1 = $('<div></div>').addClass('tab-pane fade show active').attr('id', 'list-home').attr('role', 'tabpanel')
+        let tabPane2 = $('<div></div>').addClass('tab-pane fade').attr('id', 'list-profile').attr('role', 'tabpanel')
+        let tabPane3 = $('<div></div>').addClass('tab-pane fade').attr('id', 'list-messages').attr('role', 'tabpanel')
 
         let desc1 = $('<strong></strong>').text('Input Text')
         let desc2 = $('<strong></strong>').text('ASCII Code')
@@ -544,23 +564,23 @@ $(document).ready(function() {
         for(let i = 0; i <= 255; i++) 
             selectAscii.append($('<option></option>').val(i).text(i))
         
-        let container1 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex')
-        let container2 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex')
-        let container3 = $('<div></div>').addClass('col-sm-12').addClass('col-xs-12').addClass('d-flex')
+        let container1 = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('d-flex')
+        let container2 = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('d-flex')
+        let container3 = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('d-flex')
 
-        let leftContainer1 = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8').addClass('d-flex').addClass('align-items-center')
+        let leftContainer1 = $('<div></div>').addClass('col-sm-8').addClass('col-8').addClass('d-flex').addClass('align-items-center')
         let placeholder1 = $('<div></div>')
         let cb1 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-text')
         let lbl1 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-text').text('Add new line')
 
-        let leftContainer2 = $('<div></div>').addClass('col-sm-8').addClass('col-xs-8').addClass('d-flex').addClass('align-items-center')
+        let leftContainer2 = $('<div></div>').addClass('col-sm-8').addClass('col-8').addClass('d-flex').addClass('align-items-center')
         let placeholder2 = $('<div></div>')
         let cb2 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-ascii')
         let lbl2 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-ascii').text('Add new line')
 
-        let innerContainer1 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end')
-        let innerContainer2 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end')
-        let innerContainer3 = $('<div></div>').addClass('col-sm-4').addClass('col-xs-4').addClass('d-flex').addClass('justify-content-end')
+        let innerContainer1 = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('d-flex').addClass('justify-content-end')
+        let innerContainer2 = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('d-flex').addClass('justify-content-end')
+        let innerContainer3 = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('d-flex').addClass('justify-content-end')
 
         let btn1 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'text')
         let btn2 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'ascii')
@@ -587,7 +607,7 @@ $(document).ready(function() {
         tabPane2.append(container2)
 
         innerContainer3.append(btn3)
-        container3.append($('<div></div>').addClass('col-sm-8').addClass('col-xs-8'))
+        container3.append($('<div></div>').addClass('col-sm-8').addClass('col-8'))
         container3.append(innerContainer3)
         tabPane3.append(desc3)
         tabPane3.append(selectEscape)
@@ -602,6 +622,493 @@ $(document).ready(function() {
         row.append(rightSide)
         $('#pcInputContainer').append(row)
     }
+
+    let ifCount: number = 1
+    let ifToBeValidated: number[] = []
+    let isElsed: boolean = false
+
+    $(document).on('click', '.selection', function() {
+        if($(this).data('value') == 'if-else') {
+            initInput('Selection Properties')
+            createIfSelection()
+        }
+        else {
+
+        }
+    })
+
+    function createAddSelectionButton(text: string) {
+        let container = $('<div></div>').addClass('btn d-flex align-items-center justify-content-center bg-success p-2 text-white bg-opacity-75 p-2 mt-2')
+        let icon = $('<i></i>').addClass('fas fa-plus me-2')
+        let word = $('<div></div>').text(text)
+
+        container.append(icon)
+        container.append(word)
+        
+        return container
+    }
+
+    function createIfSelection() {
+        let row = $('<div></div>').addClass('row')
+        let leftSide = $('<div></div>').addClass('col-sm-4 col-4 mb-2')
+        let rightSide = $('<div></div>').addClass('col-sm-8 col-8 if-properties-container-' + ifCount)
+        let listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab-if').attr('role', 'tablist')
+        let listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-if-1').attr('data-bs-toggle', 'list').attr('href', '#list-1').text('If')
+        let addElseIfBtn = createAddSelectionButton('Else If').addClass('additional-if').data('value', 'elif')
+        let addElseBtn = createAddSelectionButton('Else').addClass('additional-if').data('value', 'else')
+        let tab = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContentIf')
+        let tabContent = createNewIfTab()
+
+        listGroup.append(listGroupItem1)
+        leftSide.append(listGroup)
+        leftSide.append(addElseIfBtn)
+        leftSide.append(addElseBtn)
+
+        tabContent.append(createIfPropertiesInput(true))
+        tab.append(tabContent)
+        rightSide.append(tab)
+
+        let createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'createIfStatementButton').text('Create')
+        let container = $('<div></div>').addClass('d-flex justify-content-end p-2 col-sm-12 col-12')
+        container.append($('<div></div>').addClass('col-sm-10 col-10'))
+        container.append(createBtn)
+
+        row.append(leftSide)
+        row.append(rightSide)
+        $('#pcInputContainer').append(row)
+        $('#pcInputContainerLower').append(container)
+
+        ifToBeValidated.push(ifCount)
+        ifCount++
+    }
+
+    function createNewIfTab() {
+        let id = 'list-' + ifCount
+        let tabPane = $('<div></div>').addClass('tab-pane fade show').attr('id', id).attr('role', 'tabpanel') 
+        if(ifCount == 1)
+            tabPane.addClass('active')
+
+        return tabPane
+    }
+
+    $(document).on('click', '.additional-if', function() {
+        clearError()
+        if($(this).data('value') == 'elif') {
+            if(!isElsed) {
+                ifToBeValidated.push(ifCount)
+                $('#list-tab-if').append(createNewTab('Else If').data('value', 'elif'))
+                let ifInputProperties = createIfPropertiesInput(true)
+                let tabContent = createNewIfTab()
+                tabContent.append(ifInputProperties)
+                $('#nav-tabContentIf').append(tabContent)
+                ifCount++
+            }
+            else
+                createErrorMessage('Could not add else if after else!', 'pcInputErrorContainer')
+        }
+        else {
+            if(!isElsed) {
+                $('#list-tab-if').append(createNewTab('Else').data('value', 'else'))
+                isElsed = true
+            }
+            else 
+                createErrorMessage('Could not add else after else!', 'pcInputErrorContainer')
+        }
+    })
+
+    function createNewTab(text: string) {
+        let a = $('<a></a>').addClass('list-group-item list-group-item-action d-flex justify-content-between align-items-center').attr('data-bs-toggle', 'list').attr('id', 'list-if-' + ifCount).attr('href', '#list-' + ifCount)
+        let word = $('<div></div>').text(text)
+        let i = $('<i></i>').addClass('fas fa-trash delete-if-stmnt').css('color', 'red').data('value', ifCount)
+        a.append(word)
+        a.append(i)
+
+        return a
+    }
+
+    $(document).on('click', '.delete-if-stmnt', function() {
+        let targetId = $(this).data('value')
+        if($('#list-if-' + targetId).data('value') == 'else')
+            isElsed = false
+        $('#list-' + targetId).remove();
+        $('#list-if-' + targetId).remove();
+
+        if($('#list-1').hasClass('active') == true) {
+            ($(`#list-tab-if a[href="#list-1"]`) as any).tab('show');
+        }
+
+        let targetIdx = ifToBeValidated.indexOf(targetId)
+        ifToBeValidated.splice(targetIdx, 1)
+    })
+
+    $(document).on('click', '.delete-additional-condition', function() {
+        let targetId = $(this).data('value')
+        
+        $('#first-if-input-box-' + targetId).append(createAddSelectionButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', targetId))
+        $('#second-if-input-box-' + targetId).remove()
+    })
+
+    // continue here
+
+    $(document).on('click', '#createIfStatementButton', function() {
+        clearError()
+        let ifStatements: Statement[] = []
+        let tempStatement: Statement | undefined = undefined
+        let proceed: boolean = true
+
+        console.log('everything that needs to be checked')
+        
+        for(let i = 0; i < ifToBeValidated.length; i++) {
+            console.log(ifToBeValidated[i])
+            tempStatement = handleIfStatementValidation(ifToBeValidated[i])
+            if(tempStatement != undefined) {
+                ifStatements.push(tempStatement)
+                tempStatement = undefined
+            }
+            else {
+                proceed = false
+                break
+            }
+        }
+
+        for(let i = 0; i < ifStatements.length; i++) {
+            console.log(ifStatements[i])
+        }
+
+        if(proceed == true) {
+            console.log('masuk sini bos')
+            let ifStatement = new IfStatement(1, statementCount++, undefined)
+            if(isElsed)
+                ifStatements.push(new Else(1, statementCount))
+            
+            ifStatement.updateIfOperations(ifStatements)
+
+            handleAdd(ifStatement)
+            drawCanvas()
+        }
+    })
+
+    function handleIfStatementValidation(index: number): Statement | undefined {
+        let logicalOperatorClassName = 'lo-if-' + index
+        console.log(logicalOperatorClassName)
+        let isAdditionalCondition = $("input[type='radio'][name='" + logicalOperatorClassName + "']:checked").val() == undefined ? false : true
+        let operators = ['==', '!=', '<', '>', '<=', '>=']
+        let logicalOperators = ['AND', 'OR']
+        
+        let firstVariableId1 = '#first-if-select-first-variable-' + index
+        let firstOperatorClassName = 'op-first-' + index
+        let isFirstVariable = $('#first-if-input-second-variable-' + index).val() == undefined ? true : false
+        let secondVariableId1
+
+        if(isFirstVariable)
+            secondVariableId1 = '#first-if-select-second-variable-'+ index
+        else
+            secondVariableId1 = '#first-if-input-second-variable-'+ index
+
+        let firstTemp = validateIfStatementInput(firstVariableId1, secondVariableId1, isFirstVariable)
+
+        if(firstTemp == undefined)
+            return undefined
+
+        let firstRadio = $("input[type='radio'][name='" + firstOperatorClassName + "']")
+        let firstCheckedIdx = -1
+        for(let i = 0; i < firstRadio.length; i++) {
+            if((firstRadio[i] as any).checked == true) {
+                firstCheckedIdx = i 
+                break
+            }
+        }
+
+        console.log(isAdditionalCondition)
+
+        if(!isAdditionalCondition) {
+            if(index == 1)
+                return new If(1, statementCount++, new Condition(firstTemp[0], operators[firstCheckedIdx], firstTemp[1], !isFirstVariable))
+            else 
+                return new Elif(1, statementCount++, new Condition(firstTemp[0], operators[firstCheckedIdx], firstTemp[1], !isFirstVariable))
+        }
+
+        let firstVariableId2 = '#second-if-select-first-variable-' + index
+        let secondOperatorClassName = 'op-second-' + index
+        let isSecondVariable = $('#second-if-input-second-variable-' + index).val() == undefined ? true : false
+        let secondVariableId2
+
+        if(isSecondVariable)
+            secondVariableId2 = '#second-if-select-second-variable-'+ index
+        else
+            secondVariableId2 = '#second-if-input-second-variable-'+ index
+
+        let secondTemp = validateIfStatementInput(firstVariableId2, secondVariableId2, isSecondVariable)
+
+        if(secondTemp == undefined)
+            return undefined
+
+        let logicalRadio = $("input[type='radio'][name='" + logicalOperatorClassName + "']")
+        let logicalCheckedIdx = -1
+        for(let i = 0; i < logicalRadio.length; i++) {
+            if((logicalRadio[i] as any).checked == true) {
+                logicalCheckedIdx = i 
+                break
+            }
+        }
+
+        console.log(secondOperatorClassName)
+        let secondRadio = $("input[type='radio'][name='" + secondOperatorClassName + "']")
+        let secondCheckedIdx = -1
+        for(let i = 0; i < secondRadio.length; i++) {
+            if((secondRadio[i] as any).checked == true) {
+                secondCheckedIdx = i 
+                break
+            }
+        }
+
+        if(index == 1)
+            return new If(1, statementCount++, new Condition(firstTemp[0], operators[firstCheckedIdx], firstTemp[1], !isFirstVariable), logicalOperators[logicalCheckedIdx], new Condition(secondTemp[0], operators[secondCheckedIdx], secondTemp[1], !isSecondVariable))
+        else 
+            return new Elif(1, statementCount++, new Condition(firstTemp[0], operators[firstCheckedIdx], firstTemp[1], !isFirstVariable), logicalOperators[logicalCheckedIdx], new Condition(secondTemp[0], operators[secondCheckedIdx], secondTemp[1], !isSecondVariable))
+    }
+
+    function validateIfStatementInput(firstValue: string, secondValue: string, isVariable: boolean): Variable[] | undefined {         
+        let firstVariable = findVariable($(firstValue).find('option').filter(':selected').val() as string)
+        let secondVariable = undefined
+        let listVariable = []
+
+        if(firstVariable == undefined) {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+            $(firstValue).addClass('input-error')
+            return undefined 
+        }
+        
+        if(isVariable) {
+            secondVariable = findVariable($(secondValue).find('option').filter(':selected').val() as string)
+            if(secondVariable == undefined) {
+                createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+                $(secondValue).addClass('input-error')
+                return undefined 
+            }
+        }
+        else {
+            secondVariable = createVariableFromValue($(secondValue).val() as string)
+
+            let res: Return
+            res = secondVariable.validateValue()
+
+            if(!res.bool) {
+                createErrorMessage(res.message, 'pcInputErrorContainer')
+                $(secondValue).addClass('input-error')
+                return undefined 
+            }
+        }
+
+        if((firstVariable instanceof String && !(secondVariable instanceof String)) 
+            || (secondVariable instanceof String && !(firstVariable instanceof String))) {
+            if(firstVariable instanceof String)
+                $(firstValue).addClass('input-error')
+            else
+                $(secondValue).addClass('input-error')
+
+            createErrorMessage('Could not compare other data type with String', 'pcInputErrorContainer')
+            
+            return undefined
+        }
+
+        listVariable.push(firstVariable)
+        listVariable.push(secondVariable)
+
+        return listVariable
+    }
+
+    function createVariableFromValue(value: string): Variable {
+        let isNumeric = $.isNumeric(value)
+
+        if(isNumeric) {
+            if(value.includes('.'))
+                return new Double('placeholder', value)
+            else
+                return new Long('placeholder', value)
+        }
+        else {
+            if(value.length == 1)
+                return new Char('placeholder', value)
+            else
+                return new String('placeholder', value)
+        }
+    }
+
+    function createIfPropertiesInput(isRequired: boolean, customIfCount?: number) {
+        let boxId = isRequired ? 'first-if-input-box-' + ifCount : 'second-if-input-box-' + customIfCount
+        let dataValue = isRequired ? ifCount : customIfCount
+        let divContainer 
+        if(isRequired)
+            divContainer = $('<div></div>').addClass('p-2').attr('id', boxId)
+        else
+            divContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light').attr('id', boxId)
+        
+        let heading1 = $('<strong></strong>').text('Variable')
+        let listVariable: Variable[] = getAllVariables()
+        let firstSelectId = isRequired ? 'first-if-select-first-variable-' + ifCount : 'second-if-select-first-variable-' + customIfCount
+        let firstSelect = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', firstSelectId)
+        
+        let heading2 = $('<strong></strong>').text('Operator')
+        let firstRadioSelection = createOperatorRadioSelection(isRequired, dataValue)
+
+        let heading3 = $('<strong></strong>').text('Value Type')
+        let valueTypeSelectClassName = isRequired ? 'first-value-type-select' : 'second-value-type-select'
+        
+        let valueTypeSelect = $('<select></select>').addClass('form-select mb-2').addClass(valueTypeSelectClassName).data('value', dataValue)
+        valueTypeSelect.append($('<option></option>').val('variable').text('Variable'))
+        valueTypeSelect.append($('<option></option>').val('custom').text('Custom Value'))
+
+        let heading4 = $('<strong></strong>').text('Value')
+        let secondSelectContainerClassName = isRequired ? 'first-second-value-container-' + ifCount : 'second-second-value-container-' + customIfCount
+        let secondSelectContainer = $('<div></div>').addClass(secondSelectContainerClassName)
+        
+        let secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + ifCount
+        let secondSelect = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', secondSelectId)
+        secondSelectContainer.append(secondSelect)
+
+        if(!isRequired) {
+            divContainer.append(createLogicalOperatorHeader(dataValue))
+            divContainer.append(createLogicalOperatorSelection(dataValue))
+        }
+        divContainer.append(heading1)
+        divContainer.append(firstSelect)
+        divContainer.append(heading2)
+        divContainer.append(firstRadioSelection)
+        divContainer.append(heading3)
+        divContainer.append(valueTypeSelect)
+        divContainer.append(heading4)
+        divContainer.append(secondSelectContainer)
+
+        if(isRequired) {
+            divContainer.append(createAddSelectionButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', ifCount))
+        }
+        
+        return divContainer
+    }
+
+    function createLogicalOperatorHeader(dataValue: number) {
+        let container = $('<div></div>').addClass('d-flex justify-content-between align-items-center')
+        let strong = $('<strong></strong>').text('Logical Operator')
+        let i = $('<i></i>').addClass('fas fa-trash delete-additional-condition').css('color', 'red').data('value', dataValue)
+        container.append(strong)
+        container.append(i)
+
+        return container
+    }
+
+    function createLogicalOperatorSelection(dataValue: number) {
+        let container = $('<div></div>').addClass('col-12 col-sm-12 d-flex align-items-center mb-4 mt-2')
+        let firstRadioContainer = $('<div></div>').addClass('col-4 col-sm-4 d-flex align-items-center justify-content-start')
+        let secondRadioContainer = $('<div></div>').addClass('col-4 col-sm-4 d-flex align-items-center justify-content-start')
+        let radioName = 'lo-if-' + dataValue
+        let firstRadio = $('<input>').addClass('me-2').attr('name', radioName).attr('type', 'radio').attr('checked', 'true')
+        let firstRadioDesc = $('<strong></strong>').text('AND')
+        let secondRadio = $('<input>').addClass('me-2').attr('name', radioName).attr('type', 'radio')
+        let secondRadioDesc = $('<strong></strong>').text('OR')
+        let separator1 = $('<div></div>').addClass('col-1 col-sm-1')
+        let separator2 = $('<div></div>').addClass('col-3 col-sm-3')
+
+        firstRadioContainer.append(firstRadio)
+        firstRadioContainer.append(firstRadioDesc)
+        secondRadioContainer.append(secondRadio)
+        secondRadioContainer.append(secondRadioDesc)
+        
+        container.append(firstRadioContainer)
+        container.append(separator1)
+        container.append(secondRadioContainer)
+        container.append(separator2)
+
+        return container
+    }
+
+    function createOperatorRadioSelection(isRequired: boolean, customIfCount?: number) {
+        let dataValue = isRequired ? ifCount : customIfCount
+
+        let container = $('<div></div>').addClass('col-12 col-sm-12 d-flex align-items-center mb-2 mt-2')
+        let radioContainer1 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer2 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer3 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer4 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer5 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer6 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let word1 = $('<div></div>').text('==')
+        let word2 = $('<div></div>').text('!=')
+        let word3 = $('<div></div>').text('<')
+        let word4 = $('<div></div>').text('>')
+        let word5 = $('<div></div>').text('<=')
+        let word6 = $('<div></div>').text('>=')
+
+        let className: string
+        if(isRequired)
+            className = 'op-first-' + dataValue
+        else
+            className = 'op-second-' + dataValue
+
+        radioContainer1.append($('<input>').attr('type', 'radio').attr('name', className).attr('checked', 'true'))
+        radioContainer1.append(word1)
+        radioContainer2.append($('<input>').attr('type', 'radio').attr('name', className))
+        radioContainer2.append(word2)
+        radioContainer3.append($('<input>').attr('type', 'radio').attr('name', className))
+        radioContainer3.append(word3)
+        radioContainer4.append($('<input>').attr('type', 'radio').attr('name', className))
+        radioContainer4.append(word4)
+        radioContainer5.append($('<input>').attr('type', 'radio').attr('name', className))
+        radioContainer5.append(word5)
+        radioContainer6.append($('<input>').attr('type', 'radio').attr('name', className))
+        radioContainer6.append(word6)
+
+        container.append(radioContainer1)
+        container.append(radioContainer2)
+        container.append(radioContainer3)
+        container.append(radioContainer4)
+        container.append(radioContainer5)
+        container.append(radioContainer6)
+
+        return container
+    }
+
+    $(document).on('click', '.add-if-condition-btn', function() {
+        let targetId = $(this).data('value')
+        console.log('ini data value')
+        console.log(targetId)
+        let targetContainerClass = '#list-' + targetId
+        
+        $('#first-if-input-box-' + targetId).children().last().remove();
+        $(targetContainerClass).append(createIfPropertiesInput(false, targetId))
+    })
+
+    $(document).on('change', '.first-value-type-select', function() {
+        let targetId = $(this).data('value')
+        $('.first-second-value-container-' + targetId).empty()
+        let type = $(this).find('option').filter(':selected').val()
+
+        if(type == 'custom') {
+            let input = createInputField('text').addClass('mb-2').attr('id', 'first-if-input-second-variable-' + targetId)
+            $('.first-second-value-container-' + targetId).append(input)
+        }
+        else {
+            let listVariable = getAllVariables()
+            let select = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', 'first-if-select-second-variable-' + targetId)
+            $('.first-second-value-container-' + targetId).append(select)
+        }
+    })
+
+    $(document).on('change', '.second-value-type-select', function() {
+        let targetId = $(this).data('value')
+        $('.second-second-value-container-' + targetId).empty()
+        let type = $(this).find('option').filter(':selected').val()
+
+        if(type == 'custom') {
+            let input = createInputField('text').addClass('mb-2').attr('id', 'second-if-input-second-variable-' + targetId)
+            $('.second-second-value-container-' + targetId).append(input)
+        }
+        else {
+            let listVariable = getAllVariables()
+            let select = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', 'second-if-select-second-variable-' + targetId)
+            $('.second-second-value-container-' + targetId).append(select)
+        }
+    })
 
     function getAllVariables(): Variable[] {
         let allVariables: Variable[] = []

@@ -23,6 +23,6 @@ export default class Variable {
             return new Return(true, '')
     }
 
-    validateValue() {}
+    validateValue(): Return { return new Return(true, '') }
 
 }
