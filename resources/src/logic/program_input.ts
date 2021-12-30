@@ -155,8 +155,12 @@ $(document).ready(function() {
         for(let varValue of declareVariableValueList)
             $('.' + varValue).removeClass('input-error')
 
+        for(let i = 0; i < caseToBeValidated.length; i++) 
+            $('.' + caseToBeValidated[i]).removeClass('input-error')
+
         $('#chosenVariable').removeClass('input-error')
         $('#chosenOutputVariable').removeClass('input-error')
+        $('#chosenSwitchVariable').removeClass('input-error')
 
         for(let i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
@@ -633,11 +637,12 @@ $(document).ready(function() {
             createIfSelection()
         }
         else {
-
+            initInput('Switch Properties')
+            createSwitchSelection()
         }
     })
 
-    function createAddSelectionButton(text: string) {
+    function createGreenButton(text: string) {
         let container = $('<div></div>').addClass('btn d-flex align-items-center justify-content-center bg-success p-2 text-white bg-opacity-75 p-2 mt-2')
         let icon = $('<i></i>').addClass('fas fa-plus me-2')
         let word = $('<div></div>').text(text)
@@ -648,14 +653,217 @@ $(document).ready(function() {
         return container
     }
 
+    function createSwitchSelection() {
+        let listVariable: Variable[] = []
+        listVariable = getSelectedVariables('switch')
+
+        let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
+        let select = createSelect(listVariable, 7, true).attr('id', 'chosenSwitchVariable')
+
+        container.append(createHint('Variable Name', 5))
+        container.append(select)
+        container.addClass('mb-3')
+
+        let allCaseContainer = $('<div></div>').addClass('all-case-container')
+        $('#pcInputContainer').append(container)
+        $('#pcInputContainer').append(allCaseContainer)
+
+
+        createAdditionalSwitchButton()
+    }
+
+    let caseToBeValidated: string[] = []
+    let caseCount: number = 1
+    let isDefaulted: boolean = false
+
+    $(document).on('click', '#createSwitchCaseBtn', function() {
+        clearError()
+        let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
+        if(variableName == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+        }
+        else {
+            let variable = findVariable(variableName)
+            createCaseStatement(variable)
+        }
+    })
+
+    function createCaseStatement(variable: Variable) {
+        let value: string = ''
+        let tempVariable: Variable | undefined = undefined
+        let proceed: boolean = true
+        let caseStatement: Statement[] = []
+        let result: Return
+        let className: string = ''
+        
+        for(let i = 0 ; i < caseToBeValidated.length; i++) {
+            className = '.' + caseToBeValidated[i]
+            value = $(className).val() as string
+            console.log(className)
+            console.log(value)
+            if(value == undefined) {
+                $(className).addClass('input-error')
+                createErrorMessage('Field cannot be empty!', 'pcInputErrorContainer')
+                proceed = false
+                break
+            }
+
+            tempVariable = createVariableFromValue(value)
+            
+            if(tempVariable instanceof String) {
+                $(className).addClass('input-error')
+                createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer')
+                proceed = false
+                break
+            }
+
+            result = tempVariable.validateValue()
+            if(!result.bool) {
+                $(className).addClass('input-error')
+                createErrorMessage(result.message, 'pcInputErrorContainer')
+                proceed = false
+                break
+            }
+
+            caseStatement.push(new Case(1, statementCount++, new Condition(variable, '==', tempVariable, true), undefined, false))
+        }
+
+        if(proceed) {
+            if(isDefaulted) {
+                caseStatement.push(new Case(1, statementCount++, new Condition(variable, '==', variable, true), undefined, true))
+            }
+            let switchStatement = new SwitchStatement(1, statementCount++, variable, undefined)
+            switchStatement.updateCaseStatement(caseStatement)
+            handleAdd(switchStatement)
+            drawCanvas()
+        }
+    }
+
+    $(document).on('change', '#chosenSwitchVariable', function() {
+        clearError()
+        $('.all-case-container').empty()
+        caseToBeValidated = []
+        isDefaulted = false
+        caseCount = 1
+
+        let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
+        if(variableName != '') {
+            let variable = findVariable(variableName)
+            createCaseStatementInput(true, false, variable)
+        }
+    })
+
+    $(document).on('click', '.add-additional-case-btn', function() {
+        clearError()
+        if(!isDefaulted) {
+            let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
+            if(variableName == '') {
+                $('#chosenSwitchVariable').addClass('input-error')
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            }
+            else {
+                let variable = findVariable(variableName)
+                createCaseStatementInput(false, false, variable)
+            }
+        }
+        else {
+            createErrorMessage('Could not add Case after Default' ,'pcInputErrorContainer')
+        }
+    })
+
+    $(document).on('click', '.add-default-btn', function() {
+        clearError()
+        if(!isDefaulted) {
+            let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
+            if(variableName == '') {
+                $('#chosenSwitchVariable').addClass('input-error')
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            }
+            else {
+                let variable = findVariable(variableName)
+                createCaseStatementInput(false, true, variable)
+                isDefaulted = true
+            }
+        }
+        else {
+            createErrorMessage('Could not add more Default' ,'pcInputErrorContainer')
+        }
+    })
+
+    $(document).on('click', '.rmCase', function() {
+        clearError()
+        let targetId = $(this).data('value')
+        let targetClass = '.additional-case-container-' + targetId
+        let idx = caseToBeValidated.indexOf('case-input-' + targetId)
+        caseToBeValidated.splice(idx, 1)
+        if($(targetClass).find('div').find('strong').text() == 'Default:')
+            isDefaulted = false
+        $(targetClass).remove()
+    })
+
+    function createCaseStatementInput(isRequired: boolean, isDefault: boolean, variable: Variable) {
+        let className = 'additional-case-container-' + caseCount
+        let inputClassName = 'case-input-' + caseCount
+        let container = $('<div></div>').addClass('col-sm-12 col-12 mb-2 d-flex justify-content-center align-items-center ' + className)
+        let startContainer = $('<div></div>').addClass('col-sm-2 col-2 d-flex justify-content-end')
+        let leftContainer = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-center').text(variable.name)
+        let mid = $('<div></div>').addClass('col-sm-1 col-1 d-flex align-items-center').text('==')
+        let rightContainer = $('<div></div>').addClass('col-sm-3 col-3')
+        let textField = $('<input>').attr('type', 'text').addClass('form-control ' + inputClassName)
+        let endContainer = $('<div></div>').addClass('col-sm-1 col-1 d-flex justify-content-center')
+        let buttonClose = $('<button></button>').addClass('btn-close rmCase').data('value', caseCount++)
+
+        if(!isDefault) {
+            startContainer.append($('<strong></strong>').text('Case:'))
+            caseToBeValidated.push(inputClassName)
+        }
+        else {
+            startContainer.append($('<strong></strong>').text('Default:'))
+            textField.attr('disabled', 'true')
+        }
+        if(!isRequired)
+            endContainer.append(buttonClose)
+
+        rightContainer.append(textField)
+        container.append(startContainer)
+        container.append(leftContainer)
+        container.append(mid)
+        container.append(rightContainer)
+        container.append(endContainer)
+
+        $('.all-case-container').append(container)
+    }
+
+    function createAdditionalSwitchButton() {
+        let addCaseBtn = createGreenButton('Case').addClass('col-sm-3 col-3 add-additional-case-btn')
+        let addDefault = createGreenButton('Default').addClass('col-sm-3 col-3 add-default-btn')
+        let inputBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2')
+                            .attr('id', 'createSwitchCaseBtn').text('Create')
+        
+        let upperContainer = $('<div></div>').addClass('col-sm-12 col-12')
+        upperContainer.append(addCaseBtn)
+        upperContainer.append($('<div></div>').addClass('col-sm-9 col-9'))
+
+        let lowerContainer = $('<div></div>').addClass('col-sm-12 col-12 d-flex justify-content-center')
+        lowerContainer.append(addDefault)
+        lowerContainer.append($('<div></div>').addClass('col-sm-7 col-7'))
+        lowerContainer.append(inputBtn)
+
+        let bothContainer = $('<div></div>').addClass('col-sm-12 col-12 d-flex flex-column')
+        bothContainer.append(upperContainer)
+        bothContainer.append(lowerContainer)
+
+        $('#pcInputContainerLower').append(bothContainer)
+    }
+
     function createIfSelection() {
         let row = $('<div></div>').addClass('row')
         let leftSide = $('<div></div>').addClass('col-sm-4 col-4 mb-2')
         let rightSide = $('<div></div>').addClass('col-sm-8 col-8 if-properties-container-' + ifCount)
         let listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab-if').attr('role', 'tablist')
         let listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-if-1').attr('data-bs-toggle', 'list').attr('href', '#list-1').text('If')
-        let addElseIfBtn = createAddSelectionButton('Else If').addClass('additional-if').data('value', 'elif')
-        let addElseBtn = createAddSelectionButton('Else').addClass('additional-if').data('value', 'else')
+        let addElseIfBtn = createGreenButton('Else If').addClass('additional-if').data('value', 'elif')
+        let addElseBtn = createGreenButton('Else').addClass('additional-if').data('value', 'else')
         let tab = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContentIf')
         let tabContent = createNewIfTab()
 
@@ -744,7 +952,7 @@ $(document).ready(function() {
     $(document).on('click', '.delete-additional-condition', function() {
         let targetId = $(this).data('value')
         
-        $('#first-if-input-box-' + targetId).append(createAddSelectionButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', targetId))
+        $('#first-if-input-box-' + targetId).append(createGreenButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', targetId))
         $('#second-if-input-box-' + targetId).remove()
     })
 
@@ -755,11 +963,8 @@ $(document).ready(function() {
         let ifStatements: Statement[] = []
         let tempStatement: Statement | undefined = undefined
         let proceed: boolean = true
-
-        console.log('everything that needs to be checked')
         
         for(let i = 0; i < ifToBeValidated.length; i++) {
-            console.log(ifToBeValidated[i])
             tempStatement = handleIfStatementValidation(ifToBeValidated[i])
             if(tempStatement != undefined) {
                 ifStatements.push(tempStatement)
@@ -771,12 +976,7 @@ $(document).ready(function() {
             }
         }
 
-        for(let i = 0; i < ifStatements.length; i++) {
-            console.log(ifStatements[i])
-        }
-
         if(proceed == true) {
-            console.log('masuk sini bos')
             let ifStatement = new IfStatement(1, statementCount++, undefined)
             if(isElsed)
                 ifStatements.push(new Else(1, statementCount))
@@ -790,7 +990,6 @@ $(document).ready(function() {
 
     function handleIfStatementValidation(index: number): Statement | undefined {
         let logicalOperatorClassName = 'lo-if-' + index
-        console.log(logicalOperatorClassName)
         let isAdditionalCondition = $("input[type='radio'][name='" + logicalOperatorClassName + "']:checked").val() == undefined ? false : true
         let operators = ['==', '!=', '<', '>', '<=', '>=']
         let logicalOperators = ['AND', 'OR']
@@ -818,8 +1017,6 @@ $(document).ready(function() {
                 break
             }
         }
-
-        console.log(isAdditionalCondition)
 
         if(!isAdditionalCondition) {
             if(index == 1)
@@ -852,7 +1049,6 @@ $(document).ready(function() {
             }
         }
 
-        console.log(secondOperatorClassName)
         let secondRadio = $("input[type='radio'][name='" + secondOperatorClassName + "']")
         let secondCheckedIdx = -1
         for(let i = 0; i < secondRadio.length; i++) {
@@ -981,7 +1177,7 @@ $(document).ready(function() {
         divContainer.append(secondSelectContainer)
 
         if(isRequired) {
-            divContainer.append(createAddSelectionButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', ifCount))
+            divContainer.append(createGreenButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', ifCount))
         }
         
         return divContainer
@@ -1070,8 +1266,6 @@ $(document).ready(function() {
 
     $(document).on('click', '.add-if-condition-btn', function() {
         let targetId = $(this).data('value')
-        console.log('ini data value')
-        console.log(targetId)
         let targetContainerClass = '#list-' + targetId
         
         $('#first-if-input-box-' + targetId).children().last().remove();
@@ -1127,6 +1321,19 @@ $(document).ready(function() {
             allVariables.push(listString[i])
         
         return allVariables
+    }
+
+    function getSelectedVariables(type: string): Variable[] {
+        let allVariables: Variable[] = []
+        for(let i = 0; i < listInteger.length; i++)
+            allVariables.push(listInteger[i])
+        for(let i = 0; i < listLong.length; i++)
+            allVariables.push(listLong[i])
+        for(let i = 0; i < listChar.length; i++)
+            allVariables.push(listChar[i])
+
+        if(type == 'switch') 
+            return allVariables
     }
 
     $(document).on('click', '#outputVariableBtn', function() {
@@ -1332,9 +1539,6 @@ $(document).ready(function() {
             createErrorMessage('Clipboard is empty!', 'bcErrorContainer')
             return
         }
-
-        console.log(clipboard)
-        console.log(returnClick.statement)
         
         if(clipboard.findStatement(returnClick.statement)) {
             createErrorMessage('Could not paste statement here!', 'bcErrorContainer')

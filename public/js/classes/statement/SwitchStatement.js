@@ -50,8 +50,10 @@ var SwitchStatement = /** @class */ (function (_super) {
     };
     SwitchStatement.prototype.init = function () {
         if (this.caseStatement != undefined)
-            for (var i = 0; i < this.caseStatement.length; i++)
+            for (var i = 0; i < this.caseStatement.length; i++) {
                 this.caseStatement[i].parent = this;
+                this.caseStatement[i].level = this.level + 1;
+            }
     };
     SwitchStatement.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;

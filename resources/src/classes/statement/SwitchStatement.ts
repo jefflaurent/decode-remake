@@ -44,8 +44,10 @@ class SwitchStatement extends Statement {
 
     init(): void {
         if(this.caseStatement != undefined)
-            for(let i = 0; i < this.caseStatement.length; i++)
+            for(let i = 0; i < this.caseStatement.length; i++) {
                 this.caseStatement[i].parent = this
+                this.caseStatement[i].level = this.level + 1
+            }
     }
 
     writeToCanvas(canvas: Canvas): void {
