@@ -994,10 +994,12 @@ var WhileStatement = /** @class */ (function (_super) {
         if (statement == this)
             return true;
         var statementFound = false;
-        for (var i = 0; i < this.childStatement.length; i++) {
-            statementFound = this.childStatement[i].findStatement(statement);
-            if (statementFound)
-                return true;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
         }
         return false;
     };
@@ -3346,19 +3348,26 @@ $(document).ready(function () {
         drawCanvas();
     });
     $(document).on('click', '.repetition', function () {
+        var createBtn;
         if ($(this).data('value') == 'for') {
             initInput('For Loop Properties');
             createForLoopCondition();
             createForLoopVariableUpdate();
-            var createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-for-loop-button').text('Create');
-            var container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12');
-            container.append(createBtn);
-            $('#pcInputContainerLower').append(container);
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'for').text('Create');
         }
         else if ($(this).data('value') == 'do-while') {
+            initInput('Do-While Loop Properties');
+            createForLoopCondition();
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'do-while').text('Create');
         }
         else if ($(this).data('value') == 'while') {
+            initInput('While Loop Properties');
+            createForLoopCondition();
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'while').text('Create');
         }
+        var container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12');
+        container.append(createBtn);
+        $('#pcInputContainerLower').append(container);
     });
     function createForLoopCondition() {
         var listVariable = [];
@@ -3479,50 +3488,33 @@ $(document).ready(function () {
             $('.value-container-for-loop').append(select);
         }
     });
-    $(document).on('click', '#create-for-loop-button', function () {
+    $(document).on('click', '#create-loop-button', function () {
         clearError();
-        var variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val();
-        var variable;
-        var tempVariable;
-        var result;
-        var isCustom = false;
-        if (variableName == '') {
-            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
-            $('#chosen-for-loop-variable').addClass('input-error');
+        var statement = createRepetitionStatement($(this).data('value'));
+        if (statement == undefined)
             return;
-        }
-        variable = findVariable(variableName);
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    });
+    function createRepetitionStatement(statementType) {
+        var statement;
+        var loopInput = false;
+        var updateValueInput = false;
+        var isCustom = false;
+        var updateValue;
+        loopInput = validateRepetitionInput();
+        if (!loopInput)
+            return undefined;
+        var variable = findVariable($('#chosen-for-loop-variable').find('option').filter(':selected').val());
+        var tempVariable;
         if ($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
             isCustom = true;
-            var value = $('#chosen-for-loop-value').val();
-            tempVariable = createVariableFromValue(value);
-            if (tempVariable instanceof String_1.default) {
-                $('#chosen-for-loop-value').addClass('input-error');
-                createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer');
-                return;
-            }
-            result = tempVariable.validateValue();
-            if (!result.bool) {
-                $('#chosen-for-loop-value').addClass('input-error');
-                createErrorMessage(result.message, 'pcInputErrorContainer');
-                return;
-            }
+            tempVariable = createVariableFromValue($('#chosen-for-loop-value').val());
         }
         else {
             isCustom = false;
-            var variableName_1 = $('#chosen-for-loop-value').find('option').filter(':selected').val();
-            if (variableName_1 == '') {
-                createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
-                $('#chosen-for-loop-value').addClass('input-error');
-                return;
-            }
-            tempVariable = findVariable(variableName_1);
-        }
-        var updateValue = $('#update-value-for-loop').val();
-        if (updateValue == '') {
-            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
-            $('#update-value-for-loop').addClass('input-error');
-            return;
+            tempVariable = findVariable($('#chosen-for-loop-value').find('option').filter(':selected').val());
         }
         var operators = ['==', '!=', '<', '>', '<=', '>='];
         var firstRadio = $("input[type='radio'][name='op-for']");
@@ -3533,20 +3525,79 @@ $(document).ready(function () {
                 break;
             }
         }
-        var secondRadio = $("input[type='radio'][name='update-type-for-loop']");
-        var secondCheckedIdx = -1;
-        for (var i = 0; i < secondRadio.length; i++) {
-            if (secondRadio[i].checked == true) {
-                secondCheckedIdx = i;
-                break;
+        if (statementType == 'for') {
+            updateValueInput = validateRepetitionUpdate();
+            if (!updateValueInput)
+                return undefined;
+            updateValue = $('#update-value-for-loop').val();
+            var secondRadio = $("input[type='radio'][name='update-type-for-loop']");
+            var secondCheckedIdx = -1;
+            for (var i = 0; i < secondRadio.length; i++) {
+                if (secondRadio[i].checked == true) {
+                    secondCheckedIdx = i;
+                    break;
+                }
+            }
+            var isIncrement = secondCheckedIdx == 0 ? true : false;
+            statement = new ForStatement_1.default(1, statementCount++, undefined, variable, false, isIncrement, parseInt(updateValue), new Condition_1.default(variable, operators[firstCheckedIdx], tempVariable, isCustom));
+        }
+        else if (statementType == 'do-while') {
+            statement = new WhileStatement_1.default(1, statementCount++, false, undefined, new Condition_1.default(variable, operators[firstCheckedIdx], tempVariable, isCustom));
+        }
+        else {
+            statement = new WhileStatement_1.default(1, statementCount++, true, undefined, new Condition_1.default(variable, operators[firstCheckedIdx], tempVariable, isCustom));
+        }
+        return statement;
+    }
+    function validateRepetitionInput() {
+        var variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val();
+        var variable;
+        var tempVariable;
+        var result;
+        var isCustom = false;
+        if (variableName == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('#chosen-for-loop-variable').addClass('input-error');
+            return false;
+        }
+        variable = findVariable(variableName);
+        if ($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
+            isCustom = true;
+            var value = $('#chosen-for-loop-value').val();
+            tempVariable = createVariableFromValue(value);
+            if (tempVariable instanceof String_1.default) {
+                $('#chosen-for-loop-value').addClass('input-error');
+                createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer');
+                return false;
+            }
+            result = tempVariable.validateValue();
+            if (!result.bool) {
+                $('#chosen-for-loop-value').addClass('input-error');
+                createErrorMessage(result.message, 'pcInputErrorContainer');
+                return false;
             }
         }
-        var isIncrement = secondCheckedIdx == 0 ? true : false;
-        var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, false, isIncrement, parseInt(updateValue), new Condition_1.default(variable, operators[firstCheckedIdx], tempVariable, isCustom));
-        handleAdd(forStatement);
-        restructureStatement();
-        drawCanvas();
-    });
+        else {
+            isCustom = false;
+            var variableName_1 = $('#chosen-for-loop-value').find('option').filter(':selected').val();
+            if (variableName_1 == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+                $('#chosen-for-loop-value').addClass('input-error');
+                return false;
+            }
+            tempVariable = findVariable(variableName_1);
+        }
+        return true;
+    }
+    function validateRepetitionUpdate() {
+        var updateValue = $('#update-value-for-loop').val();
+        if (updateValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('#update-value-for-loop').addClass('input-error');
+            return false;
+        }
+        return true;
+    }
     // Canvas logic
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas

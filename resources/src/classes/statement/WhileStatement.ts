@@ -135,10 +135,12 @@ class WhileStatement extends Statement {
 
         let statementFound: boolean = false
     
-        for(let i = 0; i < this.childStatement.length; i++) {
-            statementFound = this.childStatement[i].findStatement(statement)
-            if(statementFound)
-                return true
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement)
+                if(statementFound)
+                    return true
+            }
         }
 
         return false

@@ -121,10 +121,12 @@ var WhileStatement = /** @class */ (function (_super) {
         if (statement == this)
             return true;
         var statementFound = false;
-        for (var i = 0; i < this.childStatement.length; i++) {
-            statementFound = this.childStatement[i].findStatement(statement);
-            if (statementFound)
-                return true;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                statementFound = this.childStatement[i].findStatement(statement);
+                if (statementFound)
+                    return true;
+            }
         }
         return false;
     };

@@ -1402,27 +1402,34 @@ $(document).ready(function() {
     })
 
     $(document).on('click', '.repetition', function() {
+        let createBtn: any
         if($(this).data('value') == 'for') {
             initInput('For Loop Properties')
             createForLoopCondition()
             createForLoopVariableUpdate()
-            let createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-for-loop-button').text('Create')
-            let container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12')
-            container.append(createBtn)
-            $('#pcInputContainerLower').append(container)
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'for').text('Create')
         }
         else if($(this).data('value') == 'do-while') {
-            
+            initInput('Do-While Loop Properties')
+            createForLoopCondition()
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'do-while').text('Create')
         }
         else if($(this).data('value') == 'while') {
-            
+            initInput('While Loop Properties')
+            createForLoopCondition()
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'while').text('Create')
         }
+
+        let container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12')
+        container.append(createBtn)
+        $('#pcInputContainerLower').append(container)
     })
 
     function createForLoopCondition() {
         let listVariable: Variable[] = []
+        
         listVariable = getSelectedVariables('repetition')
-
+        
         let loopConditionContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3')
         let loopTitle = $('<div></div>').append($('<strong></strong>').text('Loop Condition')).addClass('mb-3')
         
@@ -1567,57 +1574,39 @@ $(document).ready(function() {
         }
     })
 
-    $(document).on('click', '#create-for-loop-button', function() {
+    $(document).on('click', '#create-loop-button', function() {
         clearError()
-        let variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val() as string
-        let variable: Variable
-        let tempVariable: Variable
-        let result: Return
-        let isCustom = false
-
-        if(variableName == '') {
-            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
-            $('#chosen-for-loop-variable').addClass('input-error')
+        let statement = createRepetitionStatement($(this).data('value'))
+        if(statement == undefined) 
             return
-        }
+            
+        handleAdd(statement)
+        restructureStatement()
+        drawCanvas()
+    })
 
-        variable = findVariable(variableName)
+    function createRepetitionStatement(statementType: string): Statement | undefined{
+        let statement: Statement
+        let loopInput: boolean = false
+        let updateValueInput: boolean = false
+        let isCustom: boolean = false
+        let updateValue: string
+
+        loopInput = validateRepetitionInput()
+        if(!loopInput)
+            return undefined
+
+        let variable = findVariable($('#chosen-for-loop-variable').find('option').filter(':selected').val() as string)
+        let tempVariable: Variable
 
         if($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
             isCustom = true
-            let value = $('#chosen-for-loop-value').val() as string
-            tempVariable = createVariableFromValue(value)
-            
-            if(tempVariable instanceof String) {
-                $('#chosen-for-loop-value').addClass('input-error')
-                createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer')
-                return
-            }
-
-            result = tempVariable.validateValue()
-            if(!result.bool) {
-                $('#chosen-for-loop-value').addClass('input-error')
-                createErrorMessage(result.message, 'pcInputErrorContainer')
-                return
-            }
+            tempVariable = createVariableFromValue($('#chosen-for-loop-value').val() as string)
         }
         else {
             isCustom = false
-            let variableName = $('#chosen-for-loop-value').find('option').filter(':selected').val() as string
-            if(variableName == '') {
-                createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
-                $('#chosen-for-loop-value').addClass('input-error')
-                return
-            }
-            tempVariable = findVariable(variableName)
+            tempVariable = findVariable($('#chosen-for-loop-value').find('option').filter(':selected').val() as string)
         }
-
-        let updateValue = $('#update-value-for-loop').val() as string
-        if(updateValue == '') {
-            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
-            $('#update-value-for-loop').addClass('input-error')
-            return
-        }        
 
         let operators = ['==', '!=', '<', '>', '<=', '>=']
 
@@ -1630,22 +1619,90 @@ $(document).ready(function() {
             }
         }
 
-        let secondRadio = $("input[type='radio'][name='update-type-for-loop']")
-        let secondCheckedIdx = -1
-        for(let i = 0; i < secondRadio.length; i++) {
-            if((secondRadio[i] as any).checked == true) {
-                secondCheckedIdx = i 
-                break
+        if(statementType == 'for') {
+            updateValueInput = validateRepetitionUpdate()
+            if(!updateValueInput)
+                return undefined
+
+            updateValue = $('#update-value-for-loop').val() as string
+            let secondRadio = $("input[type='radio'][name='update-type-for-loop']")
+            let secondCheckedIdx = -1
+            for(let i = 0; i < secondRadio.length; i++) {
+                if((secondRadio[i] as any).checked == true) {
+                    secondCheckedIdx = i 
+                    break
+                }
+            }
+            let isIncrement = secondCheckedIdx == 0 ? true : false
+            statement = new ForStatement(1, statementCount++, undefined, variable, false, isIncrement, parseInt(updateValue), new Condition(variable, operators[firstCheckedIdx], tempVariable, isCustom))
+        }        
+        else if(statementType == 'do-while') {
+            statement = new WhileStatement(1, statementCount++, false, undefined, new Condition(variable, operators[firstCheckedIdx], tempVariable, isCustom))
+        }
+        else {
+            statement = new WhileStatement(1, statementCount++, true, undefined, new Condition(variable, operators[firstCheckedIdx], tempVariable, isCustom))
+        }
+
+        return statement
+    }
+
+    function validateRepetitionInput(): boolean {
+        let variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val() as string
+        let variable: Variable
+        let tempVariable: Variable
+        let result: Return
+        let isCustom = false
+
+        if(variableName == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('#chosen-for-loop-variable').addClass('input-error')
+            return false
+        }
+
+        variable = findVariable(variableName)
+
+        if($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
+            isCustom = true
+            let value = $('#chosen-for-loop-value').val() as string
+            tempVariable = createVariableFromValue(value)
+            
+            if(tempVariable instanceof String) {
+                $('#chosen-for-loop-value').addClass('input-error')
+                createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer')
+                return false
+            }
+
+            result = tempVariable.validateValue()
+            if(!result.bool) {
+                $('#chosen-for-loop-value').addClass('input-error')
+                createErrorMessage(result.message, 'pcInputErrorContainer')
+                return false
             }
         }
-        let isIncrement = secondCheckedIdx == 0 ? true : false
+        else {
+            isCustom = false
+            let variableName = $('#chosen-for-loop-value').find('option').filter(':selected').val() as string
+            if(variableName == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+                $('#chosen-for-loop-value').addClass('input-error')
+                return false
+            }
+            tempVariable = findVariable(variableName)
+        }
 
-        let forStatement = new ForStatement(1, statementCount++, undefined, variable, false, isIncrement, parseInt(updateValue), new Condition(variable, operators[firstCheckedIdx], tempVariable, isCustom))
-        
-        handleAdd(forStatement)
-        restructureStatement()
-        drawCanvas()
-    })
+        return true
+    }
+
+    function validateRepetitionUpdate(): boolean {
+        let updateValue = $('#update-value-for-loop').val() as string
+        if(updateValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('#update-value-for-loop').addClass('input-error')
+            return false
+        }     
+
+        return true
+    }
 
     // Canvas logic
     initializeCanvas()
