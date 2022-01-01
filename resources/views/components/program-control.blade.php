@@ -104,13 +104,13 @@
                             <strong>Repetition</strong>
                         </div>
                         <div class="col-12 d-flex justify-content-between mt-2" style="width: 100%;">
-                            <div class="col-4 d-flex justify-content-start">
+                            <div class="col-4 d-flex justify-content-start repetition" data-value="for">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">For</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-center">
+                            <div class="col-4 d-flex justify-content-center repetition" data-value="do-while">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn text-center">Do-While</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-end">
+                            <div class="col-4 d-flex justify-content-end repetition" data-value="while">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">While</div>
                             </div>
                         </div>

@@ -161,6 +161,9 @@ $(document).ready(function() {
         $('#chosenVariable').removeClass('input-error')
         $('#chosenOutputVariable').removeClass('input-error')
         $('#chosenSwitchVariable').removeClass('input-error')
+        $('#chosen-for-loop-variable').removeClass('input-error')
+        $('#chosen-for-loop-value').removeClass('input-error')
+        $('#update-value-for-loop').removeClass('input-error')
 
         for(let i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
@@ -660,14 +663,13 @@ $(document).ready(function() {
         let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
         let select = createSelect(listVariable, 7, true).attr('id', 'chosenSwitchVariable')
 
-        container.append(createHint('Variable Name', 5))
+        container.append(createHint('Variable', 5))
         container.append(select)
         container.addClass('mb-3')
 
         let allCaseContainer = $('<div></div>').addClass('all-case-container')
         $('#pcInputContainer').append(container)
         $('#pcInputContainer').append(allCaseContainer)
-
 
         createAdditionalSwitchButton()
     }
@@ -955,8 +957,6 @@ $(document).ready(function() {
         $('#first-if-input-box-' + targetId).append(createGreenButton('Condition').addClass('p-2 px-3 mt-2 mb-2 add-if-condition-btn').data('value', targetId))
         $('#second-if-input-box-' + targetId).remove()
     })
-
-    // continue here
 
     $(document).on('click', '#createIfStatementButton', function() {
         clearError()
@@ -1329,11 +1329,19 @@ $(document).ready(function() {
             allVariables.push(listInteger[i])
         for(let i = 0; i < listLong.length; i++)
             allVariables.push(listLong[i])
-        for(let i = 0; i < listChar.length; i++)
-            allVariables.push(listChar[i])
+        
+        if(type == 'switch') {
+            for(let i = 0; i < listChar.length; i++)
+                allVariables.push(listChar[i])
+        }
+        else if(type == 'repetition') {
+            for(let i = 0; i < listFloat.length; i++)
+                allVariables.push(listFloat[i])
+            for(let i = 0; i < listDouble.length; i++)
+                allVariables.push(listDouble[i])
+        }
 
-        if(type == 'switch') 
-            return allVariables
+        return allVariables
     }
 
     $(document).on('click', '#outputVariableBtn', function() {
@@ -1389,6 +1397,252 @@ $(document).ready(function() {
         }
         
         handleAdd(output)
+        restructureStatement()
+        drawCanvas()
+    })
+
+    $(document).on('click', '.repetition', function() {
+        if($(this).data('value') == 'for') {
+            initInput('For Loop Properties')
+            createForLoopCondition()
+            createForLoopVariableUpdate()
+            let createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-for-loop-button').text('Create')
+            let container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12')
+            container.append(createBtn)
+            $('#pcInputContainerLower').append(container)
+        }
+        else if($(this).data('value') == 'do-while') {
+            
+        }
+        else if($(this).data('value') == 'while') {
+            
+        }
+    })
+
+    function createForLoopCondition() {
+        let listVariable: Variable[] = []
+        listVariable = getSelectedVariables('repetition')
+
+        let loopConditionContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3')
+        let loopTitle = $('<div></div>').append($('<strong></strong>').text('Loop Condition')).addClass('mb-3')
+        
+        let container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
+        let variableTitle = $('<div></div>').append($('<strong></strong>').text('Variable')).addClass('col-sm-5 col-5')
+        let variableSelect = createSelect(listVariable, 7, true).attr('id', 'chosen-for-loop-variable')
+        
+        let container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
+        let operatorTitle = $('<div></div>').append($('<strong></strong>').text('Operator')).addClass('col-sm-5 col-5')
+        let operators = createOperatorRadioRepetition('op-for')
+
+        let container3 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
+        let valueTypeTitle = $('<div></div>').append($('<strong></strong>').text('Value Type')).addClass('col-sm-5 col-5')
+        let valueTypeContainer = $('<div></div>').addClass('col-sm-7 col-7')
+        let valueTypeSelect = $('<select></select>').addClass('form-select choose-for-loop-value-type')
+        valueTypeSelect.append($('<option></option>').val('variable').text('Variable'))
+        valueTypeSelect.append($('<option></option>').val('custom').text('Custom Value'))
+
+        let container4 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
+        let valueTitle = $('<div></div>').append($('<strong></strong>').text('Value')).addClass('col-sm-5 col-5')
+        let valueContainer = $('<div></div>').addClass('col-sm-7 col-7 value-container-for-loop')
+        let valueSelect = createSelect(listVariable, 12, true).attr('id', 'chosen-for-loop-value')
+
+        container1.append(variableTitle)
+        container1.append(variableSelect)
+
+        container2.append(operatorTitle)
+        container2.append(operators)
+
+        container3.append(valueTypeTitle)
+        valueTypeContainer.append(valueTypeSelect)
+        container3.append(valueTypeContainer)
+
+        container4.append(valueTitle)
+        valueContainer.append(valueSelect)
+        container4.append(valueContainer)
+
+        loopConditionContainer.append(loopTitle)
+        loopConditionContainer.append(container1)
+        loopConditionContainer.append(container2)
+        loopConditionContainer.append(container3)
+        loopConditionContainer.append(container4)
+
+        $('#pcInputContainer').append(loopConditionContainer)
+    }
+
+    function createForLoopVariableUpdate() {
+        let loopVariableUpdateContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3')
+        let variableUpdate = $('<div></div>').append($('<strong></strong>').text('Variable Update')).addClass('mb-3')
+
+        let container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex align-items-center mb-3')
+        let updateType = $('<div></div>').append($('<strong></strong>').text('Update Type')).addClass('col-sm-5 col-5')
+        let innerContainer = $('<div></div>').addClass('col-sm-7 col-7 d-flex justify-content-center align-items-center')
+        let radioContainer1 = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-evenly align-items-center')
+        let radio1 = $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop').attr('checked', 'true')
+        let radioDesc1 = $('<div></div>').text('Increment')
+
+        let radioContainer2 = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-evenly align-items-center')
+        let radio2 = $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop')
+        let radioDesc2 = $('<div></div>').text('Decrement')
+
+        radioContainer1.append(radio1)
+        radioContainer1.append(radioDesc1)
+
+        radioContainer2.append(radio2)
+        radioContainer2.append(radioDesc2)
+
+        innerContainer.append(radioContainer1)
+        innerContainer.append($('<div></div>').addClass('col-sm-1 col-1'))
+        innerContainer.append(radioContainer2)
+        innerContainer.append($('<div></div>').addClass('col-sm-3 col-3'))
+
+        container1.append(updateType)
+        container1.append(innerContainer)
+
+        let container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex align-items-center mb-3')
+        let updateValue = $('<div></div>').append($('<strong></strong>').text('Update Value')).addClass('col-sm-5 col-5')
+        let valueContainer =  $('<div></div>').addClass('col-sm-7 col-7')
+        let valueInput = $('<input></input>').addClass('form-control').attr('id', 'update-value-for-loop').attr('type', 'number').attr('min', 1)
+
+        valueContainer.append(valueInput)
+        container2.append(updateValue)
+        container2.append(valueContainer)
+
+        loopVariableUpdateContainer.append(variableUpdate)
+        loopVariableUpdateContainer.append(container1)
+        loopVariableUpdateContainer.append(container2)
+
+        $('#pcInputContainer').append(loopVariableUpdateContainer)
+    }
+
+    function createOperatorRadioRepetition(baseClassName: string) {
+        let container = $('<div></div>').addClass('col-sm-7 d-flex justify-content-center align-items-center')
+        let radioContainer1 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer2 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer3 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer4 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer5 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let radioContainer6 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
+        let word1 = $('<div></div>').text('==')
+        let word2 = $('<div></div>').text('!=')
+        let word3 = $('<div></div>').text('<')
+        let word4 = $('<div></div>').text('>')
+        let word5 = $('<div></div>').text('<=')
+        let word6 = $('<div></div>').text('>=')
+
+        radioContainer1.append($('<input>').attr('type', 'radio').attr('name', baseClassName).attr('checked', 'true'))
+        radioContainer1.append(word1)
+        radioContainer2.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
+        radioContainer2.append(word2)
+        radioContainer3.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
+        radioContainer3.append(word3)
+        radioContainer4.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
+        radioContainer4.append(word4)
+        radioContainer5.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
+        radioContainer5.append(word5)
+        radioContainer6.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
+        radioContainer6.append(word6)
+
+        container.append(radioContainer1)
+        container.append(radioContainer2)
+        container.append(radioContainer3)
+        container.append(radioContainer4)
+        container.append(radioContainer5)
+        container.append(radioContainer6)
+
+        return container
+    }
+
+    $(document).on('change', '.choose-for-loop-value-type', function() {
+        $('.value-container-for-loop').empty()
+        let type = $(this).find('option').filter(':selected').val()
+
+        if(type == 'custom') {
+            let input = createInputField('text').addClass('form-control').attr('id', 'chosen-for-loop-value')
+            $('.value-container-for-loop').append(input)
+        }
+        else {
+            let listVariable = getSelectedVariables('repetition')
+            let select = createSelect(listVariable, 12, true).attr('id', 'chosen-for-loop-value')
+            $('.value-container-for-loop').append(select)
+        }
+    })
+
+    $(document).on('click', '#create-for-loop-button', function() {
+        clearError()
+        let variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val() as string
+        let variable: Variable
+        let tempVariable: Variable
+        let result: Return
+        let isCustom = false
+
+        if(variableName == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('#chosen-for-loop-variable').addClass('input-error')
+            return
+        }
+
+        variable = findVariable(variableName)
+
+        if($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
+            isCustom = true
+            let value = $('#chosen-for-loop-value').val() as string
+            tempVariable = createVariableFromValue(value)
+            
+            if(tempVariable instanceof String) {
+                $('#chosen-for-loop-value').addClass('input-error')
+                createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer')
+                return
+            }
+
+            result = tempVariable.validateValue()
+            if(!result.bool) {
+                $('#chosen-for-loop-value').addClass('input-error')
+                createErrorMessage(result.message, 'pcInputErrorContainer')
+                return
+            }
+        }
+        else {
+            isCustom = false
+            let variableName = $('#chosen-for-loop-value').find('option').filter(':selected').val() as string
+            if(variableName == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+                $('#chosen-for-loop-value').addClass('input-error')
+                return
+            }
+            tempVariable = findVariable(variableName)
+        }
+
+        let updateValue = $('#update-value-for-loop').val() as string
+        if(updateValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('#update-value-for-loop').addClass('input-error')
+            return
+        }        
+
+        let operators = ['==', '!=', '<', '>', '<=', '>=']
+
+        let firstRadio = $("input[type='radio'][name='op-for']")
+        let firstCheckedIdx = -1
+        for(let i = 0; i < firstRadio.length; i++) {
+            if((firstRadio[i] as any).checked == true) {
+                firstCheckedIdx = i 
+                break
+            }
+        }
+
+        let secondRadio = $("input[type='radio'][name='update-type-for-loop']")
+        let secondCheckedIdx = -1
+        for(let i = 0; i < secondRadio.length; i++) {
+            if((secondRadio[i] as any).checked == true) {
+                secondCheckedIdx = i 
+                break
+            }
+        }
+        let isIncrement = secondCheckedIdx == 0 ? true : false
+
+        let forStatement = new ForStatement(1, statementCount++, undefined, variable, false, isIncrement, parseInt(updateValue), new Condition(variable, operators[firstCheckedIdx], tempVariable, isCustom))
+        
+        handleAdd(forStatement)
         restructureStatement()
         drawCanvas()
     })
