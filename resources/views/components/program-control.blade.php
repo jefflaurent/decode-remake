@@ -122,13 +122,13 @@
                             <strong>Assignment</strong>
                         </div>
                         <div class="col-12 d-flex justify-content-between mt-2" style="width: 100%;">
-                            <div class="col-4 d-flex justify-content-start">
+                            <div class="col-4 d-flex justify-content-start assignment" data-value="arithmetic">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Arithmetic</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-center">
+                            <div class="col-4 d-flex justify-content-center assignment" data-value="string">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">String</div>
                             </div>
-                            <div class="col-4 d-flex justify-content-end">
+                            <div class="col-4 d-flex justify-content-end assignment" data-value="variable">
                                 <div class="col-11 d-flex justify-content-center align-items-center p-1 blue-btn">Variable</div>
                             </div>
                         </div>

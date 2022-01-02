@@ -24,6 +24,7 @@ var Option_1 = __importDefault(require("../classes/statement/helper/options/Opti
 var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
 var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
 var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
+var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignment/Arithmetic"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -139,6 +140,7 @@ $(document).ready(function () {
         $('#chosen-for-loop-variable').removeClass('input-error');
         $('#chosen-for-loop-value').removeClass('input-error');
         $('#update-value-for-loop').removeClass('input-error');
+        $('#chosen-asg-variable').removeClass('input-error');
         for (var i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
             $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
@@ -1138,6 +1140,14 @@ $(document).ready(function () {
             for (var i = 0; i < listDouble.length; i++)
                 allVariables.push(listDouble[i]);
         }
+        else if (type == 'assignment') {
+            for (var i = 0; i < listChar.length; i++)
+                allVariables.push(listChar[i]);
+            for (var i = 0; i < listFloat.length; i++)
+                allVariables.push(listFloat[i]);
+            for (var i = 0; i < listDouble.length; i++)
+                allVariables.push(listDouble[i]);
+        }
         return allVariables;
     }
     $(document).on('click', '#outputVariableBtn', function () {
@@ -1442,6 +1452,173 @@ $(document).ready(function () {
         }
         return true;
     }
+    var assignmentToBeValidated = [];
+    var assignmentCount = 1;
+    $(document).on('click', '.assignment', function () {
+        assignmentCount = 1;
+        assignmentToBeValidated = [];
+        var createBtn;
+        var container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12');
+        if ($(this).data('value') == 'arithmetic') {
+            initInput('Arithmetic Assignment');
+            createArithmeticAssignmentHeader();
+            createArithmeticAssignmentInput(undefined);
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create');
+        }
+        else if ($(this).data('value') == 'string') {
+        }
+        else if ($(this).data('value') == 'variable') {
+            initInput('Variable Assignment');
+            createVariableAssignmentInput();
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-variable-button').text('Create');
+        }
+        container.append(createBtn);
+        $('#pcInputContainerLower').append(container);
+    });
+    function createArithmeticAssignmentHeader() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select' }).append($('<option>').text('Choose Variable')))));
+        $('#pcInputContainer').append(container);
+    }
+    function createArithmeticAssignmentInput(parent) {
+        var listVariable = getSelectedVariables('assignment');
+        var firstValueTypeClassName = 'form-select first-select-value-type first-select-value-type-' + assignmentCount;
+        var secondValueTypeClassName = 'form-select second-select-value-type second-select-value-type-' + assignmentCount;
+        var firstValueContainerClassName = 'first-assignment-value-container first-assignment-value-container-' + assignmentCount;
+        var secondValueContainerClassName = 'second-assignment-value-container second-assignment-value-container-' + assignmentCount;
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<input>', { type: 'hidden', name: parent }), $('<div>', { class: 'mb-3' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: firstValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + firstValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('first-value-' + assignmentCount))).data('value', assignmentCount), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Operator')), $('<div>', { class: 'col-sm-7 col-7 d-flex justify-content-center align-items-center' }).append($('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount, checked: 'true' }), $('<div>').text('+')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('-')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('/')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('*')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('%')), $('<div>', { class: 'col-sm-1 col-1' }))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: secondValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + secondValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + assignmentCount))).data('value', assignmentCount));
+        assignmentToBeValidated.push(assignmentCount);
+        assignmentCount++;
+        $('#pcInputContainer').append(container);
+    }
+    $(document).on('change', '.first-select-value-type', function () {
+        var targetId = $(this).data('value');
+        var selectValue = $('.first-select-value-type-' + targetId).find('option').filter(':selected').val();
+        $('.first-assignment-value-container-' + targetId).empty();
+        $("input[name='" + 'first-value-' + targetId + "']").parent().remove();
+        console.log($("input[name='" + 'first-value-' + targetId + "']").parent());
+        if (selectValue == 'custom') {
+            $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'text' }).addClass('first-value-' + targetId)));
+        }
+        else if (selectValue == 'variable') {
+            var listVariable = getSelectedVariables('assignment');
+            $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('first-value-' + targetId)));
+        }
+        else {
+            $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
+            createArithmeticAssignmentInput('first-value-' + targetId);
+        }
+    });
+    $(document).on('change', '.second-select-value-type', function () {
+        var targetId = $(this).data('value');
+        var selectValue = $('.second-select-value-type-' + targetId).find('option').filter(':selected').val();
+        $('.second-assignment-value-container-' + targetId).empty();
+        $("input[name='" + 'second-value-' + targetId + "']").parent().remove();
+        if (selectValue == 'custom') {
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'text' }).addClass('second-value-' + targetId)));
+        }
+        else if (selectValue == 'variable') {
+            var listVariable = getSelectedVariables('assignment');
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + targetId)));
+        }
+        else {
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
+            createArithmeticAssignmentInput('second-value-' + targetId);
+        }
+    });
+    // Assignment Variable
+    function createVariableAssignmentInput() {
+        var listVariable = getAllVariables();
+        var container = $('<div></div>');
+        var container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3 mt-2');
+        var variableTitle = $('<div></div>').append($('<strong></strong>').text('Variable')).addClass('col-sm-5 col-5');
+        var variableSelect = createSelect(listVariable, 7, true).attr('id', 'chosen-asg-variable');
+        var container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
+        var valueTypeTitle = $('<div></div>').append($('<strong></strong>').text('Value Type')).addClass('col-sm-5 col-5');
+        var valueTypeContainer = $('<div></div>').addClass('col-sm-7 col-7');
+        var valueTypeSelect = $('<select></select>').addClass('form-select choose-asg-value-type');
+        valueTypeSelect.append($('<option></option>').val('variable').text('Variable'));
+        valueTypeSelect.append($('<option></option>').val('custom').text('Custom Value'));
+        var container3 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
+        var valueTitle = $('<div></div>').append($('<strong></strong>').text('Value')).addClass('col-sm-5 col-5');
+        var valueContainer = $('<div></div>').addClass('col-sm-7 col-7 value-container-asg');
+        var valueSelect = createSelect(listVariable, 12, true).attr('id', 'chosen-asg-value');
+        container1.append(variableTitle);
+        container1.append(variableSelect);
+        container2.append(valueTypeTitle);
+        valueTypeContainer.append(valueTypeSelect);
+        container2.append(valueTypeContainer);
+        container3.append(valueTitle);
+        valueContainer.append(valueSelect);
+        container3.append(valueContainer);
+        container.append(container1);
+        container.append(container2);
+        container.append(container3);
+        $('#pcInputContainer').append(container);
+    }
+    $(document).on('change', '.choose-asg-value-type', function () {
+        $('.value-container-asg').empty();
+        var input;
+        if ($(this).find('option').filter(':selected').val() == 'custom') {
+            input = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'chosen-asg-value');
+        }
+        else {
+            var listVariable = getAllVariables();
+            input = createSelect(listVariable, 12, true).attr('id', 'chosen-asg-value');
+        }
+        $('.value-container-asg').append(input);
+    });
+    $(document).on('click', '#create-asg-variable-button', function () {
+        clearError();
+        var firstVariableName = $('#chosen-asg-variable').find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        var isCustom = false;
+        var result;
+        if (firstVariableName == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('#chosen-asg-variable').addClass('input-error');
+            return;
+        }
+        firstVariable = findVariable(firstVariableName);
+        if ($('.choose-asg-value-type').find('option').filter(':selected').val() == 'custom') {
+            isCustom = true;
+            var value = $('#chosen-asg-value').val();
+            if (value == '') {
+                createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+                $('#chosen-asg-value').addClass('input-error');
+                return;
+            }
+            secondVariable = createVariableFromValue(value);
+            result = secondVariable.validateValue();
+            if (!result.bool) {
+                $('#chosen-asg-value').addClass('input-error');
+                createErrorMessage(result.message, 'pcInputErrorContainer');
+                return;
+            }
+        }
+        else {
+            isCustom = false;
+            var value = $('#chosen-asg-value').find('option').filter(':selected').val();
+            if (value == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+                $('#chosen-asg-value').addClass('input-error');
+                return;
+            }
+            secondVariable = findVariable(value);
+        }
+        if (firstVariable instanceof String_1.default || secondVariable instanceof String_1.default) {
+            if (firstVariable instanceof String_1.default && secondVariable instanceof String_1.default) { }
+            else {
+                $('#chosen-asg-value').addClass('input-error');
+                createErrorMessage('Could not assign other data type with String data type', 'pcInputErrorContainer');
+                return;
+            }
+        }
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, secondVariable, isCustom);
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    });
     // Canvas logic
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
@@ -1779,7 +1956,7 @@ $(document).ready(function () {
         listInteger.push(variable);
         var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
         var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 0), true));
-        var secondIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
+        var secondIf = new Elif_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
         var ifOperations = [];
         var temp = [];
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'The number is an even number'));
@@ -1790,9 +1967,12 @@ $(document).ready(function () {
         ifOperations.push(firstIf);
         ifOperations.push(secondIf);
         ifStatement.updateIfOperations(ifOperations);
+        var listArithmetic = [];
+        listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', true));
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
         handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
-        handleAdd(new AssignmentStatement_1.default(statementCount++, 1, variable, new Integer_1.default('x', 2), '%', true));
+        handleAdd(assignmentStatement);
         handleAdd(ifStatement);
     }
 });

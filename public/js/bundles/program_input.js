@@ -85,7 +85,7 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":13}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":14}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -105,16 +105,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../variable/Char"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(statementId, level, firstVariable, secondVariable, operator, isCustomValue) {
+    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, variable, isCustomValue) {
         var _this = _super.call(this, level) || this;
+        _this.variable = undefined;
+        _this.listArithmetic = undefined;
+        _this.listOperator = undefined;
+        _this.isCustomValue = false;
+        _this.type = type;
         _this.statementId = _this.generateId(statementId);
-        _this.firstVariable = firstVariable;
-        _this.secondVariable = secondVariable;
-        _this.operator = operator;
+        _this.targetVariable = targetVariable;
+        _this.variable = variable;
+        _this.listArithmetic = listArithmetic;
+        _this.listOperator = listOperator;
         _this.isCustomValue = isCustomValue;
         _this.color = '#f4be0b';
         return _this;
@@ -123,13 +130,41 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return 'assignment-statement-' + number;
     };
     AssignmentStatement.prototype.writeToCanvas = function (canvas) {
-        var text = 'SET ' + this.firstVariable.name + ' = ' + this.generateBlockCodeText();
+        var text = 'SET ' + this.targetVariable.name + ' = ' + this.generateBlockCodeText();
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
     };
     AssignmentStatement.prototype.generateBlockCodeText = function () {
-        return this.isCustomValue ? this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value :
-            this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        var text = '';
+        if (this.type == 'arithmetic')
+            text = this.generateArithmeticText();
+        else if (this.type == 'variable')
+            text = this.generateVariableText();
+        else {
+        }
+        return text;
+    };
+    AssignmentStatement.prototype.generateArithmeticText = function () {
+        var text = '';
+        for (var i = 0; i < this.listArithmetic.length; i++) {
+            text += this.listArithmetic[i].generateBlockCodeText();
+            if (this.listOperator != undefined) {
+                if (i < this.listOperator.length) {
+                    text += ' ' + this.listOperator[i] + ' ';
+                }
+            }
+        }
+        return text;
+    };
+    AssignmentStatement.prototype.generateVariableText = function () {
+        if (this.isCustomValue) {
+            if (this.variable instanceof Char_1.default)
+                return "'" + this.variable.value + "'";
+            else
+                return this.variable.value;
+        }
+        else
+            return this.variable.name;
     };
     AssignmentStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
@@ -145,22 +180,43 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return false;
     };
     AssignmentStatement.prototype.findVariable = function (variable) {
-        if (variable.name == this.firstVariable.name)
+        if (this.type == 'variable')
+            return this.findTypeVariable(variable);
+        else if (this.type == 'arithmetic')
+            return this.findTypeArithmetic(variable);
+        else
+            return undefined;
+        return undefined;
+    };
+    AssignmentStatement.prototype.findTypeVariable = function (variable) {
+        if (this.targetVariable.name == variable.name)
             return this;
         if (!this.isCustomValue) {
-            if (variable.name == this.secondVariable.name)
+            if (this.variable.name == variable.name)
                 return this;
         }
         return undefined;
     };
+    AssignmentStatement.prototype.findTypeArithmetic = function (variable) {
+        var temp = false;
+        if (this.listArithmetic != undefined) {
+            for (var i = 0; i < this.listArithmetic.length; i++) {
+                temp = this.listArithmetic[i].findVariable(variable);
+                if (temp)
+                    return this;
+            }
+        }
+        return undefined;
+    };
     AssignmentStatement.prototype.cloneStatement = function (statementCount) {
-        return new ReturnClone_1.default(new AssignmentStatement(statementCount, this.level, this.firstVariable, this.secondVariable, this.operator, this.isCustomValue), true);
+        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.variable, this.isCustomValue);
+        return new ReturnClone_1.default(newStatement, true);
     };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;
 
-},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],3:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"../variable/Char":20,"./Statement":8,"./helper/options/Option":18}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -271,7 +327,7 @@ var DeclareStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../../utilities/ReturnClone":29,"../variable/Char":19,"../variable/Double":20,"../variable/Float":21,"../variable/Integer":22,"../variable/Long":23,"../variable/String":24,"./Statement":8,"./helper/options/Option":17}],4:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"../variable/Char":20,"../variable/Double":21,"../variable/Float":22,"../variable/Integer":23,"../variable/Long":24,"../variable/String":25,"./Statement":8,"./helper/options/Option":18}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -423,7 +479,7 @@ var ForStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":29,"./DeclareStatement":3,"./Statement":8,"./helper/options/Option":17}],5:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"./DeclareStatement":3,"./Statement":8,"./helper/options/Option":18}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -537,7 +593,7 @@ var IfStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/ifs/If":16}],6:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/ifs/If":17}],6:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -617,7 +673,7 @@ var InputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../../utilities/ReturnClone":29,"../variable/Char":19,"../variable/Double":20,"../variable/Float":21,"../variable/Integer":22,"../variable/Long":23,"./Statement":8,"./helper/options/Option":17}],7:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"../variable/Char":20,"../variable/Double":21,"../variable/Float":22,"../variable/Integer":23,"../variable/Long":24,"./Statement":8,"./helper/options/Option":18}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -711,7 +767,7 @@ var OutputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],8:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/options/Option":18}],8:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -751,7 +807,7 @@ var Statement = /** @class */ (function () {
 }());
 exports.default = Statement;
 
-},{"../../utilities/ReturnClone":29}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -870,7 +926,7 @@ var SwitchStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],10:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/options/Option":18}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1026,7 +1082,65 @@ var WhileStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"../../utilities/ReturnClone":29,"./Statement":8,"./helper/options/Option":17}],11:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/options/Option":18}],11:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Arithmetic = /** @class */ (function () {
+    function Arithmetic(firstVariable, secondVariable, firstChild, secondChild, operator, isCustom) {
+        this.firstChild = undefined;
+        this.secondChild = undefined;
+        this.firstVariable = undefined;
+        this.secondVariable = undefined;
+        this.firstVariable = firstVariable;
+        this.secondVariable = secondVariable;
+        this.firstChild = firstChild;
+        this.secondChild = secondChild;
+        this.operator = operator;
+        this.isCustom = isCustom;
+    }
+    Arithmetic.prototype.generateBlockCodeText = function () {
+        var text = '( ';
+        if (this.firstVariable != undefined)
+            text += this.firstVariable.name + ' ';
+        else
+            text += this.firstChild.generateBlockCodeText() + ' ';
+        text += this.operator + ' ';
+        if (this.secondVariable != undefined) {
+            if (this.isCustom)
+                text += this.secondVariable.value + ' ';
+            else
+                text += this.secondVariable.name + ' ';
+        }
+        else
+            text += this.secondChild.generateBlockCodeText() + ' ';
+        text += ' )';
+        return text;
+    };
+    Arithmetic.prototype.findVariable = function (variable) {
+        var temp = false;
+        if (this.firstVariable.name == variable.name)
+            return true;
+        if (!this.isCustom) {
+            if (this.secondVariable.name == variable.name)
+                return true;
+        }
+        if (this.firstChild != undefined) {
+            temp = this.firstChild.findVariable(variable);
+            if (temp)
+                return temp;
+        }
+        if (this.secondChild != undefined) {
+            temp = this.secondChild.findVariable(variable);
+            if (temp)
+                return temp;
+        }
+        return false;
+    };
+    return Arithmetic;
+}());
+exports.default = Arithmetic;
+
+},{}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1158,7 +1272,7 @@ var Case = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":29,"../../Statement":8,"../options/Option":17}],12:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":30,"../../Statement":8,"../options/Option":18}],13:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1201,7 +1315,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":19,"../../../variable/String":24}],13:[function(require,module,exports){
+},{"../../../variable/Char":20,"../../../variable/String":25}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -1213,7 +1327,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1288,7 +1402,7 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"../../../../utilities/ReturnClone":29,"./If":16}],15:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":30,"./If":17}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1408,7 +1522,7 @@ var Else = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Else;
 
-},{"../../../../utilities/ReturnClone":29,"../../Statement":8,"../options/Option":17}],16:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":30,"../../Statement":8,"../options/Option":18}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1550,7 +1664,7 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../../../utilities/ReturnClone":29,"../../Statement":8,"../options/Option":17}],17:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":30,"../../Statement":8,"../options/Option":18}],18:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1647,7 +1761,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":28,"../../AssignmentStatement":2,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"./OptionSelection":18}],18:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":29,"../../AssignmentStatement":2,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"./OptionSelection":19}],19:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1889,7 +2003,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":28,"../../../../utilities/ReturnPaste":30,"../../AssignmentStatement":2,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"../case/Case":11,"../ifs/Else":15,"../ifs/If":16}],19:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":29,"../../../../utilities/ReturnPaste":31,"../../AssignmentStatement":2,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"../case/Case":12,"../ifs/Else":16,"../ifs/If":17}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1925,7 +2039,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":27,"./Variable":25}],20:[function(require,module,exports){
+},{"../../utilities/Return":28,"./Variable":26}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1967,7 +2081,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":27,"./Variable":25}],21:[function(require,module,exports){
+},{"../../utilities/Return":28,"./Variable":26}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2009,7 +2123,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":27,"./Variable":25}],22:[function(require,module,exports){
+},{"../../utilities/Return":28,"./Variable":26}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2051,7 +2165,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":27,"./Variable":25}],23:[function(require,module,exports){
+},{"../../utilities/Return":28,"./Variable":26}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2091,7 +2205,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":27,"./Variable":25}],24:[function(require,module,exports){
+},{"../../utilities/Return":28,"./Variable":26}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2124,7 +2238,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":27,"./Variable":25}],25:[function(require,module,exports){
+},{"../../utilities/Return":28,"./Variable":26}],26:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2153,7 +2267,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":27}],26:[function(require,module,exports){
+},{"../../utilities/Return":28}],27:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2180,6 +2294,7 @@ var Option_1 = __importDefault(require("../classes/statement/helper/options/Opti
 var InputStatement_1 = __importDefault(require("../classes/statement/InputStatement"));
 var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
 var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
+var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignment/Arithmetic"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -2295,6 +2410,7 @@ $(document).ready(function () {
         $('#chosen-for-loop-variable').removeClass('input-error');
         $('#chosen-for-loop-value').removeClass('input-error');
         $('#update-value-for-loop').removeClass('input-error');
+        $('#chosen-asg-variable').removeClass('input-error');
         for (var i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
             $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
@@ -3294,6 +3410,14 @@ $(document).ready(function () {
             for (var i = 0; i < listDouble.length; i++)
                 allVariables.push(listDouble[i]);
         }
+        else if (type == 'assignment') {
+            for (var i = 0; i < listChar.length; i++)
+                allVariables.push(listChar[i]);
+            for (var i = 0; i < listFloat.length; i++)
+                allVariables.push(listFloat[i]);
+            for (var i = 0; i < listDouble.length; i++)
+                allVariables.push(listDouble[i]);
+        }
         return allVariables;
     }
     $(document).on('click', '#outputVariableBtn', function () {
@@ -3598,6 +3722,173 @@ $(document).ready(function () {
         }
         return true;
     }
+    var assignmentToBeValidated = [];
+    var assignmentCount = 1;
+    $(document).on('click', '.assignment', function () {
+        assignmentCount = 1;
+        assignmentToBeValidated = [];
+        var createBtn;
+        var container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12');
+        if ($(this).data('value') == 'arithmetic') {
+            initInput('Arithmetic Assignment');
+            createArithmeticAssignmentHeader();
+            createArithmeticAssignmentInput(undefined);
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create');
+        }
+        else if ($(this).data('value') == 'string') {
+        }
+        else if ($(this).data('value') == 'variable') {
+            initInput('Variable Assignment');
+            createVariableAssignmentInput();
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-variable-button').text('Create');
+        }
+        container.append(createBtn);
+        $('#pcInputContainerLower').append(container);
+    });
+    function createArithmeticAssignmentHeader() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select' }).append($('<option>').text('Choose Variable')))));
+        $('#pcInputContainer').append(container);
+    }
+    function createArithmeticAssignmentInput(parent) {
+        var listVariable = getSelectedVariables('assignment');
+        var firstValueTypeClassName = 'form-select first-select-value-type first-select-value-type-' + assignmentCount;
+        var secondValueTypeClassName = 'form-select second-select-value-type second-select-value-type-' + assignmentCount;
+        var firstValueContainerClassName = 'first-assignment-value-container first-assignment-value-container-' + assignmentCount;
+        var secondValueContainerClassName = 'second-assignment-value-container second-assignment-value-container-' + assignmentCount;
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<input>', { type: 'hidden', name: parent }), $('<div>', { class: 'mb-3' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: firstValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + firstValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('first-value-' + assignmentCount))).data('value', assignmentCount), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Operator')), $('<div>', { class: 'col-sm-7 col-7 d-flex justify-content-center align-items-center' }).append($('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount, checked: 'true' }), $('<div>').text('+')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('-')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('/')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('*')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('%')), $('<div>', { class: 'col-sm-1 col-1' }))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: secondValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + secondValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + assignmentCount))).data('value', assignmentCount));
+        assignmentToBeValidated.push(assignmentCount);
+        assignmentCount++;
+        $('#pcInputContainer').append(container);
+    }
+    $(document).on('change', '.first-select-value-type', function () {
+        var targetId = $(this).data('value');
+        var selectValue = $('.first-select-value-type-' + targetId).find('option').filter(':selected').val();
+        $('.first-assignment-value-container-' + targetId).empty();
+        $("input[name='" + 'first-value-' + targetId + "']").parent().remove();
+        console.log($("input[name='" + 'first-value-' + targetId + "']").parent());
+        if (selectValue == 'custom') {
+            $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'text' }).addClass('first-value-' + targetId)));
+        }
+        else if (selectValue == 'variable') {
+            var listVariable = getSelectedVariables('assignment');
+            $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('first-value-' + targetId)));
+        }
+        else {
+            $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
+            createArithmeticAssignmentInput('first-value-' + targetId);
+        }
+    });
+    $(document).on('change', '.second-select-value-type', function () {
+        var targetId = $(this).data('value');
+        var selectValue = $('.second-select-value-type-' + targetId).find('option').filter(':selected').val();
+        $('.second-assignment-value-container-' + targetId).empty();
+        $("input[name='" + 'second-value-' + targetId + "']").parent().remove();
+        if (selectValue == 'custom') {
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'text' }).addClass('second-value-' + targetId)));
+        }
+        else if (selectValue == 'variable') {
+            var listVariable = getSelectedVariables('assignment');
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + targetId)));
+        }
+        else {
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
+            createArithmeticAssignmentInput('second-value-' + targetId);
+        }
+    });
+    // Assignment Variable
+    function createVariableAssignmentInput() {
+        var listVariable = getAllVariables();
+        var container = $('<div></div>');
+        var container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3 mt-2');
+        var variableTitle = $('<div></div>').append($('<strong></strong>').text('Variable')).addClass('col-sm-5 col-5');
+        var variableSelect = createSelect(listVariable, 7, true).attr('id', 'chosen-asg-variable');
+        var container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
+        var valueTypeTitle = $('<div></div>').append($('<strong></strong>').text('Value Type')).addClass('col-sm-5 col-5');
+        var valueTypeContainer = $('<div></div>').addClass('col-sm-7 col-7');
+        var valueTypeSelect = $('<select></select>').addClass('form-select choose-asg-value-type');
+        valueTypeSelect.append($('<option></option>').val('variable').text('Variable'));
+        valueTypeSelect.append($('<option></option>').val('custom').text('Custom Value'));
+        var container3 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
+        var valueTitle = $('<div></div>').append($('<strong></strong>').text('Value')).addClass('col-sm-5 col-5');
+        var valueContainer = $('<div></div>').addClass('col-sm-7 col-7 value-container-asg');
+        var valueSelect = createSelect(listVariable, 12, true).attr('id', 'chosen-asg-value');
+        container1.append(variableTitle);
+        container1.append(variableSelect);
+        container2.append(valueTypeTitle);
+        valueTypeContainer.append(valueTypeSelect);
+        container2.append(valueTypeContainer);
+        container3.append(valueTitle);
+        valueContainer.append(valueSelect);
+        container3.append(valueContainer);
+        container.append(container1);
+        container.append(container2);
+        container.append(container3);
+        $('#pcInputContainer').append(container);
+    }
+    $(document).on('change', '.choose-asg-value-type', function () {
+        $('.value-container-asg').empty();
+        var input;
+        if ($(this).find('option').filter(':selected').val() == 'custom') {
+            input = $('<input>').attr('type', 'text').addClass('form-control').attr('id', 'chosen-asg-value');
+        }
+        else {
+            var listVariable = getAllVariables();
+            input = createSelect(listVariable, 12, true).attr('id', 'chosen-asg-value');
+        }
+        $('.value-container-asg').append(input);
+    });
+    $(document).on('click', '#create-asg-variable-button', function () {
+        clearError();
+        var firstVariableName = $('#chosen-asg-variable').find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        var isCustom = false;
+        var result;
+        if (firstVariableName == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('#chosen-asg-variable').addClass('input-error');
+            return;
+        }
+        firstVariable = findVariable(firstVariableName);
+        if ($('.choose-asg-value-type').find('option').filter(':selected').val() == 'custom') {
+            isCustom = true;
+            var value = $('#chosen-asg-value').val();
+            if (value == '') {
+                createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+                $('#chosen-asg-value').addClass('input-error');
+                return;
+            }
+            secondVariable = createVariableFromValue(value);
+            result = secondVariable.validateValue();
+            if (!result.bool) {
+                $('#chosen-asg-value').addClass('input-error');
+                createErrorMessage(result.message, 'pcInputErrorContainer');
+                return;
+            }
+        }
+        else {
+            isCustom = false;
+            var value = $('#chosen-asg-value').find('option').filter(':selected').val();
+            if (value == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+                $('#chosen-asg-value').addClass('input-error');
+                return;
+            }
+            secondVariable = findVariable(value);
+        }
+        if (firstVariable instanceof String_1.default || secondVariable instanceof String_1.default) {
+            if (firstVariable instanceof String_1.default && secondVariable instanceof String_1.default) { }
+            else {
+                $('#chosen-asg-value').addClass('input-error');
+                createErrorMessage('Could not assign other data type with String data type', 'pcInputErrorContainer');
+                return;
+            }
+        }
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, secondVariable, isCustom);
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    });
     // Canvas logic
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
@@ -3935,7 +4226,7 @@ $(document).ready(function () {
         listInteger.push(variable);
         var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
         var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 0), true));
-        var secondIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
+        var secondIf = new Elif_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
         var ifOperations = [];
         var temp = [];
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, 'The number is an even number'));
@@ -3946,14 +4237,17 @@ $(document).ready(function () {
         ifOperations.push(firstIf);
         ifOperations.push(secondIf);
         ifStatement.updateIfOperations(ifOperations);
+        var listArithmetic = [];
+        listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', true));
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
         handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
-        handleAdd(new AssignmentStatement_1.default(statementCount++, 1, variable, new Integer_1.default('x', 2), '%', true));
+        handleAdd(assignmentStatement);
         handleAdd(ifStatement);
     }
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/AssignmentStatement":2,"../classes/statement/DeclareStatement":3,"../classes/statement/ForStatement":4,"../classes/statement/IfStatement":5,"../classes/statement/InputStatement":6,"../classes/statement/OutputStatement":7,"../classes/statement/SwitchStatement":9,"../classes/statement/WhileStatement":10,"../classes/statement/helper/case/Case":11,"../classes/statement/helper/general/Condition":12,"../classes/statement/helper/ifs/Elif":14,"../classes/statement/helper/ifs/Else":15,"../classes/statement/helper/ifs/If":16,"../classes/statement/helper/options/Option":17,"../classes/variable/Char":19,"../classes/variable/Double":20,"../classes/variable/Float":21,"../classes/variable/Integer":22,"../classes/variable/Long":23,"../classes/variable/String":24}],27:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/statement/AssignmentStatement":2,"../classes/statement/DeclareStatement":3,"../classes/statement/ForStatement":4,"../classes/statement/IfStatement":5,"../classes/statement/InputStatement":6,"../classes/statement/OutputStatement":7,"../classes/statement/SwitchStatement":9,"../classes/statement/WhileStatement":10,"../classes/statement/helper/assignment/Arithmetic":11,"../classes/statement/helper/case/Case":12,"../classes/statement/helper/general/Condition":13,"../classes/statement/helper/ifs/Elif":15,"../classes/statement/helper/ifs/Else":16,"../classes/statement/helper/ifs/If":17,"../classes/statement/helper/options/Option":18,"../classes/variable/Char":20,"../classes/variable/Double":21,"../classes/variable/Float":22,"../classes/variable/Integer":23,"../classes/variable/Long":24,"../classes/variable/String":25}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -3965,7 +4259,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -3979,7 +4273,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone = /** @class */ (function () {
@@ -3992,7 +4286,7 @@ var ReturnClone = /** @class */ (function () {
 }());
 exports.default = ReturnClone;
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -4004,4 +4298,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[26]);
+},{}]},{},[27]);

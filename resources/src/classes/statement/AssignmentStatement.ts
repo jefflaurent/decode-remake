@@ -1,23 +1,31 @@
 import ReturnClick from "../../utilities/ReturnClick";
 import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
+import Char from "../variable/Char";
 import Variable from "../variable/Variable";
+import Arithmetic from "./helper/assignment/Arithmetic";
 import Option from "./helper/options/Option";
 import Statement from "./Statement";
 
 class AssignmentStatement extends Statement {
 
-    firstVariable: Variable
-    secondVariable: Variable
-    isCustomValue: boolean
-    operator: string
+    targetVariable: Variable
+    variable: Variable | undefined = undefined
+    type: string
+    listArithmetic: Arithmetic[] | undefined = undefined
+    listOperator: string[] | undefined = undefined
+    isCustomValue: boolean = false
 
-    constructor(statementId: number, level: number, firstVariable: Variable, secondVariable: Variable, operator: string, isCustomValue: boolean) {
+    constructor(statementId: number, level: number, type: string, targetVariable: Variable, 
+        listArithmetic: Arithmetic[] | undefined, listOperator: string[] | undefined, 
+        variable: Variable | undefined, isCustomValue: boolean | undefined) {
         super(level)
+        this.type = type
         this.statementId = this.generateId(statementId)
-        this.firstVariable = firstVariable
-        this.secondVariable = secondVariable
-        this.operator = operator
+        this.targetVariable = targetVariable
+        this.variable = variable
+        this.listArithmetic = listArithmetic
+        this.listOperator = listOperator
         this.isCustomValue = isCustomValue
         this.color = '#f4be0b'
     }
@@ -27,14 +35,48 @@ class AssignmentStatement extends Statement {
     }
 
     writeToCanvas(canvas: Canvas): void {
-        let text = 'SET ' + this.firstVariable.name + ' = ' + this.generateBlockCodeText()
+        let text = 'SET ' + this.targetVariable.name + ' = ' + this.generateBlockCodeText()
         let coordinate = canvas.writeText(this.level, text, this.color)
         this.createOption(canvas, coordinate.x + canvas.SPACE,  coordinate.y - canvas.LINE_HEIGHT)
     }
 
     generateBlockCodeText(): string {
-        return this.isCustomValue ? this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value : 
-            this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name 
+        let text: string = ''
+        if(this.type == 'arithmetic') 
+            text = this.generateArithmeticText()
+        else if(this.type == 'variable') 
+            text = this.generateVariableText()
+        else {
+
+        }
+        
+        return text
+    }
+
+    generateArithmeticText(): string {
+        let text = ''
+
+        for(let i = 0; i < this.listArithmetic.length; i++) {
+            text += this.listArithmetic[i].generateBlockCodeText()
+            if(this.listOperator != undefined) {
+                if(i < this.listOperator.length) {
+                    text += ' ' + this.listOperator[i] + ' '
+                }
+            }
+        }
+        
+        return text
+    }
+
+    generateVariableText(): string {
+        if(this.isCustomValue) {
+            if(this.variable instanceof Char)
+                return "'" + this.variable.value + "'"
+            else
+                return this.variable.value
+        }
+        else
+            return this.variable.name
     }
 
     createOption(canvas: Canvas, coorX: number, coorY: number): void {
@@ -54,18 +96,44 @@ class AssignmentStatement extends Statement {
     }
 
     findVariable(variable: Variable): Statement | undefined {
-        if(variable.name == this.firstVariable.name)
-            return this
-        if(!this.isCustomValue) {
-            if(variable.name == this.secondVariable.name)
-                return this
-        }
+        if(this.type == 'variable') 
+            return this.findTypeVariable(variable)
+        else if(this.type == 'arithmetic')
+            return this.findTypeArithmetic(variable)
+        else 
+            return undefined
         
         return undefined
     }
 
+    findTypeVariable(variable: Variable): Statement | undefined {
+        if(this.targetVariable.name == variable.name) 
+            return this
+        if(!this.isCustomValue) {
+            if(this.variable.name == variable.name)
+                return this
+        }
+
+        return undefined
+    }
+
+    findTypeArithmetic(variable: Variable): Statement | undefined {
+        let temp: boolean = false
+        
+        if(this.listArithmetic != undefined) {
+            for(let i = 0; i < this.listArithmetic.length; i++) {
+                temp = this.listArithmetic[i].findVariable(variable)
+                if(temp)
+                    return this
+            }
+        }
+
+        return undefined
+    }
+
     cloneStatement(statementCount: number): ReturnClone {
-        return new ReturnClone(new AssignmentStatement(statementCount, this.level, this.firstVariable, this.secondVariable, this.operator, this.isCustomValue), true)
+        let newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.variable, this.isCustomValue)
+        return new ReturnClone(newStatement, true)
     }
 }
 

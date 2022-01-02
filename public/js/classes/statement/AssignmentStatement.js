@@ -17,16 +17,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../variable/Char"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(statementId, level, firstVariable, secondVariable, operator, isCustomValue) {
+    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, variable, isCustomValue) {
         var _this = _super.call(this, level) || this;
+        _this.variable = undefined;
+        _this.listArithmetic = undefined;
+        _this.listOperator = undefined;
+        _this.isCustomValue = false;
+        _this.type = type;
         _this.statementId = _this.generateId(statementId);
-        _this.firstVariable = firstVariable;
-        _this.secondVariable = secondVariable;
-        _this.operator = operator;
+        _this.targetVariable = targetVariable;
+        _this.variable = variable;
+        _this.listArithmetic = listArithmetic;
+        _this.listOperator = listOperator;
         _this.isCustomValue = isCustomValue;
         _this.color = '#f4be0b';
         return _this;
@@ -35,13 +42,41 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return 'assignment-statement-' + number;
     };
     AssignmentStatement.prototype.writeToCanvas = function (canvas) {
-        var text = 'SET ' + this.firstVariable.name + ' = ' + this.generateBlockCodeText();
+        var text = 'SET ' + this.targetVariable.name + ' = ' + this.generateBlockCodeText();
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.createOption(canvas, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT);
     };
     AssignmentStatement.prototype.generateBlockCodeText = function () {
-        return this.isCustomValue ? this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value :
-            this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        var text = '';
+        if (this.type == 'arithmetic')
+            text = this.generateArithmeticText();
+        else if (this.type == 'variable')
+            text = this.generateVariableText();
+        else {
+        }
+        return text;
+    };
+    AssignmentStatement.prototype.generateArithmeticText = function () {
+        var text = '';
+        for (var i = 0; i < this.listArithmetic.length; i++) {
+            text += this.listArithmetic[i].generateBlockCodeText();
+            if (this.listOperator != undefined) {
+                if (i < this.listOperator.length) {
+                    text += ' ' + this.listOperator[i] + ' ';
+                }
+            }
+        }
+        return text;
+    };
+    AssignmentStatement.prototype.generateVariableText = function () {
+        if (this.isCustomValue) {
+            if (this.variable instanceof Char_1.default)
+                return "'" + this.variable.value + "'";
+            else
+                return this.variable.value;
+        }
+        else
+            return this.variable.name;
     };
     AssignmentStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
@@ -57,16 +92,37 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return false;
     };
     AssignmentStatement.prototype.findVariable = function (variable) {
-        if (variable.name == this.firstVariable.name)
+        if (this.type == 'variable')
+            return this.findTypeVariable(variable);
+        else if (this.type == 'arithmetic')
+            return this.findTypeArithmetic(variable);
+        else
+            return undefined;
+        return undefined;
+    };
+    AssignmentStatement.prototype.findTypeVariable = function (variable) {
+        if (this.targetVariable.name == variable.name)
             return this;
         if (!this.isCustomValue) {
-            if (variable.name == this.secondVariable.name)
+            if (this.variable.name == variable.name)
                 return this;
         }
         return undefined;
     };
+    AssignmentStatement.prototype.findTypeArithmetic = function (variable) {
+        var temp = false;
+        if (this.listArithmetic != undefined) {
+            for (var i = 0; i < this.listArithmetic.length; i++) {
+                temp = this.listArithmetic[i].findVariable(variable);
+                if (temp)
+                    return this;
+            }
+        }
+        return undefined;
+    };
     AssignmentStatement.prototype.cloneStatement = function (statementCount) {
-        return new ReturnClone_1.default(new AssignmentStatement(statementCount, this.level, this.firstVariable, this.secondVariable, this.operator, this.isCustomValue), true);
+        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.variable, this.isCustomValue);
+        return new ReturnClone_1.default(newStatement, true);
     };
     return AssignmentStatement;
 }(Statement_1.default));
