@@ -1716,6 +1716,7 @@ $(document).ready(function() {
 
     let assignmentToBeValidated = []
     let assignmentCount = 1
+    let assignmentStructure: {[index: string]: any} = {}
 
     $(document).on('click', '.assignment', function() {
         assignmentCount = 1
@@ -1726,7 +1727,7 @@ $(document).ready(function() {
         if($(this).data('value') == 'arithmetic') {
             initInput('Arithmetic Assignment')
             createArithmeticAssignmentHeader()
-            createArithmeticAssignmentInput(undefined)
+            createArithmeticAssignmentInput()
             createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create')
         }
         else if($(this).data('value') == 'string') {
@@ -1759,7 +1760,7 @@ $(document).ready(function() {
         $('#pcInputContainer').append(container) 
     }
 
-    function createArithmeticAssignmentInput(parent: string | undefined) { 
+    function createArithmeticAssignmentInput() { 
         let listVariable: Variable[] = getSelectedVariables('assignment')
         let firstValueTypeClassName = 'form-select first-select-value-type first-select-value-type-' + assignmentCount
         let secondValueTypeClassName = 'form-select second-select-value-type second-select-value-type-' + assignmentCount
@@ -1768,7 +1769,7 @@ $(document).ready(function() {
         
         let container =
         $('<div>', {class: 'p-2 border border-1 rounded bg-light mb-3'}).append(
-            $('<input>', {type: 'hidden', name: parent}),
+            $('<input>', {type: 'hidden', name: 'arithmetic-asg-' + assignmentCount}),
             $('<div>', {class: 'mb-3'}).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)),
             $('<div>', {class: 'col-sm-12 col-12 d-flex align-items-center mb-3'}).append(
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Value Type')),
@@ -1837,8 +1838,9 @@ $(document).ready(function() {
         let selectValue = $('.first-select-value-type-' + targetId).find('option').filter(':selected').val() as string
 
         $('.first-assignment-value-container-' + targetId).empty()
-        $("input[name='" + 'first-value-' + targetId + "']").parent().remove()
-        console.log($("input[name='" + 'first-value-' + targetId + "']").parent())
+        if(selectValue != 'operation')
+            deleteFirstChild(targetId)
+        
         if(selectValue == 'custom') {
             $('.first-assignment-value-container-' + targetId).append(
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('First Value')),
@@ -1860,7 +1862,8 @@ $(document).ready(function() {
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('First Value')),
                 $('<div>', {class: 'col-sm-7 col-7'}).append($('<strong>').text('Arithmetic Operation ' + assignmentCount))
             )
-            createArithmeticAssignmentInput('first-value-' + targetId)
+            assignmentStructure['first-value-' + targetId] = assignmentCount
+            createArithmeticAssignmentInput()
         }
     })
 
@@ -1869,7 +1872,9 @@ $(document).ready(function() {
         let selectValue = $('.second-select-value-type-' + targetId).find('option').filter(':selected').val() as string
 
         $('.second-assignment-value-container-' + targetId).empty()
-        $("input[name='" + 'second-value-' + targetId + "']").parent().remove()
+        if(selectValue != 'operation')
+            deleteSecondChild(targetId)
+
         if(selectValue == 'custom') {
             $('.second-assignment-value-container-' + targetId).append(
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Second Value')),
@@ -1891,9 +1896,48 @@ $(document).ready(function() {
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Second Value')),
                 $('<div>', {class: 'col-sm-7 col-7'}).append($('<strong>').text('Arithmetic Operation ' + assignmentCount))
             )
-            createArithmeticAssignmentInput('second-value-' + targetId)
+            assignmentStructure['second-value-' + targetId] = assignmentCount
+            createArithmeticAssignmentInput()
         }
     })
+
+    function deleteFirstChild(targetId: string) {
+        let temp: string | undefined = undefined
+
+        temp = assignmentStructure['first-value-' + targetId]
+        $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
+        assignmentStructure['first-value-' + targetId] = undefined
+
+        deleteChildAssignment(temp)
+    }
+
+    function deleteSecondChild(targetId: string) {
+        let temp: string | undefined = undefined
+
+        temp = assignmentStructure['second-value-' + targetId]
+        $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
+        assignmentStructure['second-value-' + targetId] = undefined
+
+        deleteChildAssignment(temp)
+    }
+
+    function deleteChildAssignment(targetId: string) {
+        let temp: string | undefined = undefined
+
+        temp = assignmentStructure['first-value-' + targetId]
+        if(temp != undefined) {
+            $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
+            assignmentStructure['first-value-' + targetId] = undefined
+            deleteChildAssignment(temp)
+        }
+
+        temp = assignmentStructure['second-value-' + targetId]
+        if(temp != undefined) {
+            $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
+            assignmentStructure['second-value-' + targetId] = undefined
+            deleteChildAssignment(temp)
+        }
+    }
 
     // Assignment Variable
 

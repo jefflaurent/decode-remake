@@ -1454,6 +1454,7 @@ $(document).ready(function () {
     }
     var assignmentToBeValidated = [];
     var assignmentCount = 1;
+    var assignmentStructure = {};
     $(document).on('click', '.assignment', function () {
         assignmentCount = 1;
         assignmentToBeValidated = [];
@@ -1462,7 +1463,7 @@ $(document).ready(function () {
         if ($(this).data('value') == 'arithmetic') {
             initInput('Arithmetic Assignment');
             createArithmeticAssignmentHeader();
-            createArithmeticAssignmentInput(undefined);
+            createArithmeticAssignmentInput();
             createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create');
         }
         else if ($(this).data('value') == 'string') {
@@ -1479,13 +1480,13 @@ $(document).ready(function () {
         var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select' }).append($('<option>').text('Choose Variable')))));
         $('#pcInputContainer').append(container);
     }
-    function createArithmeticAssignmentInput(parent) {
+    function createArithmeticAssignmentInput() {
         var listVariable = getSelectedVariables('assignment');
         var firstValueTypeClassName = 'form-select first-select-value-type first-select-value-type-' + assignmentCount;
         var secondValueTypeClassName = 'form-select second-select-value-type second-select-value-type-' + assignmentCount;
         var firstValueContainerClassName = 'first-assignment-value-container first-assignment-value-container-' + assignmentCount;
         var secondValueContainerClassName = 'second-assignment-value-container second-assignment-value-container-' + assignmentCount;
-        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<input>', { type: 'hidden', name: parent }), $('<div>', { class: 'mb-3' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: firstValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + firstValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('first-value-' + assignmentCount))).data('value', assignmentCount), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Operator')), $('<div>', { class: 'col-sm-7 col-7 d-flex justify-content-center align-items-center' }).append($('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount, checked: 'true' }), $('<div>').text('+')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('-')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('/')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('*')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('%')), $('<div>', { class: 'col-sm-1 col-1' }))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: secondValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + secondValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + assignmentCount))).data('value', assignmentCount));
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<input>', { type: 'hidden', name: 'arithmetic-asg-' + assignmentCount }), $('<div>', { class: 'mb-3' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: firstValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + firstValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('first-value-' + assignmentCount))).data('value', assignmentCount), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Operator')), $('<div>', { class: 'col-sm-7 col-7 d-flex justify-content-center align-items-center' }).append($('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount, checked: 'true' }), $('<div>').text('+')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('-')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('/')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('*')), $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-evenly align-items-center' }).append($('<input>', { type: 'radio', name: 'op-asg-' + assignmentCount }), $('<div>').text('%')), $('<div>', { class: 'col-sm-1 col-1' }))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: secondValueTypeClassName }).append($('<option>', { value: 'variable', text: 'Variable' }), $('<option>', { value: 'custom', text: 'Custom Value' }), $('<option>', { value: 'operation', text: 'Arithmetic Operation' })).data('value', assignmentCount))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3 ' + secondValueContainerClassName }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + assignmentCount))).data('value', assignmentCount));
         assignmentToBeValidated.push(assignmentCount);
         assignmentCount++;
         $('#pcInputContainer').append(container);
@@ -1494,8 +1495,8 @@ $(document).ready(function () {
         var targetId = $(this).data('value');
         var selectValue = $('.first-select-value-type-' + targetId).find('option').filter(':selected').val();
         $('.first-assignment-value-container-' + targetId).empty();
-        $("input[name='" + 'first-value-' + targetId + "']").parent().remove();
-        console.log($("input[name='" + 'first-value-' + targetId + "']").parent());
+        if (selectValue != 'operation')
+            deleteFirstChild(targetId);
         if (selectValue == 'custom') {
             $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'text' }).addClass('first-value-' + targetId)));
         }
@@ -1505,14 +1506,16 @@ $(document).ready(function () {
         }
         else {
             $('.first-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('First Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
-            createArithmeticAssignmentInput('first-value-' + targetId);
+            assignmentStructure['first-value-' + targetId] = assignmentCount;
+            createArithmeticAssignmentInput();
         }
     });
     $(document).on('change', '.second-select-value-type', function () {
         var targetId = $(this).data('value');
         var selectValue = $('.second-select-value-type-' + targetId).find('option').filter(':selected').val();
         $('.second-assignment-value-container-' + targetId).empty();
-        $("input[name='" + 'second-value-' + targetId + "']").parent().remove();
+        if (selectValue != 'operation')
+            deleteSecondChild(targetId);
         if (selectValue == 'custom') {
             $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'text' }).addClass('second-value-' + targetId)));
         }
@@ -1522,9 +1525,39 @@ $(document).ready(function () {
         }
         else {
             $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
-            createArithmeticAssignmentInput('second-value-' + targetId);
+            assignmentStructure['second-value-' + targetId] = assignmentCount;
+            createArithmeticAssignmentInput();
         }
     });
+    function deleteFirstChild(targetId) {
+        var temp = undefined;
+        temp = assignmentStructure['first-value-' + targetId];
+        $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
+        assignmentStructure['first-value-' + targetId] = undefined;
+        deleteChildAssignment(temp);
+    }
+    function deleteSecondChild(targetId) {
+        var temp = undefined;
+        temp = assignmentStructure['second-value-' + targetId];
+        $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
+        assignmentStructure['second-value-' + targetId] = undefined;
+        deleteChildAssignment(temp);
+    }
+    function deleteChildAssignment(targetId) {
+        var temp = undefined;
+        temp = assignmentStructure['first-value-' + targetId];
+        if (temp != undefined) {
+            $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
+            assignmentStructure['first-value-' + targetId] = undefined;
+            deleteChildAssignment(temp);
+        }
+        temp = assignmentStructure['second-value-' + targetId];
+        if (temp != undefined) {
+            $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
+            assignmentStructure['second-value-' + targetId] = undefined;
+            deleteChildAssignment(temp);
+        }
+    }
     // Assignment Variable
     function createVariableAssignmentInput() {
         var listVariable = getAllVariables();
