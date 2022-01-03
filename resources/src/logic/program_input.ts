@@ -159,6 +159,13 @@ $(document).ready(function() {
         for(let i = 0; i < caseToBeValidated.length; i++) 
             $('.' + caseToBeValidated[i]).removeClass('input-error')
 
+        for(let i = 0; i < assignmentToBeValidated.length; i++) {
+            $('.first-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error')
+            $('.first-value-' + assignmentToBeValidated[i]).removeClass('input-error')
+            $('.second-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error')
+            $('.second-value-' + assignmentToBeValidated[i]).removeClass('input-error')
+        }
+
         $('#chosenVariable').removeClass('input-error')
         $('#chosenOutputVariable').removeClass('input-error')
         $('#chosenSwitchVariable').removeClass('input-error')
@@ -166,6 +173,7 @@ $(document).ready(function() {
         $('#chosen-for-loop-value').removeClass('input-error')
         $('#update-value-for-loop').removeClass('input-error')
         $('#chosen-asg-variable').removeClass('input-error')
+        $('.selected-target-variable-asg').removeClass('input-error')
 
         for(let i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
@@ -703,8 +711,6 @@ $(document).ready(function() {
         for(let i = 0 ; i < caseToBeValidated.length; i++) {
             className = '.' + caseToBeValidated[i]
             value = $(className).val() as string
-            console.log(className)
-            console.log(value)
             if(value == undefined) {
                 $(className).addClass('input-error')
                 createErrorMessage('Field cannot be empty!', 'pcInputErrorContainer')
@@ -1411,6 +1417,8 @@ $(document).ready(function() {
         drawCanvas()
     })
 
+    // Repetition
+
     $(document).on('click', '.repetition', function() {
         let createBtn: any
         if($(this).data('value') == 'for') {
@@ -1714,7 +1722,9 @@ $(document).ready(function() {
         return true
     }
 
-    let assignmentToBeValidated = []
+    // Arithmetic Assignment
+
+    let assignmentToBeValidated: number[] = []
     let assignmentCount = 1
     let assignmentStructure: {[index: string]: any} = {}
 
@@ -1744,15 +1754,15 @@ $(document).ready(function() {
     })
 
     function createArithmeticAssignmentHeader() {
+        let listVariable: Variable[] = getSelectedVariables('assignment')
+
         let container = 
         $('<div>', {class:'p-2 border border-1 rounded bg-light mb-3'}).append(
             $('<div>', {class: 'mb-3'}).append($('<strong>').text('Target Variable')),
             $('<div>', {class: 'col-sm-12 col-12 d-flex align-items-center mb-3'}).append(
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Variable')),
                 $('<div>', {class: 'col-sm-7 col-7'}).append(
-                    $('<select>', {class: 'form-select'}).append(
-                        $('<option>').text('Choose Variable')
-                    )
+                    createSelect(listVariable, 12, true).addClass('selected-target-variable-asg')
                 )
             )
         )
@@ -1888,7 +1898,7 @@ $(document).ready(function() {
 
             $('.second-assignment-value-container-' + targetId).append(
                 $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Second Value')),
-                $('<div>', {class: 'col-sm-7 col-7'}).append(createSelect(listVariable, 12, true).addClass('second-value-' + targetId))
+                $('<div>', {class: 'col-sm-7 col-7'}).append((createSelect(listVariable, 12, true)).addClass('second-value-' + targetId))
             )
         }
         else {
@@ -1903,31 +1913,44 @@ $(document).ready(function() {
 
     function deleteFirstChild(targetId: string) {
         let temp: string | undefined = undefined
+        let idx: number
 
         temp = assignmentStructure['first-value-' + targetId]
         $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
         assignmentStructure['first-value-' + targetId] = undefined
+        idx = assignmentToBeValidated.indexOf(parseInt(temp))
+        if(idx != -1)
+            assignmentToBeValidated.splice(idx, 1)
 
         deleteChildAssignment(temp)
     }
 
     function deleteSecondChild(targetId: string) {
         let temp: string | undefined = undefined
+        let idx: number
 
         temp = assignmentStructure['second-value-' + targetId]
         $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
         assignmentStructure['second-value-' + targetId] = undefined
+        idx = assignmentToBeValidated.indexOf(parseInt(temp))
+        if(idx != -1)
+            assignmentToBeValidated.splice(idx, 1)
 
         deleteChildAssignment(temp)
     }
 
     function deleteChildAssignment(targetId: string) {
         let temp: string | undefined = undefined
+        let idx: number
 
         temp = assignmentStructure['first-value-' + targetId]
         if(temp != undefined) {
             $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
             assignmentStructure['first-value-' + targetId] = undefined
+            idx = assignmentToBeValidated.indexOf(parseInt(temp))
+            if(idx != -1)
+                assignmentToBeValidated.splice(idx, 1)
+
             deleteChildAssignment(temp)
         }
 
@@ -1935,8 +1958,230 @@ $(document).ready(function() {
         if(temp != undefined) {
             $("input[name='arithmetic-asg-" + temp + "']").parent().remove()
             assignmentStructure['second-value-' + targetId] = undefined
+            idx = assignmentToBeValidated.indexOf(parseInt(temp))
+            if(idx != -1)
+                assignmentToBeValidated.splice(idx, 1)
+
             deleteChildAssignment(temp)
         }
+    }
+
+    $(document).on('click', '#create-asg-arithmetic-button', function() {
+        clearError()
+        let temp: boolean = true
+        let value: string
+
+        value = $('.selected-target-variable-asg').find('option').filter(':selected').val() as string
+        if(value == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+            $('.selected-target-variable-asg').addClass('input-error')
+            return
+        }
+        
+        for(let i = 0; i < assignmentToBeValidated.length; i++) {
+            temp = validateArithmeticAssignmentInput(assignmentToBeValidated[i])
+            if(!temp)
+                return
+        }
+
+        createArithmeticStatement()
+    })
+
+    function validateArithmeticAssignmentInput(idx: number): boolean {
+        let firstValueType = $('.first-select-value-type-' + idx).find('option').filter(':selected').val() as string
+        let secondValueType = $('.second-select-value-type-' + idx).find('option').filter(':selected').val() as string
+        let firstVariable
+        let secondVariable
+
+        if(firstValueType != 'operation') {
+            firstVariable = getValue(firstValueType, '.first-value-' + idx)
+            if(firstVariable == undefined)
+                return false
+        }
+
+        if(secondValueType != 'operation') {
+            secondVariable = getValue(secondValueType, '.second-value-' + idx)
+            if(secondVariable == undefined) 
+                return false
+        }
+        
+        return true
+    }
+
+    function getValue(valueType: string, className: string): Variable | undefined {
+        let variable: Variable
+
+        if(valueType == 'custom') {
+            let value = $(className).val() as string
+            let result: Return
+
+            if(value == '') {
+                createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer')
+                $(className).addClass('input-error')
+                return undefined
+            }
+
+            variable = createVariableFromValue(value)
+            if(variable instanceof String) {
+                createErrorMessage('Could not assign with String data type', 'pcInputErrorContainer')
+                $(className).addClass('input-error')
+                return undefined
+            }
+
+            result = variable.validateValue()
+            if(!result.bool) {
+                createErrorMessage(result.message, 'pcInputErrorContainer')
+                $(className).addClass('input-error')
+                return undefined
+            }
+        }
+        else if(valueType == 'variable') {
+            let variableName: string
+
+            variableName = $(className).find('select').find('option').filter(':selected').val() as string
+            if(variableName == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+                $(className).find('select').addClass('input-error')
+                return undefined
+            }
+
+            variable = findVariable(variableName)
+        }
+
+        return variable
+    }
+
+    function createArithmeticStatement() {
+        let firstValueType = $('.first-select-value-type-1').find('option').filter(':selected').val() as string
+        let secondValueType = $('.second-select-value-type-1').find('option').filter(':selected').val() as string
+        let firstVariable: Variable | undefined = undefined
+        let secondVariable: Variable | undefined = undefined
+        let firstChild: Arithmetic | undefined = undefined
+        let secondChild: Arithmetic | undefined = undefined
+        let isFirstCustom: boolean = false
+        let isSecondCustom: boolean = false
+        let operators = ['+', '-', '/', '*', '%']
+        let radioClassName = 'op-asg-1'
+        let value: string
+        let targetVariable: Variable 
+        let listArithmetic = []
+        let listOperator = []
+        let listIsCustom = []
+        
+        value = $('.selected-target-variable-asg').find('option').filter(':selected').val() as string
+        targetVariable = findVariable(value)
+
+        if(firstValueType == 'operation') {
+            let temp = assignmentStructure['first-value-1']
+            firstChild = createArithmeticAssignment(temp)
+            listArithmetic.push(firstChild)
+        }
+        else if(firstValueType == 'variable') { 
+            let variableName: string
+            variableName = $('.first-value-1').find('select').find('option').filter(':selected').val() as string
+            firstVariable = findVariable(variableName)
+            listArithmetic.push(firstVariable)
+            listIsCustom.push(false)
+        }
+        else {
+            isFirstCustom = true
+            let value = $('.first-value-1').val() as string
+            firstVariable = createVariableFromValue(value)
+            listArithmetic.push(firstVariable)
+            listIsCustom.push(true)
+        }
+
+        if(secondValueType == 'operation') {
+            let temp = assignmentStructure['second-value-1']
+            secondChild = createArithmeticAssignment(temp)
+            listArithmetic.push(secondChild)
+        }
+        else if(secondValueType == 'variable') { 
+            let variableName: string
+            variableName = $('.second-value-1').find('select').find('option').filter(':selected').val() as string
+            secondVariable = findVariable(variableName)
+            listArithmetic.push(secondVariable)
+            listIsCustom.push(false)
+        }
+        else {
+            isSecondCustom = true
+            let value = $('.second-value-1').val() as string
+            secondVariable = createVariableFromValue(value)
+            listArithmetic.push(secondVariable)
+            listIsCustom.push(true)
+        }
+
+        let radio = $("input[type='radio'][name='" + radioClassName + "']")
+        let checkedIdx = -1
+        for(let i = 0; i < radio.length; i++) {
+            if((radio[i] as any).checked == true) {
+                checkedIdx = i 
+                break
+            }
+        }
+
+        listOperator.push(operators[checkedIdx])
+
+        let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', 
+            targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined)
+    
+        handleAdd(assignmentStatement)
+        restructureStatement()
+        drawCanvas()
+    }
+
+    function createArithmeticAssignment(idx: number): Arithmetic {
+        let firstValueType = $('.first-select-value-type-' + idx).find('option').filter(':selected').val() as string
+        let secondValueType = $('.second-select-value-type-' + idx).find('option').filter(':selected').val() as string
+        let firstVariable: Variable | undefined = undefined
+        let secondVariable: Variable | undefined = undefined
+        let firstChild: Arithmetic | undefined = undefined
+        let secondChild: Arithmetic | undefined = undefined
+        let isFirstCustom: boolean = false
+        let isSecondCustom: boolean = false
+        let operators = ['+', '-', '/', '*', '%']
+        let radioClassName = 'op-asg-' + idx
+
+        if(firstValueType == 'operation') {
+            let temp = assignmentStructure['first-value-' + idx]
+            firstChild = createArithmeticAssignment(temp)
+        }
+        else if(firstValueType == 'variable') { 
+            let variableName: string
+            variableName = $('.first-value-' + idx).find('select').find('option').filter(':selected').val() as string
+            firstVariable = findVariable(variableName)
+        }
+        else {
+            isFirstCustom = true
+            let value = $('.first-value-' + idx).val() as string
+            firstVariable = createVariableFromValue(value)
+        }
+
+        if(secondValueType == 'operation') {
+            let temp = assignmentStructure['second-value-' + idx]
+            secondChild = createArithmeticAssignment(temp)
+        }
+        else if(secondValueType == 'variable') { 
+            let variableName: string
+            variableName = $('.second-value-' + idx).find('select').find('option').filter(':selected').val() as string
+            secondVariable = findVariable(variableName)
+        }
+        else {
+            isSecondCustom = true
+            let value = $('.second-value-' + idx).val() as string
+            secondVariable = createVariableFromValue(value)
+        }
+
+        let radio = $("input[type='radio'][name='" + radioClassName + "']")
+        let checkedIdx = -1
+        for(let i = 0; i < radio.length; i++) {
+            if((radio[i] as any).checked == true) {
+                checkedIdx = i 
+                break
+            }
+        }
+
+        return new Arithmetic(firstVariable, secondVariable, firstChild, secondChild, operators[checkedIdx], isFirstCustom, isSecondCustom)
     }
 
     // Assignment Variable
@@ -2046,8 +2291,7 @@ $(document).ready(function() {
                 return
             }
         }
-
-        let statement = new AssignmentStatement(statementCount++, 1, 'variable', firstVariable, undefined, undefined, secondVariable, isCustom)
+        let statement = new AssignmentStatement(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom)
         handleAdd(statement)
         restructureStatement()
         drawCanvas()
@@ -2482,8 +2726,8 @@ $(document).ready(function() {
         ifStatement.updateIfOperations(ifOperations)
 
         let listArithmetic = []
-        listArithmetic.push(new Arithmetic(variable ,new Integer('x', 2), undefined, undefined, '%', true))
-        let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined)
+        listArithmetic.push(new Arithmetic(variable, new Integer('x', 2), undefined, undefined, '%', false, true))
+        let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined)
 
         handleAdd(new DeclareStatement(statementCount++, 1, variable))
         handleAdd(new InputStatement(statementCount++, 1, variable))

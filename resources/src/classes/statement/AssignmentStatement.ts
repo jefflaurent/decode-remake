@@ -12,13 +12,14 @@ class AssignmentStatement extends Statement {
     targetVariable: Variable
     variable: Variable | undefined = undefined
     type: string
-    listArithmetic: Arithmetic[] | undefined = undefined
+    listArithmetic: any[] | undefined = undefined
     listOperator: string[] | undefined = undefined
+    listIsCustom: boolean[] | undefined = undefined
     isCustomValue: boolean = false
 
     constructor(statementId: number, level: number, type: string, targetVariable: Variable, 
-        listArithmetic: Arithmetic[] | undefined, listOperator: string[] | undefined, 
-        variable: Variable | undefined, isCustomValue: boolean | undefined) {
+        listArithmetic: any[] | undefined, listOperator: string[] | undefined,
+        listIsCustom: boolean[] | undefined, variable: Variable | undefined, isCustomValue: boolean | undefined) {
         super(level)
         this.type = type
         this.statementId = this.generateId(statementId)
@@ -26,6 +27,7 @@ class AssignmentStatement extends Statement {
         this.variable = variable
         this.listArithmetic = listArithmetic
         this.listOperator = listOperator
+        this.listIsCustom = listIsCustom
         this.isCustomValue = isCustomValue
         this.color = '#f4be0b'
     }
@@ -55,12 +57,27 @@ class AssignmentStatement extends Statement {
 
     generateArithmeticText(): string {
         let text = ''
+        let opIdx = 0
+        let customIdx = 0
 
         for(let i = 0; i < this.listArithmetic.length; i++) {
-            text += this.listArithmetic[i].generateBlockCodeText()
+            if(this.listArithmetic[i] instanceof Variable) {
+                if(this.listIsCustom != undefined) {
+                    if(this.listIsCustom[customIdx])
+                        text += ' ' + (this.listArithmetic[i] as Variable).value + ' '
+                    else
+                        text += ' ' + (this.listArithmetic[i] as Variable).name + ' '
+                    customIdx++
+                }
+            }
+            else {
+                text += (this.listArithmetic[i] as Arithmetic).generateBlockCodeText()
+            }
+            
             if(this.listOperator != undefined) {
-                if(i < this.listOperator.length) {
-                    text += ' ' + this.listOperator[i] + ' '
+                if(opIdx < this.listOperator.length) {
+                    text += ' ' + this.listOperator[opIdx] + ' '
+                    opIdx++
                 }
             }
         }
@@ -132,7 +149,7 @@ class AssignmentStatement extends Statement {
     }
 
     cloneStatement(statementCount: number): ReturnClone {
-        let newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.variable, this.isCustomValue)
+        let newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue)
         return new ReturnClone(newStatement, true)
     }
 }

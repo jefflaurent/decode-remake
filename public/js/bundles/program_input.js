@@ -106,15 +106,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Char_1 = __importDefault(require("../variable/Char"));
+var Variable_1 = __importDefault(require("../variable/Variable"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, variable, isCustomValue) {
+    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, listIsCustom, variable, isCustomValue) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
         _this.listArithmetic = undefined;
         _this.listOperator = undefined;
+        _this.listIsCustom = undefined;
         _this.isCustomValue = false;
         _this.type = type;
         _this.statementId = _this.generateId(statementId);
@@ -122,6 +124,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
         _this.variable = variable;
         _this.listArithmetic = listArithmetic;
         _this.listOperator = listOperator;
+        _this.listIsCustom = listIsCustom;
         _this.isCustomValue = isCustomValue;
         _this.color = '#f4be0b';
         return _this;
@@ -146,11 +149,25 @@ var AssignmentStatement = /** @class */ (function (_super) {
     };
     AssignmentStatement.prototype.generateArithmeticText = function () {
         var text = '';
+        var opIdx = 0;
+        var customIdx = 0;
         for (var i = 0; i < this.listArithmetic.length; i++) {
-            text += this.listArithmetic[i].generateBlockCodeText();
+            if (this.listArithmetic[i] instanceof Variable_1.default) {
+                if (this.listIsCustom != undefined) {
+                    if (this.listIsCustom[customIdx])
+                        text += ' ' + this.listArithmetic[i].value + ' ';
+                    else
+                        text += ' ' + this.listArithmetic[i].name + ' ';
+                    customIdx++;
+                }
+            }
+            else {
+                text += this.listArithmetic[i].generateBlockCodeText();
+            }
             if (this.listOperator != undefined) {
-                if (i < this.listOperator.length) {
-                    text += ' ' + this.listOperator[i] + ' ';
+                if (opIdx < this.listOperator.length) {
+                    text += ' ' + this.listOperator[opIdx] + ' ';
+                    opIdx++;
                 }
             }
         }
@@ -209,14 +226,14 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return undefined;
     };
     AssignmentStatement.prototype.cloneStatement = function (statementCount) {
-        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.variable, this.isCustomValue);
+        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue);
         return new ReturnClone_1.default(newStatement, true);
     };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;
 
-},{"../../utilities/ReturnClone":30,"../variable/Char":20,"./Statement":8,"./helper/options/Option":18}],3:[function(require,module,exports){
+},{"../../utilities/ReturnClone":30,"../variable/Char":20,"../variable/Variable":26,"./Statement":8,"./helper/options/Option":18}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1086,7 +1103,7 @@ exports.default = WhileStatement;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Arithmetic = /** @class */ (function () {
-    function Arithmetic(firstVariable, secondVariable, firstChild, secondChild, operator, isCustom) {
+    function Arithmetic(firstVariable, secondVariable, firstChild, secondChild, operator, isFirstCustom, isSecondCustom) {
         this.firstChild = undefined;
         this.secondChild = undefined;
         this.firstVariable = undefined;
@@ -1096,17 +1113,22 @@ var Arithmetic = /** @class */ (function () {
         this.firstChild = firstChild;
         this.secondChild = secondChild;
         this.operator = operator;
-        this.isCustom = isCustom;
+        this.isFirstCustom = isFirstCustom;
+        this.isSecondCustom = isSecondCustom;
     }
     Arithmetic.prototype.generateBlockCodeText = function () {
         var text = '( ';
-        if (this.firstVariable != undefined)
-            text += this.firstVariable.name + ' ';
+        if (this.firstVariable != undefined) {
+            if (this.isFirstCustom)
+                text += this.firstVariable.value + ' ';
+            else
+                text += this.firstVariable.name + ' ';
+        }
         else
             text += this.firstChild.generateBlockCodeText() + ' ';
         text += this.operator + ' ';
         if (this.secondVariable != undefined) {
-            if (this.isCustom)
+            if (this.isSecondCustom)
                 text += this.secondVariable.value + ' ';
             else
                 text += this.secondVariable.name + ' ';
@@ -1118,9 +1140,11 @@ var Arithmetic = /** @class */ (function () {
     };
     Arithmetic.prototype.findVariable = function (variable) {
         var temp = false;
-        if (this.firstVariable.name == variable.name)
-            return true;
-        if (!this.isCustom) {
+        if (!this.isFirstCustom) {
+            if (this.firstVariable.name == variable.name)
+                return true;
+        }
+        if (!this.isSecondCustom) {
             if (this.secondVariable.name == variable.name)
                 return true;
         }
@@ -2404,6 +2428,12 @@ $(document).ready(function () {
         }
         for (var i = 0; i < caseToBeValidated.length; i++)
             $('.' + caseToBeValidated[i]).removeClass('input-error');
+        for (var i = 0; i < assignmentToBeValidated.length; i++) {
+            $('.first-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error');
+            $('.first-value-' + assignmentToBeValidated[i]).removeClass('input-error');
+            $('.second-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error');
+            $('.second-value-' + assignmentToBeValidated[i]).removeClass('input-error');
+        }
         $('#chosenVariable').removeClass('input-error');
         $('#chosenOutputVariable').removeClass('input-error');
         $('#chosenSwitchVariable').removeClass('input-error');
@@ -2411,6 +2441,7 @@ $(document).ready(function () {
         $('#chosen-for-loop-value').removeClass('input-error');
         $('#update-value-for-loop').removeClass('input-error');
         $('#chosen-asg-variable').removeClass('input-error');
+        $('.selected-target-variable-asg').removeClass('input-error');
         for (var i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
             $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
@@ -2870,8 +2901,6 @@ $(document).ready(function () {
         for (var i = 0; i < caseToBeValidated.length; i++) {
             className = '.' + caseToBeValidated[i];
             value = $(className).val();
-            console.log(className);
-            console.log(value);
             if (value == undefined) {
                 $(className).addClass('input-error');
                 createErrorMessage('Field cannot be empty!', 'pcInputErrorContainer');
@@ -3471,6 +3500,7 @@ $(document).ready(function () {
         restructureStatement();
         drawCanvas();
     });
+    // Repetition
     $(document).on('click', '.repetition', function () {
         var createBtn;
         if ($(this).data('value') == 'for') {
@@ -3722,6 +3752,7 @@ $(document).ready(function () {
         }
         return true;
     }
+    // Arithmetic Assignment
     var assignmentToBeValidated = [];
     var assignmentCount = 1;
     var assignmentStructure = {};
@@ -3747,7 +3778,8 @@ $(document).ready(function () {
         $('#pcInputContainerLower').append(container);
     });
     function createArithmeticAssignmentHeader() {
-        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select' }).append($('<option>').text('Choose Variable')))));
+        var listVariable = getSelectedVariables('assignment');
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('selected-target-variable-asg'))));
         $('#pcInputContainer').append(container);
     }
     function createArithmeticAssignmentInput() {
@@ -3791,7 +3823,7 @@ $(document).ready(function () {
         }
         else if (selectValue == 'variable') {
             var listVariable = getSelectedVariables('assignment');
-            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('second-value-' + targetId)));
+            $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append((createSelect(listVariable, 12, true)).addClass('second-value-' + targetId)));
         }
         else {
             $('.second-assignment-value-container-' + targetId).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Second Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<strong>').text('Arithmetic Operation ' + assignmentCount)));
@@ -3801,32 +3833,235 @@ $(document).ready(function () {
     });
     function deleteFirstChild(targetId) {
         var temp = undefined;
+        var idx;
         temp = assignmentStructure['first-value-' + targetId];
         $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
         assignmentStructure['first-value-' + targetId] = undefined;
+        idx = assignmentToBeValidated.indexOf(parseInt(temp));
+        if (idx != -1)
+            assignmentToBeValidated.splice(idx, 1);
         deleteChildAssignment(temp);
     }
     function deleteSecondChild(targetId) {
         var temp = undefined;
+        var idx;
         temp = assignmentStructure['second-value-' + targetId];
         $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
         assignmentStructure['second-value-' + targetId] = undefined;
+        idx = assignmentToBeValidated.indexOf(parseInt(temp));
+        if (idx != -1)
+            assignmentToBeValidated.splice(idx, 1);
         deleteChildAssignment(temp);
     }
     function deleteChildAssignment(targetId) {
         var temp = undefined;
+        var idx;
         temp = assignmentStructure['first-value-' + targetId];
         if (temp != undefined) {
             $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
             assignmentStructure['first-value-' + targetId] = undefined;
+            idx = assignmentToBeValidated.indexOf(parseInt(temp));
+            if (idx != -1)
+                assignmentToBeValidated.splice(idx, 1);
             deleteChildAssignment(temp);
         }
         temp = assignmentStructure['second-value-' + targetId];
         if (temp != undefined) {
             $("input[name='arithmetic-asg-" + temp + "']").parent().remove();
             assignmentStructure['second-value-' + targetId] = undefined;
+            idx = assignmentToBeValidated.indexOf(parseInt(temp));
+            if (idx != -1)
+                assignmentToBeValidated.splice(idx, 1);
             deleteChildAssignment(temp);
         }
+    }
+    $(document).on('click', '#create-asg-arithmetic-button', function () {
+        clearError();
+        var temp = true;
+        var value;
+        value = $('.selected-target-variable-asg').find('option').filter(':selected').val();
+        if (value == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer');
+            $('.selected-target-variable-asg').addClass('input-error');
+            return;
+        }
+        for (var i = 0; i < assignmentToBeValidated.length; i++) {
+            temp = validateArithmeticAssignmentInput(assignmentToBeValidated[i]);
+            if (!temp)
+                return;
+        }
+        createArithmeticStatement();
+    });
+    function validateArithmeticAssignmentInput(idx) {
+        var firstValueType = $('.first-select-value-type-' + idx).find('option').filter(':selected').val();
+        var secondValueType = $('.second-select-value-type-' + idx).find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        if (firstValueType != 'operation') {
+            firstVariable = getValue(firstValueType, '.first-value-' + idx);
+            if (firstVariable == undefined)
+                return false;
+        }
+        if (secondValueType != 'operation') {
+            secondVariable = getValue(secondValueType, '.second-value-' + idx);
+            if (secondVariable == undefined)
+                return false;
+        }
+        return true;
+    }
+    function getValue(valueType, className) {
+        var variable;
+        if (valueType == 'custom') {
+            var value = $(className).val();
+            var result = void 0;
+            if (value == '') {
+                createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+                $(className).addClass('input-error');
+                return undefined;
+            }
+            variable = createVariableFromValue(value);
+            if (variable instanceof String_1.default) {
+                createErrorMessage('Could not assign with String data type', 'pcInputErrorContainer');
+                $(className).addClass('input-error');
+                return undefined;
+            }
+            result = variable.validateValue();
+            if (!result.bool) {
+                createErrorMessage(result.message, 'pcInputErrorContainer');
+                $(className).addClass('input-error');
+                return undefined;
+            }
+        }
+        else if (valueType == 'variable') {
+            var variableName = void 0;
+            variableName = $(className).find('select').find('option').filter(':selected').val();
+            if (variableName == '') {
+                createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+                $(className).find('select').addClass('input-error');
+                return undefined;
+            }
+            variable = findVariable(variableName);
+        }
+        return variable;
+    }
+    function createArithmeticStatement() {
+        var firstValueType = $('.first-select-value-type-1').find('option').filter(':selected').val();
+        var secondValueType = $('.second-select-value-type-1').find('option').filter(':selected').val();
+        var firstVariable = undefined;
+        var secondVariable = undefined;
+        var firstChild = undefined;
+        var secondChild = undefined;
+        var isFirstCustom = false;
+        var isSecondCustom = false;
+        var operators = ['+', '-', '/', '*', '%'];
+        var radioClassName = 'op-asg-1';
+        var value;
+        var targetVariable;
+        var listArithmetic = [];
+        var listOperator = [];
+        var listIsCustom = [];
+        value = $('.selected-target-variable-asg').find('option').filter(':selected').val();
+        targetVariable = findVariable(value);
+        if (firstValueType == 'operation') {
+            var temp = assignmentStructure['first-value-1'];
+            firstChild = createArithmeticAssignment(temp);
+            listArithmetic.push(firstChild);
+        }
+        else if (firstValueType == 'variable') {
+            var variableName = void 0;
+            variableName = $('.first-value-1').find('select').find('option').filter(':selected').val();
+            firstVariable = findVariable(variableName);
+            listArithmetic.push(firstVariable);
+            listIsCustom.push(false);
+        }
+        else {
+            isFirstCustom = true;
+            var value_1 = $('.first-value-1').val();
+            firstVariable = createVariableFromValue(value_1);
+            listArithmetic.push(firstVariable);
+            listIsCustom.push(true);
+        }
+        if (secondValueType == 'operation') {
+            var temp = assignmentStructure['second-value-1'];
+            secondChild = createArithmeticAssignment(temp);
+            listArithmetic.push(secondChild);
+        }
+        else if (secondValueType == 'variable') {
+            var variableName = void 0;
+            variableName = $('.second-value-1').find('select').find('option').filter(':selected').val();
+            secondVariable = findVariable(variableName);
+            listArithmetic.push(secondVariable);
+            listIsCustom.push(false);
+        }
+        else {
+            isSecondCustom = true;
+            var value_2 = $('.second-value-1').val();
+            secondVariable = createVariableFromValue(value_2);
+            listArithmetic.push(secondVariable);
+            listIsCustom.push(true);
+        }
+        var radio = $("input[type='radio'][name='" + radioClassName + "']");
+        var checkedIdx = -1;
+        for (var i = 0; i < radio.length; i++) {
+            if (radio[i].checked == true) {
+                checkedIdx = i;
+                break;
+            }
+        }
+        listOperator.push(operators[checkedIdx]);
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined);
+        handleAdd(assignmentStatement);
+        restructureStatement();
+        drawCanvas();
+    }
+    function createArithmeticAssignment(idx) {
+        var firstValueType = $('.first-select-value-type-' + idx).find('option').filter(':selected').val();
+        var secondValueType = $('.second-select-value-type-' + idx).find('option').filter(':selected').val();
+        var firstVariable = undefined;
+        var secondVariable = undefined;
+        var firstChild = undefined;
+        var secondChild = undefined;
+        var isFirstCustom = false;
+        var isSecondCustom = false;
+        var operators = ['+', '-', '/', '*', '%'];
+        var radioClassName = 'op-asg-' + idx;
+        if (firstValueType == 'operation') {
+            var temp = assignmentStructure['first-value-' + idx];
+            firstChild = createArithmeticAssignment(temp);
+        }
+        else if (firstValueType == 'variable') {
+            var variableName = void 0;
+            variableName = $('.first-value-' + idx).find('select').find('option').filter(':selected').val();
+            firstVariable = findVariable(variableName);
+        }
+        else {
+            isFirstCustom = true;
+            var value = $('.first-value-' + idx).val();
+            firstVariable = createVariableFromValue(value);
+        }
+        if (secondValueType == 'operation') {
+            var temp = assignmentStructure['second-value-' + idx];
+            secondChild = createArithmeticAssignment(temp);
+        }
+        else if (secondValueType == 'variable') {
+            var variableName = void 0;
+            variableName = $('.second-value-' + idx).find('select').find('option').filter(':selected').val();
+            secondVariable = findVariable(variableName);
+        }
+        else {
+            isSecondCustom = true;
+            var value = $('.second-value-' + idx).val();
+            secondVariable = createVariableFromValue(value);
+        }
+        var radio = $("input[type='radio'][name='" + radioClassName + "']");
+        var checkedIdx = -1;
+        for (var i = 0; i < radio.length; i++) {
+            if (radio[i].checked == true) {
+                checkedIdx = i;
+                break;
+            }
+        }
+        return new Arithmetic_1.default(firstVariable, secondVariable, firstChild, secondChild, operators[checkedIdx], isFirstCustom, isSecondCustom);
     }
     // Assignment Variable
     function createVariableAssignmentInput() {
@@ -3917,7 +4152,7 @@ $(document).ready(function () {
                 return;
             }
         }
-        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, secondVariable, isCustom);
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom);
         handleAdd(statement);
         restructureStatement();
         drawCanvas();
@@ -4271,8 +4506,8 @@ $(document).ready(function () {
         ifOperations.push(secondIf);
         ifStatement.updateIfOperations(ifOperations);
         var listArithmetic = [];
-        listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', true));
-        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined);
+        listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', false, true));
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
         handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
         handleAdd(assignmentStatement);

@@ -18,15 +18,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Char_1 = __importDefault(require("../variable/Char"));
+var Variable_1 = __importDefault(require("../variable/Variable"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, variable, isCustomValue) {
+    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, listIsCustom, variable, isCustomValue) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
         _this.listArithmetic = undefined;
         _this.listOperator = undefined;
+        _this.listIsCustom = undefined;
         _this.isCustomValue = false;
         _this.type = type;
         _this.statementId = _this.generateId(statementId);
@@ -34,6 +36,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
         _this.variable = variable;
         _this.listArithmetic = listArithmetic;
         _this.listOperator = listOperator;
+        _this.listIsCustom = listIsCustom;
         _this.isCustomValue = isCustomValue;
         _this.color = '#f4be0b';
         return _this;
@@ -58,11 +61,25 @@ var AssignmentStatement = /** @class */ (function (_super) {
     };
     AssignmentStatement.prototype.generateArithmeticText = function () {
         var text = '';
+        var opIdx = 0;
+        var customIdx = 0;
         for (var i = 0; i < this.listArithmetic.length; i++) {
-            text += this.listArithmetic[i].generateBlockCodeText();
+            if (this.listArithmetic[i] instanceof Variable_1.default) {
+                if (this.listIsCustom != undefined) {
+                    if (this.listIsCustom[customIdx])
+                        text += ' ' + this.listArithmetic[i].value + ' ';
+                    else
+                        text += ' ' + this.listArithmetic[i].name + ' ';
+                    customIdx++;
+                }
+            }
+            else {
+                text += this.listArithmetic[i].generateBlockCodeText();
+            }
             if (this.listOperator != undefined) {
-                if (i < this.listOperator.length) {
-                    text += ' ' + this.listOperator[i] + ' ';
+                if (opIdx < this.listOperator.length) {
+                    text += ' ' + this.listOperator[opIdx] + ' ';
+                    opIdx++;
                 }
             }
         }
@@ -121,7 +138,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return undefined;
     };
     AssignmentStatement.prototype.cloneStatement = function (statementCount) {
-        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.variable, this.isCustomValue);
+        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue);
         return new ReturnClone_1.default(newStatement, true);
     };
     return AssignmentStatement;

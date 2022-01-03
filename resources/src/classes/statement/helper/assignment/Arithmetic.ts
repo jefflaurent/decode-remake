@@ -7,23 +7,29 @@ class Arithmetic {
     firstVariable: Variable | undefined = undefined 
     secondVariable: Variable | undefined = undefined 
     operator: string
-    isCustom: boolean
+    isFirstCustom: boolean
+    isSecondCustom: boolean
 
     constructor(firstVariable: Variable | undefined, secondVariable: Variable | undefined, 
-        firstChild: Arithmetic | undefined, secondChild: Arithmetic | undefined, operator: string, isCustom?: boolean) {
+        firstChild: Arithmetic | undefined, secondChild: Arithmetic | undefined, operator: string, isFirstCustom: boolean, isSecondCustom: boolean) {
         
         this.firstVariable = firstVariable
         this.secondVariable = secondVariable
         this.firstChild = firstChild
         this.secondChild = secondChild
         this.operator = operator
-        this.isCustom = isCustom
+        this.isFirstCustom = isFirstCustom
+        this.isSecondCustom = isSecondCustom
     } 
 
     generateBlockCodeText(): string {
         let text = '( '
-        if(this.firstVariable != undefined)
-            text += this.firstVariable.name + ' '
+        if(this.firstVariable != undefined) {
+            if(this.isFirstCustom)
+                text += this.firstVariable.value + ' '
+            else
+                text += this.firstVariable.name + ' '
+        }
         else 
             text += this.firstChild.generateBlockCodeText() + ' '
         
@@ -31,7 +37,7 @@ class Arithmetic {
         text += this.operator + ' '
 
         if(this.secondVariable != undefined) {
-            if(this.isCustom) 
+            if(this.isSecondCustom) 
                 text += this.secondVariable.value + ' '
             else
                 text += this.secondVariable.name + ' '
@@ -47,9 +53,11 @@ class Arithmetic {
     findVariable(variable: Variable): boolean {
         let temp: boolean = false
 
-        if(this.firstVariable.name == variable.name)
-            return true
-        if(!this.isCustom) {
+        if(!this.isFirstCustom) {
+            if(this.firstVariable.name == variable.name)
+                return true
+        }
+        if(!this.isSecondCustom) {
             if(this.secondVariable.name == variable.name)
                 return true
         }
