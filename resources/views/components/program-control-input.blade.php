@@ -11,88 +11,79 @@
                 <div class="container-fluid">
                     <div id="pcInputErrorContainer"></div>
                     <div id="pcInputContainer">
-                        <div class="p-2 border border-1 rounded bg-light mb-3">
-                            <div class="mb-3"><strong>Target Variable</strong></div>
+                        <div class="p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3">
+                            <div class="mb-3">
+                                <strong>Action Type</strong>
+                            </div>
                             <div class="col-sm-12 col-12 d-flex align-items-center mb-3">
                                 <div class="col-sm-5 col-5">
-                                    <strong>Variable</strong>
+                                    <strong>Action</strong>
                                 </div>
                                 <div class="col-sm-7 col-7">
                                     <select name="" id="" class="form-select">
-                                        <option value="">Choose Variable</option>
+                                        <option value="">Get String Length</option>
+                                        <option value="">Get Part of String</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                        <div class="p-2 border border-1 rounded bg-light mb-3">
-                            <div class="mb-3"><strong>Arithmetic Operation</strong></div>
-                            <div class="col-sm-12 col-12 d-flex align-items-center mb-3">
+                        <div class="p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3">
+                            <div class="mb-3"><strong>String Length</strong></div>
+                            <div class="col-12 col-sm-12 d-flex align-items-center mb-3">
                                 <div class="col-sm-5 col-5">
-                                    <strong>Value Type</strong>
+                                    <strong>Target Variable (String)</strong>
                                 </div>
-                                <div class="col-sm-7 col-7">
-                                    <select name="" id="" class="form-select">
-                                        <option value="">Variable</option>
-                                        <option value="">Custom Value</option>
-                                        <option value="">Arithmetic Operation</option>
-                                    </select>
+                                <div class="col-sm-1 col-1"></div>
+                                <div class="col-sm-5 col-5">
+                                    <strong>Variable (String)</strong>
                                 </div>
+                                <div class="col-sm-1 col-1"></div>
                             </div>
-                            <div class="col-sm-12 col-12 d-flex align-items-center mb-3">
+                            <div class="col-12 col-sm-12 mb-3 d-flex align-items-center">
                                 <div class="col-sm-5 col-5">
-                                    <strong>First Value</strong>
-                                </div>
-                                <div class="col-sm-7 col-7">
                                     <select name="" id="" class="form-select">
                                         <option value="">Choose Variable</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="col-sm-12 col-12 d-flex align-items-center mb-3">
+                                <div class="col-sm-1 col-1 d-flex justify-content-center"> = </div>
                                 <div class="col-sm-5 col-5">
-                                    <strong>Operator</strong>
-                                </div>
-                                <div class="col-sm-7 col-7 d-flex justify-content-center align-items-center">
-                                    <div class="col-sm-1 col-1 d-flex justify-content-evenly align-items-center"></div>
-                                    <div class="col-sm-2 col-2 d-flex justify-content-evenly align-items-center">
-                                        <input type="radio" name="x" id="" checked> <div>+</div>
-                                    </div>
-                                    <div class="col-sm-2 col-2 d-flex justify-content-evenly align-items-center">
-                                        <input type="radio" name="x" id=""> <div>-</div>
-                                    </div>
-                                    <div class="col-sm-2 col-2 d-flex justify-content-evenly align-items-center">
-                                        <input type="radio" name="x" id=""> <div>/</div>
-                                    </div>
-                                    <div class="col-sm-2 col-2 d-flex justify-content-evenly align-items-center">
-                                        <input type="radio" name="x" id=""> <div>*</div>
-                                    </div>
-                                    <div class="col-sm-2 col-2 d-flex justify-content-evenly align-items-center">
-                                        <input type="radio" name="x" id=""> <div>%</div>
-                                    </div>
-                                    <div class="col-sm-1 col-1 d-flex justify-content-evenly align-items-center"></div>
-                                </div>  
-                            </div>
-                            <div class="col-sm-12 col-12 d-flex align-items-center mb-3">
-                                <div class="col-sm-5 col-5">
-                                    <strong>Value Type</strong>
-                                </div>
-                                <div class="col-sm-7 col-7">
-                                    <select name="" id="" class="form-select">
-                                        <option value="">Variable</option>
-                                        <option value="">Custom Value</option>
-                                        <option value="">Arithmetic Operation</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-12 d-flex align-items-center mb-3">
-                                <div class="col-sm-5 col-5">
-                                    <strong>Second Value</strong>
-                                </div>
-                                <div class="col-sm-7 col-7">
                                     <select name="" id="" class="form-select">
                                         <option value="">Choose Variable</option>
                                     </select>
                                 </div>
+                                <div class="col-sm-1 col-1"></div>
+                            </div>
+                            <div class="col-12 col-sm-12 mb-3 d-flex align-items-center">
+                                <div class="col-sm-5 col-5 d-flex justify-content-end"></div>
+                                <div class="col-sm-1 col-1"></div>
+                                <div class="col-sm-5 col-5">
+                                    <strong>Start Index</strong>
+                                </div>
+                                <div class="col-sm-1 col-1"></div>
+                            </div>
+                            <div class="col-12 col-sm-12 mb-3 d-flex align-items-center">
+                                <div class="col-sm-5 col-5 d-flex justify-content-end"></div>
+                                <div class="col-sm-1 col-1"></div>
+                                <div class="col-sm-5 col-5">
+                                    <input type="number" name="" id="" class="form-control">
+                                </div>
+                                <div class="col-sm-1 col-1"></div>
+                            </div>
+                            <div class="col-12 col-sm-12 mb-3 d-flex align-items-center">
+                                <div class="col-sm-5 col-5 d-flex justify-content-end"></div>
+                                <div class="col-sm-1 col-1"></div>
+                                <div class="col-sm-5 col-5">
+                                    <strong>End Index</strong>
+                                </div>
+                                <div class="col-sm-1 col-1"></div>
+                            </div>
+                            <div class="col-12 col-sm-12 mb-3 d-flex align-items-center">
+                                <div class="col-sm-5 col-5 d-flex justify-content-end"></div>
+                                <div class="col-sm-1 col-1"></div>
+                                <div class="col-sm-5 col-5">
+                                    <input type="number" name="" id="" class="form-control">
+                                </div>
+                                <div class="col-sm-1 col-1"></div>
                             </div>
                         </div>
                     </div>

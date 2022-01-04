@@ -21,9 +21,10 @@
                     </div>
                     
                     <!-- Generate  -->
-                    <div class="col-12 d-flex justify-content-end p-2">
-                        <div class="col-4 d-flex justify-content-between">
-                            <div class="col-5 d-flex justify-content-evenly align-items-center">
+                    <div class="col-12 col-sm-12 d-flex justify-content-end p-2">
+                        <div class="col-4 col-sm-4 d-flex justify-content-between">
+                            <div class="col-1 col-sm-1"></div>
+                            <div class="col-5 col-sm-5 d-flex justify-content-end align-items-center">
                                 <select name="" class="form-select" id="">
                                     <option value="">C</option>
                                     <option value="">C++</option>
@@ -33,9 +34,9 @@
                                     <option value="">Pseudocode</option>
                                 </select>
                             </div>
-                            <div class="col-1"></div>
-                            <div class="col-6 d-flex justify-content-end align-items-center">
-                                <div class="col-10 d-flex justify-content-center align-items-center p-2 blue-btn text-center">Generate</div>
+                            <div class="col-1 col-sm-1"></div>
+                            <div class="col-4 col-sm-4 d-flex justify-content-end align-items-center">
+                                <button type="submit" class="btn btn-primary col-12 col-sm-12" id="btn-generate-source-code">Generate</button>
                             </div>
                         </div>
                     </div>

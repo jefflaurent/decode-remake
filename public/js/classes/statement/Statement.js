@@ -33,6 +33,7 @@ var Statement = /** @class */ (function () {
     Statement.prototype.findVariable = function (variable) { return undefined; };
     Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
     Statement.prototype.findStatement = function (statement) { return false; };
+    Statement.prototype.generateCSourceCode = function () { return ''; };
     return Statement;
 }());
 exports.default = Statement;

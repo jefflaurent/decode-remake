@@ -45,6 +45,7 @@ class Statement {
     findVariable(variable: Variable): Statement | undefined  { return undefined }
     cloneStatement(statementCount: number): ReturnClone { return new ReturnClone(this, false) }
     findStatement(statement: Statement): boolean { return false }
+    generateCSourceCode(): string { return '' }
 }
 
 export default Statement

@@ -16,10 +16,13 @@ class AssignmentStatement extends Statement {
     listOperator: string[] | undefined = undefined
     listIsCustom: boolean[] | undefined = undefined
     isCustomValue: boolean = false
+    start: number | undefined = undefined
+    length: number | undefined = undefined
 
     constructor(statementId: number, level: number, type: string, targetVariable: Variable, 
         listArithmetic: any[] | undefined, listOperator: string[] | undefined,
-        listIsCustom: boolean[] | undefined, variable: Variable | undefined, isCustomValue: boolean | undefined) {
+        listIsCustom: boolean[] | undefined, variable: Variable | undefined, isCustomValue: boolean | undefined,
+        start: number | undefined, length: number | undefined) {
         super(level)
         this.type = type
         this.statementId = this.generateId(statementId)
@@ -29,6 +32,8 @@ class AssignmentStatement extends Statement {
         this.listOperator = listOperator
         this.listIsCustom = listIsCustom
         this.isCustomValue = isCustomValue
+        this.start = start
+        this.length = length
         this.color = '#f4be0b'
     }
 
@@ -48,9 +53,10 @@ class AssignmentStatement extends Statement {
             text = this.generateArithmeticText()
         else if(this.type == 'variable') 
             text = this.generateVariableText()
-        else {
-
-        }
+        else if(this.type == 'length')
+            text = this.generateLengthText()
+        else
+            text = this.generateSubText()
         
         return text
     }
@@ -96,6 +102,14 @@ class AssignmentStatement extends Statement {
             return this.variable.name
     }
 
+    generateLengthText(): string {
+        return 'LENGTH OF ' + this.variable.name
+    }
+
+    generateSubText(): string {
+        return this.variable.name + ' FROM ' + this.start + ' WITH LENGTH ' + this.length
+    }
+
     createOption(canvas: Canvas, coorX: number, coorY: number): void {
         this.option = new Option(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this)
         this.option.parent = this
@@ -117,10 +131,8 @@ class AssignmentStatement extends Statement {
             return this.findTypeVariable(variable)
         else if(this.type == 'arithmetic')
             return this.findTypeArithmetic(variable)
-        else 
-            return undefined
-        
-        return undefined
+        else
+            return this.findTypeString(variable)
     }
 
     findTypeVariable(variable: Variable): Statement | undefined {
@@ -148,8 +160,18 @@ class AssignmentStatement extends Statement {
         return undefined
     }
 
+    findTypeString(variable: Variable): Statement | undefined {
+        if(this.targetVariable.name == variable.name)
+            return this
+        else if(this.variable.name == variable.name)
+            return this
+        
+        return undefined
+    }
+
     cloneStatement(statementCount: number): ReturnClone {
-        let newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue)
+        let newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, 
+            this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue, this.start, this.length)
         return new ReturnClone(newStatement, true)
     }
 }

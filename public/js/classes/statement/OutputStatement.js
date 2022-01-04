@@ -17,6 +17,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../variable/Char"));
+var Double_1 = __importDefault(require("../variable/Double"));
+var Float_1 = __importDefault(require("../variable/Float"));
+var Integer_1 = __importDefault(require("../variable/Integer"));
+var Long_1 = __importDefault(require("../variable/Long"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
@@ -86,6 +91,32 @@ var OutputStatement = /** @class */ (function (_super) {
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, this.variable), true);
         else
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true);
+    };
+    OutputStatement.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        var newLine = this.isNewLine ? '\\n' : '';
+        if (this.type == 'variable') {
+            if (this.variable instanceof Integer_1.default)
+                sourceCode = "printf(\"%d" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Long_1.default)
+                sourceCode = "printf(\"%lld" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Float_1.default)
+                sourceCode = "printf(\"%f" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Double_1.default)
+                sourceCode = "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Char_1.default)
+                sourceCode = "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof String)
+                sourceCode = "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
+        }
+        else if (this.type == 'text')
+            sourceCode = "printf(\"" + this.text + newLine + "\");";
+        else if (this.type == 'ascii')
+            sourceCode = "printf(\"%c" + newLine + "\", " + this.asciiCode + ");";
+        else
+            sourceCode = "printf(\"" + this.escapeSequence + "\");";
+        sourceCode += '\n';
+        return sourceCode;
     };
     return OutputStatement;
 }(Statement_1.default));

@@ -26,6 +26,7 @@ import OutputStatement from '../classes/statement/OutputStatement'
 import AssignmentStatement from '../classes/statement/AssignmentStatement'
 import Return from '../utilities/Return'
 import Arithmetic from '../classes/statement/helper/assignment/Arithmetic'
+import C from '../classes/languages/C'
 declare var bootstrap: any
 
 $(document).ready(function() {
@@ -174,6 +175,10 @@ $(document).ready(function() {
         $('#update-value-for-loop').removeClass('input-error')
         $('#chosen-asg-variable').removeClass('input-error')
         $('.selected-target-variable-asg').removeClass('input-error')
+        $('.first-asg-string-value').find('select').removeClass('input-error')
+        $('.second-asg-string-value').find('select').removeClass('input-error')
+        $('.begin-idx-string').removeClass('input-error')
+        $('.length-idx-string').removeClass('input-error')
 
         for(let i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
@@ -1741,7 +1746,10 @@ $(document).ready(function() {
             createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create')
         }
         else if($(this).data('value') == 'string') {
-             
+            initInput('String Assignment')
+            createActionTypeChoice()
+            createGetStringLengthInput()
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-string-button').text('Create')
         }
         else if($(this).data('value') == 'variable') {
             initInput('Variable Assignment')
@@ -1752,6 +1760,212 @@ $(document).ready(function() {
         container.append(createBtn)
         $('#pcInputContainerLower').append(container)  
     })
+
+    // String Assignment
+
+    $(document).on('click', '#create-asg-string-button', function() {
+        clearError()
+        
+        if($('.choose-action-type').find('option').filter(':selected').val() == 'length')
+            createStringAssignmentLength()
+        else 
+            createStringAssignmentSub()
+    })
+
+    function createStringAssignmentLength() {
+        let firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val() as string
+        let secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val() as string
+        let firstVariable: Variable
+        let secondVariable: Variable
+
+        if(firstValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('.first-asg-string-value').find('select').addClass('input-error')
+            return
+        }
+
+        if(secondValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('.second-asg-string-value').find('select').addClass('input-error')
+            return
+        }
+
+        firstVariable = findVariable(firstValue)
+        secondVariable = findVariable(secondValue)
+
+        let statement = new AssignmentStatement(statementCount++, 1, 'length', firstVariable,
+            undefined, undefined, undefined, secondVariable, undefined, undefined, undefined)
+        
+        handleAdd(statement)
+        restructureStatement()
+        drawCanvas()
+    }
+
+    function createStringAssignmentSub() {
+        let firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val() as string
+        let secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val() as string
+        let firstVariable: Variable
+        let secondVariable: Variable
+        let start: string
+        let length: string
+
+        if(firstValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('.first-asg-string-value').find('select').addClass('input-error')
+            return
+        }
+
+        if(secondValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
+            $('.second-asg-string-value').find('select').addClass('input-error')
+            return
+        }
+
+        firstVariable = findVariable(firstValue)
+        secondVariable = findVariable(secondValue)
+
+        start = $('.begin-idx-string').val() as string
+        if(start == '') {
+            createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer')
+            $('.begin-idx-string').addClass('input-error')
+            return
+        }
+        else if(parseInt(start) < 1) {
+            createErrorMessage('Start position must be greater than 0', 'pcInputErrorContainer')
+            $('.begin-idx-string').addClass('input-error')
+            return
+        }
+        else if(parseInt(start) > secondVariable.value.length) {
+            createErrorMessage('Start position must be less than String length', 'pcInputErrorContainer')
+            $('.begin-idx-string').addClass('input-error')
+            return
+        }
+        
+        length = $('.length-idx-string').val() as string
+        if(length == '') {
+            createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer')
+            $('.length-idx-string').addClass('input-error')
+            return
+        }
+        else if(parseInt(length) < 1) {
+            createErrorMessage('Length must be greater than 0', 'pcInputErrorContainer')
+            $('.length-idx-string').addClass('input-error')
+            return
+        }
+        else if(parseInt(start) + (parseInt(length)-1) > secondVariable.value.length) {
+            createErrorMessage('String overflow', 'pcInputErrorContainer')
+            $('.length-idx-string').addClass('input-error')
+            return
+        }
+
+        let statement = new AssignmentStatement(statementCount++, 1, 'sub', firstVariable, 
+            undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length))
+
+        handleAdd(statement)
+        restructureStatement()
+        drawCanvas()
+    }
+
+    $(document).on('change', '.choose-action-type', function() {
+        $('.action-select-container').remove()
+        
+        if($(this).find('option').filter(':selected').val() == 'length') {
+            createGetStringLengthInput()
+        }
+        else if($(this).find('option').filter(':selected').val() == 'sub') {
+            createSubstringInput()
+        }
+    })
+
+    function createActionTypeChoice() {
+        let container = 
+        $('<div>', {class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3'}).append(
+            $('<div>', {class: 'mb-3'}).append($('<strong>').text('Action Type')),
+            $('<div>', {class: 'col-sm-12 col-12 mb-3 d-flex align-items-center'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Action')),
+                $('<div>', {class: 'col-sm-7 col-7'}).append(
+                    $('<select>', {class: 'form-select choose-action-type'}).append(
+                        $('<option>').val('length').text('Get String Length'),
+                        $('<option>').val('sub').text('Get Part of String'),
+                    )
+                )
+            )
+        )
+
+        $('#pcInputContainer').append(container)
+    }
+
+    function createGetStringLengthInput() {
+        let container = 
+        $('<div>', {class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3 action-select-container'}).append(
+            $('<div>', {class: 'mb-3'}).append($('<strong>').text('String Length')),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Target Variable (Integer)')),
+                $('<div>', {class: 'col-sm-1 col-1'}),
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Variable (String)')),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            ),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}).append(createSelect(listInteger, 12, false).addClass('first-asg-string-value')),
+                $('<div>', {class: 'col-sm-1 col-1 d-flex justify-content-center'}).text('='),
+                $('<div>', {class: 'col-sm-5 col-5'}).append(createSelect(listString, 12, false).addClass('second-asg-string-value')),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            )
+        )
+
+        $('#pcInputContainer').append(container)
+    }
+
+    function createSubstringInput() {
+        let container = 
+        $('<div>', {class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3 action-select-container'}).append(
+            $('<div>', {class: 'mb-3'}).append($('<strong>').text('Part of String')),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Target Variable (String)')),
+                $('<div>', {class: 'col-sm-1 col-1'}),
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Variable (String)')),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            ),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}).append(createSelect(listString, 12, false).addClass('first-asg-string-value')),
+                $('<div>', {class: 'col-sm-1 col-1 d-flex justify-content-center'}).text('='),
+                $('<div>', {class: 'col-sm-5 col-5'}).append(createSelect(listString, 12, false).addClass('second-asg-string-value')),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            ),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}),
+                $('<div>', {class: 'col-sm-1 col-1'}),
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Start Position')),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            ),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}),
+                $('<div>', {class: 'col-sm-1 col-1'}),
+                $('<div>', {class: 'col-sm-5 col-5'}).append(
+                    $('<input>', {type: 'number', class: 'form-control begin-idx-string'})
+                ),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            ),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}),
+                $('<div>', {class: 'col-sm-1 col-1'}),
+                $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Length')),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            ),
+            $('<div>', {class: 'col-12 col-sm-12 d-flex align-items-center mb-3'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}),
+                $('<div>', {class: 'col-sm-1 col-1'}),
+                $('<div>', {class: 'col-sm-5 col-5'}).append(
+                    $('<input>', {type: 'number', class: 'form-control length-idx-string'})
+                ),
+                $('<div>', {class: 'col-sm-1 col-1'})
+            )
+        )
+
+        $('#pcInputContainer').append(container)
+    }
+
+    // Arithmetic Assignment
 
     function createArithmeticAssignmentHeader() {
         let listVariable: Variable[] = getSelectedVariables('assignment')
@@ -2123,7 +2337,7 @@ $(document).ready(function() {
         listOperator.push(operators[checkedIdx])
 
         let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', 
-            targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined)
+            targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined)
     
         handleAdd(assignmentStatement)
         restructureStatement()
@@ -2291,7 +2505,8 @@ $(document).ready(function() {
                 return
             }
         }
-        let statement = new AssignmentStatement(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom)
+        let statement = new AssignmentStatement(statementCount++, 1, 'variable', 
+            firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined)
         handleAdd(statement)
         restructureStatement()
         drawCanvas()
@@ -2727,11 +2942,35 @@ $(document).ready(function() {
 
         let listArithmetic = []
         listArithmetic.push(new Arithmetic(variable, new Integer('x', 2), undefined, undefined, '%', false, true))
-        let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined)
+        let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', 
+            variable, listArithmetic, undefined, undefined, undefined, undefined, undefined, undefined)
 
         handleAdd(new DeclareStatement(statementCount++, 1, variable))
         handleAdd(new InputStatement(statementCount++, 1, variable))
         handleAdd(assignmentStatement)
         handleAdd(ifStatement)
     }
+
+    // Source Code Logic
+
+    $(document).on('click', '#btn-generate-source-code', function() {
+        let c: C = new C(listStatement)
+        $('#source-code-container').val('')
+        $('#source-code-container').val(c.generateSourceCode())
+        // resizeTextArea()
+    })
+
+    // function resizeTextArea()  {
+    //     let str = ($('#source-code-container') as any).value;
+    //     let cols = ($('#source-code-container') as any).cols;
+
+    //     var lineCount = 0;
+
+    //     let temp = str.split('\n')
+    //     for(let i = 0; i < temp.length; i++) { 
+    //         lineCount +=  Math.ceil( temp[i].length / cols )
+    //     }
+
+    //     ($('#source-code-container') as any).rows = lineCount + 1;
+    //   };
 })

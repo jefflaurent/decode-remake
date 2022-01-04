@@ -85,7 +85,52 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":14}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":15}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var C = /** @class */ (function () {
+    function C(listStatement) {
+        this.listStatement = listStatement;
+    }
+    C.prototype.generateSourceCode = function () {
+        this.generateStartingTemplate();
+        this.generateBody();
+        this.generateFinishTemplate();
+        return this.sourceCode;
+    };
+    C.prototype.generateStartingTemplate = function () {
+        this.sourceCode = '';
+        this.sourceCode += '#include<stdio.h>\n';
+        this.sourceCode += '#include<string.h>\n\n';
+        this.sourceCode += 'int main()\n';
+        this.sourceCode += '{\n';
+    };
+    C.prototype.generateBody = function () {
+        var temp;
+        for (var i = 0; i < this.listStatement.length; i++) {
+            temp = '';
+            temp = this.getIndentation(this.listStatement[i].level);
+            temp += this.listStatement[i].generateCSourceCode();
+            this.sourceCode += temp;
+        }
+    };
+    C.prototype.generateFinishTemplate = function () {
+        this.sourceCode += '\n';
+        this.sourceCode += '\treturn 0;\n';
+        this.sourceCode += '}';
+    };
+    C.prototype.getIndentation = function (level) {
+        var indentation = '';
+        var tab = '\t';
+        for (var i = 0; i < level; i++)
+            indentation += tab;
+        return indentation;
+    };
+    return C;
+}());
+exports.default = C;
+
+},{}],3:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -111,13 +156,15 @@ var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, listIsCustom, variable, isCustomValue) {
+    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, listIsCustom, variable, isCustomValue, start, length) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
         _this.listArithmetic = undefined;
         _this.listOperator = undefined;
         _this.listIsCustom = undefined;
         _this.isCustomValue = false;
+        _this.start = undefined;
+        _this.length = undefined;
         _this.type = type;
         _this.statementId = _this.generateId(statementId);
         _this.targetVariable = targetVariable;
@@ -126,6 +173,8 @@ var AssignmentStatement = /** @class */ (function (_super) {
         _this.listOperator = listOperator;
         _this.listIsCustom = listIsCustom;
         _this.isCustomValue = isCustomValue;
+        _this.start = start;
+        _this.length = length;
         _this.color = '#f4be0b';
         return _this;
     }
@@ -143,8 +192,10 @@ var AssignmentStatement = /** @class */ (function (_super) {
             text = this.generateArithmeticText();
         else if (this.type == 'variable')
             text = this.generateVariableText();
-        else {
-        }
+        else if (this.type == 'length')
+            text = this.generateLengthText();
+        else
+            text = this.generateSubText();
         return text;
     };
     AssignmentStatement.prototype.generateArithmeticText = function () {
@@ -183,6 +234,12 @@ var AssignmentStatement = /** @class */ (function (_super) {
         else
             return this.variable.name;
     };
+    AssignmentStatement.prototype.generateLengthText = function () {
+        return 'LENGTH OF ' + this.variable.name;
+    };
+    AssignmentStatement.prototype.generateSubText = function () {
+        return this.variable.name + ' FROM ' + this.start + ' WITH LENGTH ' + this.length;
+    };
     AssignmentStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.parent = this;
@@ -202,8 +259,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
         else if (this.type == 'arithmetic')
             return this.findTypeArithmetic(variable);
         else
-            return undefined;
-        return undefined;
+            return this.findTypeString(variable);
     };
     AssignmentStatement.prototype.findTypeVariable = function (variable) {
         if (this.targetVariable.name == variable.name)
@@ -225,15 +281,22 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    AssignmentStatement.prototype.findTypeString = function (variable) {
+        if (this.targetVariable.name == variable.name)
+            return this;
+        else if (this.variable.name == variable.name)
+            return this;
+        return undefined;
+    };
     AssignmentStatement.prototype.cloneStatement = function (statementCount) {
-        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue);
+        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue, this.start, this.length);
         return new ReturnClone_1.default(newStatement, true);
     };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;
 
-},{"../../utilities/ReturnClone":30,"../variable/Char":20,"../variable/Variable":26,"./Statement":8,"./helper/options/Option":18}],3:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Variable":27,"./Statement":9,"./helper/options/Option":19}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -340,11 +403,28 @@ var DeclareStatement = /** @class */ (function (_super) {
     DeclareStatement.prototype.cloneStatement = function (statementCount) {
         return new ReturnClone_1.default(new DeclareStatement(statementCount, this.level, this.variable), true);
     };
+    DeclareStatement.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        if (this.variable instanceof Integer_1.default)
+            sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode = 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode = 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode = 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode = 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+        else if (this.variable instanceof String_1.default)
+            sourceCode = 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+        sourceCode += '\n';
+        return sourceCode;
+    };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../../utilities/ReturnClone":30,"../variable/Char":20,"../variable/Double":21,"../variable/Float":22,"../variable/Integer":23,"../variable/Long":24,"../variable/String":25,"./Statement":8,"./helper/options/Option":18}],4:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Double":22,"../variable/Float":23,"../variable/Integer":24,"../variable/Long":25,"../variable/String":26,"./Statement":9,"./helper/options/Option":19}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -496,7 +576,7 @@ var ForStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":30,"./DeclareStatement":3,"./Statement":8,"./helper/options/Option":18}],5:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"./DeclareStatement":4,"./Statement":9,"./helper/options/Option":19}],6:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -610,7 +690,7 @@ var IfStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/ifs/If":17}],6:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/ifs/If":18}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -635,6 +715,7 @@ var Double_1 = __importDefault(require("../variable/Double"));
 var Float_1 = __importDefault(require("../variable/Float"));
 var Integer_1 = __importDefault(require("../variable/Integer"));
 var Long_1 = __importDefault(require("../variable/Long"));
+var String_1 = __importDefault(require("../variable/String"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var InputStatement = /** @class */ (function (_super) {
@@ -686,11 +767,28 @@ var InputStatement = /** @class */ (function (_super) {
     InputStatement.prototype.cloneStatement = function (statementCount) {
         return new ReturnClone_1.default(new InputStatement(statementCount, this.level, this.variable), true);
     };
+    InputStatement.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        if (this.variable instanceof Integer_1.default)
+            sourceCode = "scanf(\"%d\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode = "scanf(\"%lld\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode = "scanf(\"%f\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode = "scanf(\"%lf\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode = "scanf(\"%c\", &" + this.variable.name + ');';
+        else if (this.variable instanceof String_1.default)
+            sourceCode = "scanf(\"%s\", " + this.variable.name + ');';
+        sourceCode += '\n';
+        return sourceCode;
+    };
     return InputStatement;
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../../utilities/ReturnClone":30,"../variable/Char":20,"../variable/Double":21,"../variable/Float":22,"../variable/Integer":23,"../variable/Long":24,"./Statement":8,"./helper/options/Option":18}],7:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Double":22,"../variable/Float":23,"../variable/Integer":24,"../variable/Long":25,"../variable/String":26,"./Statement":9,"./helper/options/Option":19}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -710,6 +808,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../variable/Char"));
+var Double_1 = __importDefault(require("../variable/Double"));
+var Float_1 = __importDefault(require("../variable/Float"));
+var Integer_1 = __importDefault(require("../variable/Integer"));
+var Long_1 = __importDefault(require("../variable/Long"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
@@ -780,11 +883,37 @@ var OutputStatement = /** @class */ (function (_super) {
         else
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true);
     };
+    OutputStatement.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        var newLine = this.isNewLine ? '\\n' : '';
+        if (this.type == 'variable') {
+            if (this.variable instanceof Integer_1.default)
+                sourceCode = "printf(\"%d" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Long_1.default)
+                sourceCode = "printf(\"%lld" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Float_1.default)
+                sourceCode = "printf(\"%f" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Double_1.default)
+                sourceCode = "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof Char_1.default)
+                sourceCode = "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
+            else if (this.variable instanceof String)
+                sourceCode = "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
+        }
+        else if (this.type == 'text')
+            sourceCode = "printf(\"" + this.text + newLine + "\");";
+        else if (this.type == 'ascii')
+            sourceCode = "printf(\"%c" + newLine + "\", " + this.asciiCode + ");";
+        else
+            sourceCode = "printf(\"" + this.escapeSequence + "\");";
+        sourceCode += '\n';
+        return sourceCode;
+    };
     return OutputStatement;
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/options/Option":18}],8:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Double":22,"../variable/Float":23,"../variable/Integer":24,"../variable/Long":25,"./Statement":9,"./helper/options/Option":19}],9:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -820,11 +949,12 @@ var Statement = /** @class */ (function () {
     Statement.prototype.findVariable = function (variable) { return undefined; };
     Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
     Statement.prototype.findStatement = function (statement) { return false; };
+    Statement.prototype.generateCSourceCode = function () { return ''; };
     return Statement;
 }());
 exports.default = Statement;
 
-},{"../../utilities/ReturnClone":30}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -943,7 +1073,7 @@ var SwitchStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/options/Option":18}],10:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/options/Option":19}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1099,7 +1229,7 @@ var WhileStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"../../utilities/ReturnClone":30,"./Statement":8,"./helper/options/Option":18}],11:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/options/Option":19}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Arithmetic = /** @class */ (function () {
@@ -1164,7 +1294,7 @@ var Arithmetic = /** @class */ (function () {
 }());
 exports.default = Arithmetic;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1296,7 +1426,7 @@ var Case = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":30,"../../Statement":8,"../options/Option":18}],13:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":31,"../../Statement":9,"../options/Option":19}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1339,7 +1469,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":20,"../../../variable/String":25}],14:[function(require,module,exports){
+},{"../../../variable/Char":21,"../../../variable/String":26}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -1351,7 +1481,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1426,7 +1556,7 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"../../../../utilities/ReturnClone":30,"./If":17}],16:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":31,"./If":18}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1546,7 +1676,7 @@ var Else = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Else;
 
-},{"../../../../utilities/ReturnClone":30,"../../Statement":8,"../options/Option":18}],17:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":31,"../../Statement":9,"../options/Option":19}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1688,7 +1818,7 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../../../utilities/ReturnClone":30,"../../Statement":8,"../options/Option":18}],18:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":31,"../../Statement":9,"../options/Option":19}],19:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1785,7 +1915,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":29,"../../AssignmentStatement":2,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"./OptionSelection":19}],19:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":30,"../../AssignmentStatement":3,"../../DeclareStatement":4,"../../ForStatement":5,"../../IfStatement":6,"../../InputStatement":7,"../../OutputStatement":8,"../../SwitchStatement":10,"../../WhileStatement":11,"./OptionSelection":20}],20:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2027,7 +2157,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":29,"../../../../utilities/ReturnPaste":31,"../../AssignmentStatement":2,"../../DeclareStatement":3,"../../ForStatement":4,"../../IfStatement":5,"../../InputStatement":6,"../../OutputStatement":7,"../../SwitchStatement":9,"../../WhileStatement":10,"../case/Case":12,"../ifs/Else":16,"../ifs/If":17}],20:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":30,"../../../../utilities/ReturnPaste":32,"../../AssignmentStatement":3,"../../DeclareStatement":4,"../../ForStatement":5,"../../IfStatement":6,"../../InputStatement":7,"../../OutputStatement":8,"../../SwitchStatement":10,"../../WhileStatement":11,"../case/Case":13,"../ifs/Else":17,"../ifs/If":18}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2063,7 +2193,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":28,"./Variable":26}],21:[function(require,module,exports){
+},{"../../utilities/Return":29,"./Variable":27}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2105,7 +2235,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":28,"./Variable":26}],22:[function(require,module,exports){
+},{"../../utilities/Return":29,"./Variable":27}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2147,7 +2277,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":28,"./Variable":26}],23:[function(require,module,exports){
+},{"../../utilities/Return":29,"./Variable":27}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2189,7 +2319,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":28,"./Variable":26}],24:[function(require,module,exports){
+},{"../../utilities/Return":29,"./Variable":27}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2229,7 +2359,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":28,"./Variable":26}],25:[function(require,module,exports){
+},{"../../utilities/Return":29,"./Variable":27}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2262,7 +2392,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":28,"./Variable":26}],26:[function(require,module,exports){
+},{"../../utilities/Return":29,"./Variable":27}],27:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2291,7 +2421,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":28}],27:[function(require,module,exports){
+},{"../../utilities/Return":29}],28:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2319,6 +2449,7 @@ var InputStatement_1 = __importDefault(require("../classes/statement/InputStatem
 var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
 var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
 var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignment/Arithmetic"));
+var C_1 = __importDefault(require("../classes/languages/C"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -2442,6 +2573,10 @@ $(document).ready(function () {
         $('#update-value-for-loop').removeClass('input-error');
         $('#chosen-asg-variable').removeClass('input-error');
         $('.selected-target-variable-asg').removeClass('input-error');
+        $('.first-asg-string-value').find('select').removeClass('input-error');
+        $('.second-asg-string-value').find('select').removeClass('input-error');
+        $('.begin-idx-string').removeClass('input-error');
+        $('.length-idx-string').removeClass('input-error');
         for (var i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
             $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
@@ -3768,6 +3903,10 @@ $(document).ready(function () {
             createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create');
         }
         else if ($(this).data('value') == 'string') {
+            initInput('String Assignment');
+            createActionTypeChoice();
+            createGetStringLengthInput();
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-string-button').text('Create');
         }
         else if ($(this).data('value') == 'variable') {
             initInput('Variable Assignment');
@@ -3777,6 +3916,114 @@ $(document).ready(function () {
         container.append(createBtn);
         $('#pcInputContainerLower').append(container);
     });
+    // String Assignment
+    $(document).on('click', '#create-asg-string-button', function () {
+        clearError();
+        if ($('.choose-action-type').find('option').filter(':selected').val() == 'length')
+            createStringAssignmentLength();
+        else
+            createStringAssignmentSub();
+    });
+    function createStringAssignmentLength() {
+        var firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val();
+        var secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        if (firstValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.first-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        if (secondValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.second-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        firstVariable = findVariable(firstValue);
+        secondVariable = findVariable(secondValue);
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'length', firstVariable, undefined, undefined, undefined, secondVariable, undefined, undefined, undefined);
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    }
+    function createStringAssignmentSub() {
+        var firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val();
+        var secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        var start;
+        var length;
+        if (firstValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.first-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        if (secondValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.second-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        firstVariable = findVariable(firstValue);
+        secondVariable = findVariable(secondValue);
+        start = $('.begin-idx-string').val();
+        if (start == '') {
+            createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+            $('.begin-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(start) < 1) {
+            createErrorMessage('Start position must be greater than 0', 'pcInputErrorContainer');
+            $('.begin-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(start) > secondVariable.value.length) {
+            createErrorMessage('Start position must be less than String length', 'pcInputErrorContainer');
+            $('.begin-idx-string').addClass('input-error');
+            return;
+        }
+        length = $('.length-idx-string').val();
+        if (length == '') {
+            createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+            $('.length-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(length) < 1) {
+            createErrorMessage('Length must be greater than 0', 'pcInputErrorContainer');
+            $('.length-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(start) + (parseInt(length) - 1) > secondVariable.value.length) {
+            createErrorMessage('String overflow', 'pcInputErrorContainer');
+            $('.length-idx-string').addClass('input-error');
+            return;
+        }
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'sub', firstVariable, undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length));
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    }
+    $(document).on('change', '.choose-action-type', function () {
+        $('.action-select-container').remove();
+        if ($(this).find('option').filter(':selected').val() == 'length') {
+            createGetStringLengthInput();
+        }
+        else if ($(this).find('option').filter(':selected').val() == 'sub') {
+            createSubstringInput();
+        }
+    });
+    function createActionTypeChoice() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Action Type')), $('<div>', { class: 'col-sm-12 col-12 mb-3 d-flex align-items-center' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Action')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select choose-action-type' }).append($('<option>').val('length').text('Get String Length'), $('<option>').val('sub').text('Get Part of String')))));
+        $('#pcInputContainer').append(container);
+    }
+    function createGetStringLengthInput() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3 action-select-container' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('String Length')), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Target Variable (Integer)')), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable (String)')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listInteger, 12, false).addClass('first-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1 d-flex justify-content-center' }).text('='), $('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listString, 12, false).addClass('second-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1' })));
+        $('#pcInputContainer').append(container);
+    }
+    function createSubstringInput() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3 action-select-container' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Part of String')), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Target Variable (String)')), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable (String)')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listString, 12, false).addClass('first-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1 d-flex justify-content-center' }).text('='), $('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listString, 12, false).addClass('second-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Start Position')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<input>', { type: 'number', class: 'form-control begin-idx-string' })), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Length')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<input>', { type: 'number', class: 'form-control length-idx-string' })), $('<div>', { class: 'col-sm-1 col-1' })));
+        $('#pcInputContainer').append(container);
+    }
+    // Arithmetic Assignment
     function createArithmeticAssignmentHeader() {
         var listVariable = getSelectedVariables('assignment');
         var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('selected-target-variable-asg'))));
@@ -4009,7 +4256,7 @@ $(document).ready(function () {
             }
         }
         listOperator.push(operators[checkedIdx]);
-        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined);
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined);
         handleAdd(assignmentStatement);
         restructureStatement();
         drawCanvas();
@@ -4152,7 +4399,7 @@ $(document).ready(function () {
                 return;
             }
         }
-        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom);
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined);
         handleAdd(statement);
         restructureStatement();
         drawCanvas();
@@ -4507,15 +4754,32 @@ $(document).ready(function () {
         ifStatement.updateIfOperations(ifOperations);
         var listArithmetic = [];
         listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', false, true));
-        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined);
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined, undefined, undefined);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
         handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
         handleAdd(assignmentStatement);
         handleAdd(ifStatement);
     }
+    // Source Code Logic
+    $(document).on('click', '#btn-generate-source-code', function () {
+        var c = new C_1.default(listStatement);
+        $('#source-code-container').val('');
+        $('#source-code-container').val(c.generateSourceCode());
+        // resizeTextArea()
+    });
+    // function resizeTextArea()  {
+    //     let str = ($('#source-code-container') as any).value;
+    //     let cols = ($('#source-code-container') as any).cols;
+    //     var lineCount = 0;
+    //     let temp = str.split('\n')
+    //     for(let i = 0; i < temp.length; i++) { 
+    //         lineCount +=  Math.ceil( temp[i].length / cols )
+    //     }
+    //     ($('#source-code-container') as any).rows = lineCount + 1;
+    //   };
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/statement/AssignmentStatement":2,"../classes/statement/DeclareStatement":3,"../classes/statement/ForStatement":4,"../classes/statement/IfStatement":5,"../classes/statement/InputStatement":6,"../classes/statement/OutputStatement":7,"../classes/statement/SwitchStatement":9,"../classes/statement/WhileStatement":10,"../classes/statement/helper/assignment/Arithmetic":11,"../classes/statement/helper/case/Case":12,"../classes/statement/helper/general/Condition":13,"../classes/statement/helper/ifs/Elif":15,"../classes/statement/helper/ifs/Else":16,"../classes/statement/helper/ifs/If":17,"../classes/statement/helper/options/Option":18,"../classes/variable/Char":20,"../classes/variable/Double":21,"../classes/variable/Float":22,"../classes/variable/Integer":23,"../classes/variable/Long":24,"../classes/variable/String":25}],28:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/statement/AssignmentStatement":3,"../classes/statement/DeclareStatement":4,"../classes/statement/ForStatement":5,"../classes/statement/IfStatement":6,"../classes/statement/InputStatement":7,"../classes/statement/OutputStatement":8,"../classes/statement/SwitchStatement":10,"../classes/statement/WhileStatement":11,"../classes/statement/helper/assignment/Arithmetic":12,"../classes/statement/helper/case/Case":13,"../classes/statement/helper/general/Condition":14,"../classes/statement/helper/ifs/Elif":16,"../classes/statement/helper/ifs/Else":17,"../classes/statement/helper/ifs/If":18,"../classes/statement/helper/options/Option":19,"../classes/variable/Char":21,"../classes/variable/Double":22,"../classes/variable/Float":23,"../classes/variable/Integer":24,"../classes/variable/Long":25,"../classes/variable/String":26}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -4527,7 +4791,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -4541,7 +4805,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone = /** @class */ (function () {
@@ -4554,7 +4818,7 @@ var ReturnClone = /** @class */ (function () {
 }());
 exports.default = ReturnClone;
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -4566,4 +4830,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[27]);
+},{}]},{},[28]);

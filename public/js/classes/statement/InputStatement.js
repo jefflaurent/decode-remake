@@ -22,6 +22,7 @@ var Double_1 = __importDefault(require("../variable/Double"));
 var Float_1 = __importDefault(require("../variable/Float"));
 var Integer_1 = __importDefault(require("../variable/Integer"));
 var Long_1 = __importDefault(require("../variable/Long"));
+var String_1 = __importDefault(require("../variable/String"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var InputStatement = /** @class */ (function (_super) {
@@ -72,6 +73,23 @@ var InputStatement = /** @class */ (function (_super) {
     };
     InputStatement.prototype.cloneStatement = function (statementCount) {
         return new ReturnClone_1.default(new InputStatement(statementCount, this.level, this.variable), true);
+    };
+    InputStatement.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        if (this.variable instanceof Integer_1.default)
+            sourceCode = "scanf(\"%d\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode = "scanf(\"%lld\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode = "scanf(\"%f\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode = "scanf(\"%lf\", &" + this.variable.name + ');';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode = "scanf(\"%c\", &" + this.variable.name + ');';
+        else if (this.variable instanceof String_1.default)
+            sourceCode = "scanf(\"%s\", " + this.variable.name + ');';
+        sourceCode += '\n';
+        return sourceCode;
     };
     return InputStatement;
 }(Statement_1.default));

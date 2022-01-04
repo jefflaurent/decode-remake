@@ -104,6 +104,23 @@ var DeclareStatement = /** @class */ (function (_super) {
     DeclareStatement.prototype.cloneStatement = function (statementCount) {
         return new ReturnClone_1.default(new DeclareStatement(statementCount, this.level, this.variable), true);
     };
+    DeclareStatement.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        if (this.variable instanceof Integer_1.default)
+            sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode = 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode = 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode = 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode = 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+        else if (this.variable instanceof String_1.default)
+            sourceCode = 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+        sourceCode += '\n';
+        return sourceCode;
+    };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;

@@ -102,6 +102,27 @@ class DeclareStatement extends Statement {
     cloneStatement(statementCount: number): ReturnClone {
         return new ReturnClone(new DeclareStatement(statementCount, this.level, this.variable), true)
     }
+
+    generateCSourceCode(): string {
+        let sourceCode = ''
+        
+        if(this.variable instanceof Integer)
+            sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Long)
+            sourceCode = 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Float)
+            sourceCode = 'float ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Double)
+            sourceCode = 'double ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Char)
+            sourceCode = 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
+        else if(this.variable instanceof String)
+            sourceCode = 'char[' + this.variable.value.length +'] ' + this.variable.name + ' = ' +  `"` + this.variable.value + `";`
+    
+        sourceCode += '\n'
+
+        return sourceCode
+    }
 }
 
 export default DeclareStatement

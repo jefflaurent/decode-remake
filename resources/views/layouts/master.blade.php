@@ -61,6 +61,19 @@
                 margin-top: 4% !important;
             }
         }
+
+        #source-code-container {
+            padding: 2%;
+            border: 0.1vh solid #C4C4C4;
+            font-family: Consolas;
+            background-color: white; 
+            resize: none; 
+            overflow: auto;
+        }
+
+        #source-code-container:focus {
+            outline: 0;
+        }
     </style>
     <title>Decode</title>
 </head>

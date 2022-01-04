@@ -23,13 +23,15 @@ var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
     __extends(AssignmentStatement, _super);
-    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, listIsCustom, variable, isCustomValue) {
+    function AssignmentStatement(statementId, level, type, targetVariable, listArithmetic, listOperator, listIsCustom, variable, isCustomValue, start, length) {
         var _this = _super.call(this, level) || this;
         _this.variable = undefined;
         _this.listArithmetic = undefined;
         _this.listOperator = undefined;
         _this.listIsCustom = undefined;
         _this.isCustomValue = false;
+        _this.start = undefined;
+        _this.length = undefined;
         _this.type = type;
         _this.statementId = _this.generateId(statementId);
         _this.targetVariable = targetVariable;
@@ -38,6 +40,8 @@ var AssignmentStatement = /** @class */ (function (_super) {
         _this.listOperator = listOperator;
         _this.listIsCustom = listIsCustom;
         _this.isCustomValue = isCustomValue;
+        _this.start = start;
+        _this.length = length;
         _this.color = '#f4be0b';
         return _this;
     }
@@ -55,8 +59,10 @@ var AssignmentStatement = /** @class */ (function (_super) {
             text = this.generateArithmeticText();
         else if (this.type == 'variable')
             text = this.generateVariableText();
-        else {
-        }
+        else if (this.type == 'length')
+            text = this.generateLengthText();
+        else
+            text = this.generateSubText();
         return text;
     };
     AssignmentStatement.prototype.generateArithmeticText = function () {
@@ -95,6 +101,12 @@ var AssignmentStatement = /** @class */ (function (_super) {
         else
             return this.variable.name;
     };
+    AssignmentStatement.prototype.generateLengthText = function () {
+        return 'LENGTH OF ' + this.variable.name;
+    };
+    AssignmentStatement.prototype.generateSubText = function () {
+        return this.variable.name + ' FROM ' + this.start + ' WITH LENGTH ' + this.length;
+    };
     AssignmentStatement.prototype.createOption = function (canvas, coorX, coorY) {
         this.option = new Option_1.default(this.statementId, coorX, coorY, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.parent = this;
@@ -114,8 +126,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
         else if (this.type == 'arithmetic')
             return this.findTypeArithmetic(variable);
         else
-            return undefined;
-        return undefined;
+            return this.findTypeString(variable);
     };
     AssignmentStatement.prototype.findTypeVariable = function (variable) {
         if (this.targetVariable.name == variable.name)
@@ -137,8 +148,15 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         return undefined;
     };
+    AssignmentStatement.prototype.findTypeString = function (variable) {
+        if (this.targetVariable.name == variable.name)
+            return this;
+        else if (this.variable.name == variable.name)
+            return this;
+        return undefined;
+    };
     AssignmentStatement.prototype.cloneStatement = function (statementCount) {
-        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue);
+        var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue, this.start, this.length);
         return new ReturnClone_1.default(newStatement, true);
     };
     return AssignmentStatement;

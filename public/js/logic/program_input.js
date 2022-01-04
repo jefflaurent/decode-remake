@@ -25,6 +25,7 @@ var InputStatement_1 = __importDefault(require("../classes/statement/InputStatem
 var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStatement"));
 var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
 var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignment/Arithmetic"));
+var C_1 = __importDefault(require("../classes/languages/C"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -148,6 +149,10 @@ $(document).ready(function () {
         $('#update-value-for-loop').removeClass('input-error');
         $('#chosen-asg-variable').removeClass('input-error');
         $('.selected-target-variable-asg').removeClass('input-error');
+        $('.first-asg-string-value').find('select').removeClass('input-error');
+        $('.second-asg-string-value').find('select').removeClass('input-error');
+        $('.begin-idx-string').removeClass('input-error');
+        $('.length-idx-string').removeClass('input-error');
         for (var i = 0; i < ifToBeValidated.length; i++) {
             $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
             $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
@@ -1474,6 +1479,10 @@ $(document).ready(function () {
             createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create');
         }
         else if ($(this).data('value') == 'string') {
+            initInput('String Assignment');
+            createActionTypeChoice();
+            createGetStringLengthInput();
+            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-string-button').text('Create');
         }
         else if ($(this).data('value') == 'variable') {
             initInput('Variable Assignment');
@@ -1483,6 +1492,114 @@ $(document).ready(function () {
         container.append(createBtn);
         $('#pcInputContainerLower').append(container);
     });
+    // String Assignment
+    $(document).on('click', '#create-asg-string-button', function () {
+        clearError();
+        if ($('.choose-action-type').find('option').filter(':selected').val() == 'length')
+            createStringAssignmentLength();
+        else
+            createStringAssignmentSub();
+    });
+    function createStringAssignmentLength() {
+        var firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val();
+        var secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        if (firstValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.first-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        if (secondValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.second-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        firstVariable = findVariable(firstValue);
+        secondVariable = findVariable(secondValue);
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'length', firstVariable, undefined, undefined, undefined, secondVariable, undefined, undefined, undefined);
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    }
+    function createStringAssignmentSub() {
+        var firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val();
+        var secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val();
+        var firstVariable;
+        var secondVariable;
+        var start;
+        var length;
+        if (firstValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.first-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        if (secondValue == '') {
+            createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
+            $('.second-asg-string-value').find('select').addClass('input-error');
+            return;
+        }
+        firstVariable = findVariable(firstValue);
+        secondVariable = findVariable(secondValue);
+        start = $('.begin-idx-string').val();
+        if (start == '') {
+            createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+            $('.begin-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(start) < 1) {
+            createErrorMessage('Start position must be greater than 0', 'pcInputErrorContainer');
+            $('.begin-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(start) > secondVariable.value.length) {
+            createErrorMessage('Start position must be less than String length', 'pcInputErrorContainer');
+            $('.begin-idx-string').addClass('input-error');
+            return;
+        }
+        length = $('.length-idx-string').val();
+        if (length == '') {
+            createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
+            $('.length-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(length) < 1) {
+            createErrorMessage('Length must be greater than 0', 'pcInputErrorContainer');
+            $('.length-idx-string').addClass('input-error');
+            return;
+        }
+        else if (parseInt(start) + (parseInt(length) - 1) > secondVariable.value.length) {
+            createErrorMessage('String overflow', 'pcInputErrorContainer');
+            $('.length-idx-string').addClass('input-error');
+            return;
+        }
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'sub', firstVariable, undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length));
+        handleAdd(statement);
+        restructureStatement();
+        drawCanvas();
+    }
+    $(document).on('change', '.choose-action-type', function () {
+        $('.action-select-container').remove();
+        if ($(this).find('option').filter(':selected').val() == 'length') {
+            createGetStringLengthInput();
+        }
+        else if ($(this).find('option').filter(':selected').val() == 'sub') {
+            createSubstringInput();
+        }
+    });
+    function createActionTypeChoice() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Action Type')), $('<div>', { class: 'col-sm-12 col-12 mb-3 d-flex align-items-center' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Action')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select choose-action-type' }).append($('<option>').val('length').text('Get String Length'), $('<option>').val('sub').text('Get Part of String')))));
+        $('#pcInputContainer').append(container);
+    }
+    function createGetStringLengthInput() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3 action-select-container' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('String Length')), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Target Variable (Integer)')), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable (String)')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listInteger, 12, false).addClass('first-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1 d-flex justify-content-center' }).text('='), $('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listString, 12, false).addClass('second-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1' })));
+        $('#pcInputContainer').append(container);
+    }
+    function createSubstringInput() {
+        var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light col-sm-12 col-12 mb-3 action-select-container' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Part of String')), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Target Variable (String)')), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable (String)')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listString, 12, false).addClass('first-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1 d-flex justify-content-center' }).text('='), $('<div>', { class: 'col-sm-5 col-5' }).append(createSelect(listString, 12, false).addClass('second-asg-string-value')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Start Position')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<input>', { type: 'number', class: 'form-control begin-idx-string' })), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Length')), $('<div>', { class: 'col-sm-1 col-1' })), $('<div>', { class: 'col-12 col-sm-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-5 col-5' }).append($('<input>', { type: 'number', class: 'form-control length-idx-string' })), $('<div>', { class: 'col-sm-1 col-1' })));
+        $('#pcInputContainer').append(container);
+    }
+    // Arithmetic Assignment
     function createArithmeticAssignmentHeader() {
         var listVariable = getSelectedVariables('assignment');
         var container = $('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Target Variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), $('<div>', { class: 'col-sm-7 col-7' }).append(createSelect(listVariable, 12, true).addClass('selected-target-variable-asg'))));
@@ -1715,7 +1832,7 @@ $(document).ready(function () {
             }
         }
         listOperator.push(operators[checkedIdx]);
-        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined);
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined);
         handleAdd(assignmentStatement);
         restructureStatement();
         drawCanvas();
@@ -1858,7 +1975,7 @@ $(document).ready(function () {
                 return;
             }
         }
-        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom);
+        var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined);
         handleAdd(statement);
         restructureStatement();
         drawCanvas();
@@ -2213,10 +2330,27 @@ $(document).ready(function () {
         ifStatement.updateIfOperations(ifOperations);
         var listArithmetic = [];
         listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', false, true));
-        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined);
+        var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined, undefined, undefined);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
         handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
         handleAdd(assignmentStatement);
         handleAdd(ifStatement);
     }
+    // Source Code Logic
+    $(document).on('click', '#btn-generate-source-code', function () {
+        var c = new C_1.default(listStatement);
+        $('#source-code-container').val('');
+        $('#source-code-container').val(c.generateSourceCode());
+        // resizeTextArea()
+    });
+    // function resizeTextArea()  {
+    //     let str = ($('#source-code-container') as any).value;
+    //     let cols = ($('#source-code-container') as any).cols;
+    //     var lineCount = 0;
+    //     let temp = str.split('\n')
+    //     for(let i = 0; i < temp.length; i++) { 
+    //         lineCount +=  Math.ceil( temp[i].length / cols )
+    //     }
+    //     ($('#source-code-container') as any).rows = lineCount + 1;
+    //   };
 });

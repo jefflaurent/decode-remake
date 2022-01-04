@@ -6,6 +6,7 @@ import Double from "../variable/Double"
 import Float from "../variable/Float"
 import Integer from "../variable/Integer"
 import Long from "../variable/Long"
+import String from "../variable/String"
 import Variable from "../variable/Variable"
 import Option from "./helper/options/Option"
 import Statement from "./Statement"
@@ -68,6 +69,27 @@ class InputStatement extends Statement {
 
     cloneStatement(statementCount: number): ReturnClone {
         return new ReturnClone(new InputStatement(statementCount, this.level, this.variable), true)
+    }
+
+    generateCSourceCode(): string {
+        let sourceCode = ''
+        
+        if(this.variable instanceof Integer)
+            sourceCode = `scanf("%d", &` + this.variable.name + ');'
+        else if(this.variable instanceof Long)
+            sourceCode = `scanf("%lld", &` + this.variable.name + ');'
+        else if(this.variable instanceof Float)
+            sourceCode = `scanf("%f", &` + this.variable.name + ');'
+        else if(this.variable instanceof Double)
+            sourceCode = `scanf("%lf", &` + this.variable.name + ');'
+        else if(this.variable instanceof Char)
+            sourceCode = `scanf("%c", &` + this.variable.name + ');'
+        else if(this.variable instanceof String)
+            sourceCode = `scanf("%s", ` + this.variable.name + ');'
+        
+        sourceCode += '\n'
+
+        return sourceCode
     }
 }
 
