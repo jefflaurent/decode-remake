@@ -106,12 +106,13 @@ var C = /** @class */ (function () {
         this.sourceCode += '{\n';
     };
     C.prototype.generateBody = function () {
-        var temp;
+        var temp = [];
         for (var i = 0; i < this.listStatement.length; i++) {
-            temp = '';
-            temp = this.getIndentation(this.listStatement[i].level);
-            temp += this.listStatement[i].generateCSourceCode();
-            this.sourceCode += temp;
+            temp = this.listStatement[i].generateCSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++) {
+                this.sourceCode += this.getIndentation(1) + temp[j];
+            }
         }
     };
     C.prototype.generateFinishTemplate = function () {
@@ -405,6 +406,7 @@ var DeclareStatement = /** @class */ (function (_super) {
     };
     DeclareStatement.prototype.generateCSourceCode = function () {
         var sourceCode = '';
+        sourceCode += this.getIndentation();
         if (this.variable instanceof Integer_1.default)
             sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Long_1.default)
@@ -418,7 +420,9 @@ var DeclareStatement = /** @class */ (function (_super) {
         else if (this.variable instanceof String_1.default)
             sourceCode = 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
-        return sourceCode;
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
     };
     return DeclareStatement;
 }(Statement_1.default));
@@ -444,7 +448,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
-var DeclareStatement_1 = __importDefault(require("./DeclareStatement"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var ForStatement = /** @class */ (function (_super) {
@@ -477,9 +480,8 @@ var ForStatement = /** @class */ (function (_super) {
     ForStatement.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
         var text = 'FOR ( ';
-        var declareStatement = new DeclareStatement_1.default(-1, -1, this.variable);
         this.option = [];
-        text += declareStatement.getDeclareStatementText(this.variableIsNew) + '; ';
+        text += this.variable.name + ' = 0; ';
         text += this.condition.generateBlockCodeText() + '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
@@ -572,11 +574,51 @@ var ForStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(forStatement, true);
     };
+    ForStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        sourceCode += 'for(' + this.variable.name + ' = 0; ';
+        sourceCode += this.condition.generateCSourceCode();
+        sourceCode += '; ';
+        if (this.isIncrement) {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '++ )';
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
+        }
+        else {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '-- )';
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
+        }
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
     return ForStatement;
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":31,"./DeclareStatement":4,"./Statement":9,"./helper/options/Option":19}],6:[function(require,module,exports){
+},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/options/Option":19}],6:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -686,6 +728,12 @@ var IfStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(ifStatement, true);
     };
+    IfStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCSourceCode());
+        return sourceCodeContainer;
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;
@@ -782,7 +830,9 @@ var InputStatement = /** @class */ (function (_super) {
         else if (this.variable instanceof String_1.default)
             sourceCode = "scanf(\"%s\", " + this.variable.name + ');';
         sourceCode += '\n';
-        return sourceCode;
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
     };
     return InputStatement;
 }(Statement_1.default));
@@ -884,30 +934,32 @@ var OutputStatement = /** @class */ (function (_super) {
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true);
     };
     OutputStatement.prototype.generateCSourceCode = function () {
-        var sourceCode = '';
+        var sourceCode = '' + this.getIndentation();
         var newLine = this.isNewLine ? '\\n' : '';
         if (this.type == 'variable') {
             if (this.variable instanceof Integer_1.default)
-                sourceCode = "printf(\"%d" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%d" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Long_1.default)
-                sourceCode = "printf(\"%lld" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%lld" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Float_1.default)
-                sourceCode = "printf(\"%f" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%f" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Double_1.default)
-                sourceCode = "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Char_1.default)
-                sourceCode = "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof String)
-                sourceCode = "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
         }
         else if (this.type == 'text')
-            sourceCode = "printf(\"" + this.text + newLine + "\");";
+            sourceCode += "printf(\"" + this.text + newLine + "\");";
         else if (this.type == 'ascii')
-            sourceCode = "printf(\"%c" + newLine + "\", " + this.asciiCode + ");";
+            sourceCode += "printf(\"%c" + newLine + "\", " + this.asciiCode + ");";
         else
-            sourceCode = "printf(\"" + this.escapeSequence + "\");";
+            sourceCode += "printf(\"" + this.escapeSequence + "\");";
         sourceCode += '\n';
-        return sourceCode;
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
     };
     return OutputStatement;
 }(Statement_1.default));
@@ -942,6 +994,13 @@ var Statement = /** @class */ (function () {
     Statement.prototype.getParent = function () {
         return this.parent;
     };
+    Statement.prototype.getIndentation = function () {
+        var indentation = '';
+        var tab = '\t';
+        for (var i = 1; i < this.level; i++)
+            indentation += tab;
+        return indentation;
+    };
     Statement.prototype.generateId = function (number) { };
     Statement.prototype.writeToCanvas = function (canvas, isClose) { };
     Statement.prototype.updateChildStatement = function (childStatement) { };
@@ -949,7 +1008,7 @@ var Statement = /** @class */ (function () {
     Statement.prototype.findVariable = function (variable) { return undefined; };
     Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
     Statement.prototype.findStatement = function (statement) { return false; };
-    Statement.prototype.generateCSourceCode = function () { return ''; };
+    Statement.prototype.generateCSourceCode = function () { return []; };
     return Statement;
 }());
 exports.default = Statement;
@@ -1014,7 +1073,7 @@ var SwitchStatement = /** @class */ (function (_super) {
     };
     SwitchStatement.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
-        var text = 'SWITCH (' + this.variable.name + ' )';
+        var text = 'SWITCH ( ' + this.variable.name + ' )';
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.option = new Option_1.default(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
@@ -1068,6 +1127,20 @@ var SwitchStatement = /** @class */ (function (_super) {
             switchStatement.updateChildStatement(caseStatement);
         }
         return new ReturnClone_1.default(switchStatement, true);
+    };
+    SwitchStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateCSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
     };
     return SwitchStatement;
 }(Statement_1.default));
@@ -1314,6 +1387,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../../../variable/Char"));
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
 var Case = /** @class */ (function (_super) {
@@ -1349,8 +1423,12 @@ var Case = /** @class */ (function (_super) {
     Case.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
         var text = '';
-        if (!this.isDefault)
-            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                text = "CASE '" + this.condition.secondVariable.value + "':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+            else
+                text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
+        }
         else
             text = 'DEFAULT:' + '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
         var coordinate = canvas.writeText(this.level, text, this.color);
@@ -1422,11 +1500,40 @@ var Case = /** @class */ (function (_super) {
         caseStatement.updateChildStatement(childStatement);
         return new ReturnClone_1.default(caseStatement, true);
     };
+    Case.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                sourceCodeContainer.push(this.getIndentation() + "case '" + this.condition.secondVariable.value + "':\n");
+            else
+                sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
+        }
+        else
+            sourceCodeContainer.push(this.getIndentation() + "default:");
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
+        return sourceCodeContainer;
+    };
     return Case;
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":31,"../../Statement":9,"../options/Option":19}],14:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":31,"../../../variable/Char":21,"../../Statement":9,"../options/Option":19}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1464,6 +1571,24 @@ var Condition = /** @class */ (function () {
     };
     Condition.prototype.cloneCondition = function () {
         return new Condition(this.firstVariable, this.operator, this.secondVariable, this.isCustomValue);
+    };
+    Condition.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        if (this.isCustomValue) {
+            if (this.secondVariable instanceof Char_1.default)
+                sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+            else if (this.secondVariable instanceof String_1.default)
+                sourceCode = 'strcmp(' + this.firstVariable.name + ", \"" + this.secondVariable.value + "\") " + this.operator + '0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
+        }
+        else {
+            if (this.secondVariable instanceof String_1.default)
+                sourceCode = 'strcmp(' + this.firstVariable.name + ", " + this.secondVariable.name + ") " + this.operator + '0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        }
+        return sourceCode;
     };
     return Condition;
 }());
@@ -1551,6 +1676,38 @@ var Elif = /** @class */ (function (_super) {
             ifStatement.updateChildStatement(childStatement);
         }
         return new ReturnClone_1.default(ifStatement, true);
+    };
+    Elif.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? '&&' : '||';
+            sourceCode += 'else if(' + this.firstCondition.generateCSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateCSourceCode() + ')\n';
+        }
+        else {
+            sourceCode += 'else if(' + this.firstCondition.generateCSourceCode() + ')\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
     };
     return Elif;
 }(If_1.default));
@@ -1671,6 +1828,29 @@ var Else = /** @class */ (function (_super) {
             elseStatement.updateChildStatement(childStatement);
         }
         return new ReturnClone_1.default(elseStatement, true);
+    };
+    Else.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'else\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
     };
     return Else;
 }(Statement_1.default));
@@ -1813,6 +1993,38 @@ var If = /** @class */ (function (_super) {
             ifStatement.updateChildStatement(childStatement);
         }
         return new ReturnClone_1.default(ifStatement, true);
+    };
+    If.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? '&&' : '||';
+            sourceCode += 'if(' + this.firstCondition.generateCSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateCSourceCode() + ')\n';
+        }
+        else {
+            sourceCode += 'if(' + this.firstCondition.generateCSourceCode() + ')\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
     };
     return If;
 }(Statement_1.default));
@@ -3065,6 +3277,7 @@ $(document).ready(function () {
             var switchStatement = new SwitchStatement_1.default(1, statementCount++, variable, undefined);
             switchStatement.updateCaseStatement(caseStatement);
             handleAdd(switchStatement);
+            restructureStatement();
             drawCanvas();
         }
     }
@@ -3277,6 +3490,7 @@ $(document).ready(function () {
                 ifStatements.push(new Else_1.default(1, statementCount));
             ifStatement.updateIfOperations(ifStatements);
             handleAdd(ifStatement);
+            restructureStatement();
             drawCanvas();
         }
     });

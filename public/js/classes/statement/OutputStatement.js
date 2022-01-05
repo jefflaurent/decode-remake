@@ -93,30 +93,32 @@ var OutputStatement = /** @class */ (function (_super) {
             return new ReturnClone_1.default(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true);
     };
     OutputStatement.prototype.generateCSourceCode = function () {
-        var sourceCode = '';
+        var sourceCode = '' + this.getIndentation();
         var newLine = this.isNewLine ? '\\n' : '';
         if (this.type == 'variable') {
             if (this.variable instanceof Integer_1.default)
-                sourceCode = "printf(\"%d" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%d" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Long_1.default)
-                sourceCode = "printf(\"%lld" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%lld" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Float_1.default)
-                sourceCode = "printf(\"%f" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%f" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Double_1.default)
-                sourceCode = "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Char_1.default)
-                sourceCode = "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof String)
-                sourceCode = "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
+                sourceCode += "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
         }
         else if (this.type == 'text')
-            sourceCode = "printf(\"" + this.text + newLine + "\");";
+            sourceCode += "printf(\"" + this.text + newLine + "\");";
         else if (this.type == 'ascii')
-            sourceCode = "printf(\"%c" + newLine + "\", " + this.asciiCode + ");";
+            sourceCode += "printf(\"%c" + newLine + "\", " + this.asciiCode + ");";
         else
-            sourceCode = "printf(\"" + this.escapeSequence + "\");";
+            sourceCode += "printf(\"" + this.escapeSequence + "\");";
         sourceCode += '\n';
-        return sourceCode;
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
     };
     return OutputStatement;
 }(Statement_1.default));

@@ -750,6 +750,7 @@ $(document).ready(function() {
             let switchStatement = new SwitchStatement(1, statementCount++, variable, undefined)
             switchStatement.updateCaseStatement(caseStatement)
             handleAdd(switchStatement)
+            restructureStatement()
             drawCanvas()
         }
     }
@@ -997,6 +998,7 @@ $(document).ready(function() {
             ifStatement.updateIfOperations(ifStatements)
 
             handleAdd(ifStatement)
+            restructureStatement()
             drawCanvas()
         }
     })

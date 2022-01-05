@@ -115,6 +115,15 @@ class IfStatement extends Statement {
 
         return new ReturnClone(ifStatement, true)
     }
+
+    generateCSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        for(let i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCSourceCode())
+
+        return sourceCodeContainer
+    }
 }
 
 export default IfStatement

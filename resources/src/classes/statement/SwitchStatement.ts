@@ -52,7 +52,7 @@ class SwitchStatement extends Statement {
 
     writeToCanvas(canvas: Canvas): void {
         let upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE
-        let text = 'SWITCH (' + this.variable.name + ' )'
+        let text = 'SWITCH ( ' + this.variable.name + ' )'
         let coordinate = canvas.writeText(this.level, text, this.color)
         this.option = new Option(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this)
         this.option.draw(canvas)
@@ -122,6 +122,26 @@ class SwitchStatement extends Statement {
         }
 
         return new ReturnClone(switchStatement, true)
+    }
+
+    generateCSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n')
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+        
+        for(let i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateCSourceCode()
+            temp = temp.flat(Infinity)
+
+            for(let j =0 ; j < temp.length; j++) 
+                sourceCodeContainer.push(temp[j])
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
     }
 }
 

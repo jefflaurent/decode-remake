@@ -18,12 +18,13 @@ var C = /** @class */ (function () {
         this.sourceCode += '{\n';
     };
     C.prototype.generateBody = function () {
-        var temp;
+        var temp = [];
         for (var i = 0; i < this.listStatement.length; i++) {
-            temp = '';
-            temp = this.getIndentation(this.listStatement[i].level);
-            temp += this.listStatement[i].generateCSourceCode();
-            this.sourceCode += temp;
+            temp = this.listStatement[i].generateCSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++) {
+                this.sourceCode += this.getIndentation(1) + temp[j];
+            }
         }
     };
     C.prototype.generateFinishTemplate = function () {

@@ -1,6 +1,7 @@
 import ReturnClick from "../../../../utilities/ReturnClick";
 import ReturnClone from "../../../../utilities/ReturnClone";
 import Canvas from "../../../canvas/Canvas";
+import Char from "../../../variable/Char";
 import Variable from "../../../variable/Variable";
 import Statement from "../../Statement";
 import Condition from "../general/Condition";
@@ -47,8 +48,12 @@ class Case extends Statement {
         let upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE
         let text = ''
 
-        if(!this.isDefault)
-            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
+        if(!this.isDefault) {
+            if(this.condition.secondVariable instanceof Char)
+                text = `CASE '` + this.condition.secondVariable.value + `':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t`
+            else
+                text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
+        }   
         else
             text = 'DEFAULT:' + '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
             
@@ -138,6 +143,41 @@ class Case extends Statement {
         caseStatement.updateChildStatement(childStatement)
         
         return new ReturnClone(caseStatement, true)
+    }
+
+    generateCSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        if(!this.isDefault) {
+            if(this.condition.secondVariable instanceof Char)
+                sourceCodeContainer.push(this.getIndentation() + `case '` + this.condition.secondVariable.value + `':\n`) 
+            else
+                sourceCodeContainer.push(this.getIndentation() + `case ` + this.condition.secondVariable.value + `:\n`) 
+        }
+        else 
+            sourceCodeContainer.push(this.getIndentation() + `default:`)
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+    
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n')
+
+        return sourceCodeContainer;
     }
 }
 

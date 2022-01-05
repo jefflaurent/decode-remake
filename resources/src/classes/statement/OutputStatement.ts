@@ -97,35 +97,37 @@ class OutputStatement extends Statement {
             return new ReturnClone(new OutputStatement(statementCount, this.level, this.isNewLine, this.type, undefined, this.text), true)
     }
 
-    generateCSourceCode(): string {
-        let sourceCode = ''
+    generateCSourceCode(): string[] {
+        let sourceCode = '' + this.getIndentation()
         let newLine = this.isNewLine ? '\\n' : ''
         
         if(this.type == 'variable') {
-
             if(this.variable instanceof Integer)
-                sourceCode = `printf("%d` + newLine + `", ` + this.variable.name + ');'
+                sourceCode += `printf("%d` + newLine + `", ` + this.variable.name + ');'
             else if(this.variable instanceof Long)
-                sourceCode = `printf("%lld` + newLine + `", ` + this.variable.name + ');'
+                sourceCode += `printf("%lld` + newLine + `", ` + this.variable.name + ');'
             else if(this.variable instanceof Float)
-                sourceCode = `printf("%f` + newLine + `", ` + this.variable.name + ');'
+                sourceCode += `printf("%f` + newLine + `", ` + this.variable.name + ');'
             else if(this.variable instanceof Double)
-                sourceCode = `printf("%lf` + newLine + `", ` + this.variable.name + ');'
+                sourceCode += `printf("%lf` + newLine + `", ` + this.variable.name + ');'
             else if(this.variable instanceof Char)
-                sourceCode = `printf("%c` + newLine + `", ` + this.variable.name + ');'
+                sourceCode += `printf("%c` + newLine + `", ` + this.variable.name + ');'
             else if(this.variable instanceof String)
-                sourceCode = `printf("%s` + newLine + `", ` + this.variable.name + ');'
+                sourceCode += `printf("%s` + newLine + `", ` + this.variable.name + ');'
         }
         else if(this.type == 'text')
-            sourceCode = `printf("` + this.text + newLine + `");`
+            sourceCode += `printf("` + this.text + newLine + `");`
         else if(this.type == 'ascii')
-            sourceCode = `printf("%c` + newLine + `", ` + this.asciiCode + ");"
+            sourceCode += `printf("%c` + newLine + `", ` + this.asciiCode + ");"
         else
-            sourceCode = `printf("` + this.escapeSequence + `");`
+            sourceCode += `printf("` + this.escapeSequence + `");`
 
         sourceCode += '\n'
 
-        return sourceCode
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
     }
 }
 

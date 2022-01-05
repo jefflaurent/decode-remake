@@ -157,6 +157,45 @@ class If extends Statement {
 
         return new ReturnClone(ifStatement, true)
     }
+
+    generateCSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+        
+        if(this.logicalOperator != undefined && this.secondCondition != undefined) {
+            let symbol = this.logicalOperator == 'AND' ? '&&' : '||'
+
+            sourceCode += 'if(' + this.firstCondition.generateCSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateCSourceCode() + ')\n'
+        }
+        else {
+            sourceCode += 'if(' + this.firstCondition.generateCSourceCode() + ')\n' 
+        }
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
 }
 
 export default If

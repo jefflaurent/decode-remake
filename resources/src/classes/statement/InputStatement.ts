@@ -71,7 +71,7 @@ class InputStatement extends Statement {
         return new ReturnClone(new InputStatement(statementCount, this.level, this.variable), true)
     }
 
-    generateCSourceCode(): string {
+    generateCSourceCode(): string[] {
         let sourceCode = ''
         
         if(this.variable instanceof Integer)
@@ -89,7 +89,10 @@ class InputStatement extends Statement {
         
         sourceCode += '\n'
 
-        return sourceCode
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
     }
 }
 

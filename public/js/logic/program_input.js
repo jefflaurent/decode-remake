@@ -641,6 +641,7 @@ $(document).ready(function () {
             var switchStatement = new SwitchStatement_1.default(1, statementCount++, variable, undefined);
             switchStatement.updateCaseStatement(caseStatement);
             handleAdd(switchStatement);
+            restructureStatement();
             drawCanvas();
         }
     }
@@ -853,6 +854,7 @@ $(document).ready(function () {
                 ifStatements.push(new Else_1.default(1, statementCount));
             ifStatement.updateIfOperations(ifStatements);
             handleAdd(ifStatement);
+            restructureStatement();
             drawCanvas();
         }
     });

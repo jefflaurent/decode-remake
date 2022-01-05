@@ -57,7 +57,7 @@ var SwitchStatement = /** @class */ (function (_super) {
     };
     SwitchStatement.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
-        var text = 'SWITCH (' + this.variable.name + ' )';
+        var text = 'SWITCH ( ' + this.variable.name + ' )';
         var coordinate = canvas.writeText(this.level, text, this.color);
         this.option = new Option_1.default(this.statementId, coordinate.x + canvas.SPACE, coordinate.y - canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, canvas.LINE_HEIGHT, this);
         this.option.draw(canvas);
@@ -111,6 +111,20 @@ var SwitchStatement = /** @class */ (function (_super) {
             switchStatement.updateChildStatement(caseStatement);
         }
         return new ReturnClone_1.default(switchStatement, true);
+    };
+    SwitchStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateCSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
     };
     return SwitchStatement;
 }(Statement_1.default));

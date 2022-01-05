@@ -107,6 +107,12 @@ var IfStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(ifStatement, true);
     };
+    IfStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCSourceCode());
+        return sourceCodeContainer;
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;

@@ -36,6 +36,24 @@ var Condition = /** @class */ (function () {
     Condition.prototype.cloneCondition = function () {
         return new Condition(this.firstVariable, this.operator, this.secondVariable, this.isCustomValue);
     };
+    Condition.prototype.generateCSourceCode = function () {
+        var sourceCode = '';
+        if (this.isCustomValue) {
+            if (this.secondVariable instanceof Char_1.default)
+                sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+            else if (this.secondVariable instanceof String_1.default)
+                sourceCode = 'strcmp(' + this.firstVariable.name + ", \"" + this.secondVariable.value + "\") " + this.operator + '0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
+        }
+        else {
+            if (this.secondVariable instanceof String_1.default)
+                sourceCode = 'strcmp(' + this.firstVariable.name + ", " + this.secondVariable.name + ") " + this.operator + '0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        }
+        return sourceCode;
+    };
     return Condition;
 }());
 exports.default = Condition;

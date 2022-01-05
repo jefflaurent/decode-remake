@@ -106,6 +106,7 @@ var DeclareStatement = /** @class */ (function (_super) {
     };
     DeclareStatement.prototype.generateCSourceCode = function () {
         var sourceCode = '';
+        sourceCode += this.getIndentation();
         if (this.variable instanceof Integer_1.default)
             sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Long_1.default)
@@ -119,7 +120,9 @@ var DeclareStatement = /** @class */ (function (_super) {
         else if (this.variable instanceof String_1.default)
             sourceCode = 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
-        return sourceCode;
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
     };
     return DeclareStatement;
 }(Statement_1.default));

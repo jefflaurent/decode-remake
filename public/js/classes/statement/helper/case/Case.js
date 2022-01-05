@@ -17,6 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../../../variable/Char"));
 var Statement_1 = __importDefault(require("../../Statement"));
 var Option_1 = __importDefault(require("../options/Option"));
 var Case = /** @class */ (function (_super) {
@@ -52,8 +53,12 @@ var Case = /** @class */ (function (_super) {
     Case.prototype.writeToCanvas = function (canvas) {
         var upper = canvas.LAST_POSITION + canvas.LINE_HEIGHT + canvas.SPACE;
         var text = '';
-        if (!this.isDefault)
-            text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                text = "CASE '" + this.condition.secondVariable.value + "':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+            else
+                text = 'CASE ' + this.condition.secondVariable.value + ':\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
+        }
         else
             text = 'DEFAULT:' + '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t';
         var coordinate = canvas.writeText(this.level, text, this.color);
@@ -124,6 +129,35 @@ var Case = /** @class */ (function (_super) {
         }
         caseStatement.updateChildStatement(childStatement);
         return new ReturnClone_1.default(caseStatement, true);
+    };
+    Case.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                sourceCodeContainer.push(this.getIndentation() + "case '" + this.condition.secondVariable.value + "':\n");
+            else
+                sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
+        }
+        else
+            sourceCodeContainer.push(this.getIndentation() + "default:");
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
+        return sourceCodeContainer;
     };
     return Case;
 }(Statement_1.default));

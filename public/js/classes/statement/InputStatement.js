@@ -89,7 +89,9 @@ var InputStatement = /** @class */ (function (_super) {
         else if (this.variable instanceof String_1.default)
             sourceCode = "scanf(\"%s\", " + this.variable.name + ');';
         sourceCode += '\n';
-        return sourceCode;
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
     };
     return InputStatement;
 }(Statement_1.default));

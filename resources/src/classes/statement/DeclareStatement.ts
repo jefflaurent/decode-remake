@@ -103,8 +103,9 @@ class DeclareStatement extends Statement {
         return new ReturnClone(new DeclareStatement(statementCount, this.level, this.variable), true)
     }
 
-    generateCSourceCode(): string {
+    generateCSourceCode(): string[] {
         let sourceCode = ''
+        sourceCode += this.getIndentation()
         
         if(this.variable instanceof Integer)
             sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';'
@@ -121,7 +122,10 @@ class DeclareStatement extends Statement {
     
         sourceCode += '\n'
 
-        return sourceCode
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
     }
 }
 

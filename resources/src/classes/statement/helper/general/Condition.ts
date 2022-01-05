@@ -44,6 +44,27 @@ class Condition {
     cloneCondition(): Condition {
         return new Condition(this.firstVariable, this.operator, this.secondVariable, this.isCustomValue)
     }
+
+    generateCSourceCode(): string {
+        let sourceCode = ''
+
+        if(this.isCustomValue) {
+            if(this.secondVariable instanceof Char)
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ` '` + this.secondVariable.value + `'`
+            else if(this.secondVariable instanceof String) 
+                sourceCode = 'strcmp(' + this.firstVariable.name + `, "` + this.secondVariable.value + `") ` + this.operator + '0'
+            else 
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value
+        }
+        else {
+            if(this.secondVariable instanceof String) 
+                sourceCode = 'strcmp(' + this.firstVariable.name + `, ` + this.secondVariable.name + `) ` + this.operator + '0'
+            else 
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name
+        }
+
+        return sourceCode
+    }
 }
 
 export default Condition

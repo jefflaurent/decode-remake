@@ -38,6 +38,16 @@ class Statement {
         return this.parent
     }
 
+    getIndentation(): string {
+        let indentation = ''
+        let tab = '\t'
+        
+        for(let i = 1; i < this.level; i++) 
+            indentation += tab
+        
+        return indentation
+    }
+
     generateId(number: number) {}
     writeToCanvas(canvas: Canvas,  isClose?: boolean) {}
     updateChildStatement(childStatement: Statement[]): void {}
@@ -45,7 +55,7 @@ class Statement {
     findVariable(variable: Variable): Statement | undefined  { return undefined }
     cloneStatement(statementCount: number): ReturnClone { return new ReturnClone(this, false) }
     findStatement(statement: Statement): boolean { return false }
-    generateCSourceCode(): string { return '' }
+    generateCSourceCode(): string[] { return [] }
 }
 
 export default Statement

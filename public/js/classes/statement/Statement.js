@@ -26,6 +26,13 @@ var Statement = /** @class */ (function () {
     Statement.prototype.getParent = function () {
         return this.parent;
     };
+    Statement.prototype.getIndentation = function () {
+        var indentation = '';
+        var tab = '\t';
+        for (var i = 1; i < this.level; i++)
+            indentation += tab;
+        return indentation;
+    };
     Statement.prototype.generateId = function (number) { };
     Statement.prototype.writeToCanvas = function (canvas, isClose) { };
     Statement.prototype.updateChildStatement = function (childStatement) { };
@@ -33,7 +40,7 @@ var Statement = /** @class */ (function () {
     Statement.prototype.findVariable = function (variable) { return undefined; };
     Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
     Statement.prototype.findStatement = function (statement) { return false; };
-    Statement.prototype.generateCSourceCode = function () { return ''; };
+    Statement.prototype.generateCSourceCode = function () { return []; };
     return Statement;
 }());
 exports.default = Statement;
