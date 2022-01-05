@@ -41,6 +41,8 @@ var Statement = /** @class */ (function () {
     Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
     Statement.prototype.findStatement = function (statement) { return false; };
     Statement.prototype.generateCSourceCode = function () { return []; };
+    Statement.prototype.generateJavaSourceCode = function () { return []; };
+    Statement.prototype.generatePythonSourceCode = function () { return []; };
     return Statement;
 }());
 exports.default = Statement;

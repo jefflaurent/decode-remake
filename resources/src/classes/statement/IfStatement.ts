@@ -124,6 +124,24 @@ class IfStatement extends Statement {
 
         return sourceCodeContainer
     }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        for(let i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateJavaSourceCode())
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        for(let i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode())
+
+        return sourceCodeContainer
+    }
 }
 
 export default IfStatement

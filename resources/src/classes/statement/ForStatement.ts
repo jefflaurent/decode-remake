@@ -218,6 +218,53 @@ class ForStatement extends Statement {
 
         return sourceCodeContainer
     }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+
+        sourceCode += 'for(' + this.variable.name + ' = 0; ' 
+        sourceCode += this.condition.generateJavaSourceCode()
+        sourceCode += '; '
+        if(this.isIncrement) {
+            if(this.addValueBy == 1) 
+                sourceCode += this.variable.name + '++ )'
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
+        }
+        else {
+            if(this.addValueBy == 1) 
+                sourceCode += this.variable.name + '-- )'
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
+        }
+        sourceCode += '\n'
+
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
 }
 
 export default ForStatement

@@ -75,22 +75,55 @@ var InputStatement = /** @class */ (function (_super) {
         return new ReturnClone_1.default(new InputStatement(statementCount, this.level, this.variable), true);
     };
     InputStatement.prototype.generateCSourceCode = function () {
-        var sourceCode = '';
+        var sourceCode = '' + this.getIndentation();
         if (this.variable instanceof Integer_1.default)
-            sourceCode = "scanf(\"%d\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%d\", &" + this.variable.name + ');';
         else if (this.variable instanceof Long_1.default)
-            sourceCode = "scanf(\"%lld\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%lld\", &" + this.variable.name + ');';
         else if (this.variable instanceof Float_1.default)
-            sourceCode = "scanf(\"%f\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%f\", &" + this.variable.name + ');';
         else if (this.variable instanceof Double_1.default)
-            sourceCode = "scanf(\"%lf\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%lf\", &" + this.variable.name + ');';
         else if (this.variable instanceof Char_1.default)
-            sourceCode = "scanf(\"%c\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%c\", &" + this.variable.name + ');';
         else if (this.variable instanceof String_1.default)
-            sourceCode = "scanf(\"%s\", " + this.variable.name + ');';
+            sourceCode += "scanf(\"%s\", " + this.variable.name + ');';
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    InputStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Integer_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextInt();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else if (this.variable instanceof Long_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextLong();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else if (this.variable instanceof Float_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextFloat();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else if (this.variable instanceof Double_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextDouble();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextLine();\n');
+        }
+        return sourceCodeContainer;
+    };
+    InputStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(input())\n');
+        else if (this.variable instanceof Float_1.default || this.variable instanceof Double_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(input())\n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = input()\n');
         return sourceCodeContainer;
     };
     return InputStatement;

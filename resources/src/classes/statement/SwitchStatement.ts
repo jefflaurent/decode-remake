@@ -143,6 +143,26 @@ class SwitchStatement extends Statement {
 
         return sourceCodeContainer
     }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n')
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+        
+        for(let i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateJavaSourceCode()
+            temp = temp.flat(Infinity)
+
+            for(let j =0 ; j < temp.length; j++) 
+                sourceCodeContainer.push(temp[j])
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
 }
 
 export default SwitchStatement

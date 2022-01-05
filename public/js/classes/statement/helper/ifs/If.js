@@ -167,6 +167,68 @@ var If = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    If.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? '&&' : '||';
+            sourceCode += 'if(' + this.firstCondition.generateJavaSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateJavaSourceCode() + ')\n';
+        }
+        else {
+            sourceCode += 'if(' + this.firstCondition.generateJavaSourceCode() + ')\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    If.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? 'and' : 'or';
+            sourceCode += 'if ' + this.firstCondition.generatePythonSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generatePythonSourceCode() + ':\n';
+        }
+        else {
+            sourceCode += 'if ' + this.firstCondition.generatePythonSourceCode() + ':\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        return sourceCodeContainer;
+    };
     return If;
 }(Statement_1.default));
 exports.default = If;

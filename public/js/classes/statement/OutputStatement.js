@@ -120,6 +120,54 @@ var OutputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    OutputStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        var prefix = this.isNewLine ? 'System.out.println(' : 'System.out.print(';
+        if (this.type == 'variable')
+            sourceCode += prefix + this.variable.name + ');';
+        else if (this.type == 'text')
+            sourceCode += prefix + "\"" + this.text + "\");";
+        else if (this.type == 'ascii') {
+            if (this.isNewLine)
+                sourceCode += "System.out.printf(\"%c\\n\", " + this.asciiCode + ');';
+            else
+                sourceCode += "System.out.printf(\"%c\", " + this.asciiCode + ');';
+        }
+        else
+            sourceCode += "System.out.printf(\"" + this.escapeSequence + "\");";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    OutputStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        if (this.type == 'variable') {
+            if (this.isNewLine)
+                sourceCode += 'print(' + this.variable.name + ')';
+            else
+                sourceCode += 'print(' + this.variable.name + ", end='')";
+        }
+        else if (this.type == 'text') {
+            if (this.isNewLine)
+                sourceCode += "print(\"" + this.text + "\")";
+            else
+                sourceCode += "print(\"" + this.text + "\", end='')";
+        }
+        else if (this.type == 'ascii') {
+            if (this.isNewLine)
+                sourceCode += "print(chr(" + this.asciiCode + "))";
+            else
+                sourceCode += "print(chr(" + this.asciiCode + "), end='')";
+        }
+        else
+            sourceCode += "print(\"" + this.escapeSequence + "\")";
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     return OutputStatement;
 }(Statement_1.default));
 exports.default = OutputStatement;

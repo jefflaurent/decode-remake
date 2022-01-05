@@ -129,6 +129,63 @@ class OutputStatement extends Statement {
 
         return sourceCodeContainer
     }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCode: string = ''
+        sourceCode += this.getIndentation()
+        let prefix = this.isNewLine ? 'System.out.println(' : 'System.out.print('
+        
+        if(this.type == 'variable') 
+            sourceCode += prefix + this.variable.name + ');'
+        else if(this.type == 'text')
+            sourceCode += prefix + `"` + this.text + `");`
+        else if(this.type == 'ascii') {
+            if(this.isNewLine)
+                sourceCode += `System.out.printf("%c\\n", ` + this.asciiCode + ');' 
+            else
+                sourceCode += `System.out.printf("%c", ` + this.asciiCode + ');' 
+        }
+        else
+            sourceCode += `System.out.printf("` + this.escapeSequence + `");`
+
+        sourceCode += '\n'
+
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = [] 
+        let sourceCode: string = '' + this.getIndentation()
+    
+        if(this.type == 'variable') {
+            if(this.isNewLine)
+                sourceCode += 'print(' + this.variable.name + ')'
+            else
+                sourceCode += 'print(' + this.variable.name + `, end='')`
+        }
+        else if(this.type == 'text') {
+            if(this.isNewLine)
+                sourceCode += `print("` + this.text + `")`
+            else
+                sourceCode += `print("` + this.text + `", end='')`
+        }
+        else if(this.type == 'ascii') {
+            if(this.isNewLine)
+                sourceCode += `print(chr(` + this.asciiCode + `))`
+            else
+                sourceCode += `print(chr(` + this.asciiCode + `), end='')`
+        }
+        else
+            sourceCode += `print("` + this.escapeSequence + `")`
+
+        sourceCode += '\n'
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
 }
 
 export default OutputStatement

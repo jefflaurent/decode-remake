@@ -183,6 +183,46 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    ForStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        sourceCode += 'for(' + this.variable.name + ' = 0; ';
+        sourceCode += this.condition.generateJavaSourceCode();
+        sourceCode += '; ';
+        if (this.isIncrement) {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '++ )';
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
+        }
+        else {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '-- )';
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
+        }
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
     return ForStatement;
 }(Statement_1.default));
 exports.default = ForStatement;

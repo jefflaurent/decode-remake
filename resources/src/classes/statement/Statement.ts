@@ -56,6 +56,8 @@ class Statement {
     cloneStatement(statementCount: number): ReturnClone { return new ReturnClone(this, false) }
     findStatement(statement: Statement): boolean { return false }
     generateCSourceCode(): string[] { return [] }
+    generateJavaSourceCode(): string[] { return [] }
+    generatePythonSourceCode(): string[] { return [] }
 }
 
 export default Statement

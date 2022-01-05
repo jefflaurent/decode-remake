@@ -85,7 +85,7 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":15}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":17}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var C = /** @class */ (function () {
@@ -132,6 +132,86 @@ var C = /** @class */ (function () {
 exports.default = C;
 
 },{}],3:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Java = /** @class */ (function () {
+    function Java(listStatement) {
+        this.listStatement = listStatement;
+    }
+    Java.prototype.generateSourceCode = function () {
+        this.generateStartingTemplate();
+        this.generateBody();
+        this.generateFinishTemplate();
+        return this.sourceCode;
+    };
+    Java.prototype.generateStartingTemplate = function () {
+        this.sourceCode = '';
+        this.sourceCode += 'import java.util.Scanner;\n\n';
+        this.sourceCode += 'public class Decode\n';
+        this.sourceCode += '{\n';
+        this.sourceCode += '\tScanner scan = new Scanner(System.in);\n\n';
+        this.sourceCode += '\tpublic Decode()\n';
+        this.sourceCode += '\t{\n';
+    };
+    Java.prototype.generateBody = function () {
+        var temp = [];
+        for (var i = 0; i < this.listStatement.length; i++) {
+            temp = this.listStatement[i].generateJavaSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++) {
+                this.sourceCode += this.getIndentation(2) + temp[j];
+            }
+        }
+        if (this.listStatement.length == 0) {
+            this.sourceCode += '\n';
+        }
+    };
+    Java.prototype.generateFinishTemplate = function () {
+        this.sourceCode += '\t}\n\n';
+        this.sourceCode += '\tpublic static void main(String[] args)\n';
+        this.sourceCode += '\t{\n';
+        this.sourceCode += '\t\tnew Decode();\n';
+        this.sourceCode += '\t}\n';
+        this.sourceCode += '}';
+    };
+    Java.prototype.getIndentation = function (level) {
+        var indentation = '';
+        var tab = '\t';
+        for (var i = 0; i < level; i++)
+            indentation += tab;
+        return indentation;
+    };
+    return Java;
+}());
+exports.default = Java;
+
+},{}],4:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Python = /** @class */ (function () {
+    function Python(listStatement) {
+        this.listStatement = listStatement;
+        this.sourceCode = '';
+    }
+    Python.prototype.generateSourceCode = function () {
+        this.generateBody();
+        return this.sourceCode;
+    };
+    Python.prototype.generateBody = function () {
+        var temp = [];
+        for (var i = 0; i < this.listStatement.length; i++) {
+            temp = this.listStatement[i].generatePythonSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++) {
+                this.sourceCode += temp[j];
+            }
+        }
+    };
+    return Python;
+}());
+exports.default = Python;
+
+},{}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -293,11 +373,66 @@ var AssignmentStatement = /** @class */ (function (_super) {
         var newStatement = new AssignmentStatement(statementCount, this.level, this.type, this.targetVariable, this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue, this.start, this.length);
         return new ReturnClone_1.default(newStatement, true);
     };
+    AssignmentStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'strlen(' + this.variable.name + ');\n');
+        }
+        else {
+            var start = void 0;
+            if (this.start == 1)
+                start = this.variable.name;
+            else
+                start = this.variable.name + '+' + (this.start - 1);
+            sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n');
+        }
+        return sourceCodeContainer;
+    };
+    AssignmentStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + this.variable.name + '.length();\n');
+        }
+        else {
+            var start = this.start - 1;
+            var end = start + this.length;
+            sourceCodeContainer.push(prefix + this.variable.name + '.substring(' + start + ', ' + end + ');\n');
+        }
+        return sourceCodeContainer;
+    };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;
 
-},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Variable":27,"./Statement":9,"./helper/options/Option":19}],4:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"../variable/Char":23,"../variable/Variable":29,"./Statement":11,"./helper/options/Option":21}],6:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -408,27 +543,59 @@ var DeclareStatement = /** @class */ (function (_super) {
         var sourceCode = '';
         sourceCode += this.getIndentation();
         if (this.variable instanceof Integer_1.default)
-            sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Long_1.default)
-            sourceCode = 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Float_1.default)
-            sourceCode = 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Double_1.default)
-            sourceCode = 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Char_1.default)
-            sourceCode = 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
         else if (this.variable instanceof String_1.default)
-            sourceCode = 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+            sourceCode += 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    DeclareStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        if (this.variable instanceof Integer_1.default)
+            sourceCode += 'Integer ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode += 'Long ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode += 'Float ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode += 'Double ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode += 'Character ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+        else if (this.variable instanceof String_1.default)
+            sourceCode += 'String ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    DeclareStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Char_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = '" + this.variable.value + "'\n");
+        else if (this.variable instanceof String_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = \"" + this.variable.value + "\"\n");
+        else if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(' + this.variable.value + ')\n');
+        else if (this.variable instanceof Float_1.default || this.variable instanceof Double_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(' + this.variable.value + ')\n');
         return sourceCodeContainer;
     };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Double":22,"../variable/Float":23,"../variable/Integer":24,"../variable/Long":25,"../variable/String":26,"./Statement":9,"./helper/options/Option":19}],5:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"../variable/Char":23,"../variable/Double":24,"../variable/Float":25,"../variable/Integer":26,"../variable/Long":27,"../variable/String":28,"./Statement":11,"./helper/options/Option":21}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -614,11 +781,51 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    ForStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        sourceCode += 'for(' + this.variable.name + ' = 0; ';
+        sourceCode += this.condition.generateJavaSourceCode();
+        sourceCode += '; ';
+        if (this.isIncrement) {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '++ )';
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
+        }
+        else {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '-- )';
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
+        }
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
     return ForStatement;
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/options/Option":19}],6:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"./Statement":11,"./helper/options/Option":21}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -734,11 +941,23 @@ var IfStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.ifOperations[i].generateCSourceCode());
         return sourceCodeContainer;
     };
+    IfStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateJavaSourceCode());
+        return sourceCodeContainer;
+    };
+    IfStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode());
+        return sourceCodeContainer;
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/ifs/If":18}],7:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"./Statement":11,"./helper/ifs/If":20}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -816,29 +1035,62 @@ var InputStatement = /** @class */ (function (_super) {
         return new ReturnClone_1.default(new InputStatement(statementCount, this.level, this.variable), true);
     };
     InputStatement.prototype.generateCSourceCode = function () {
-        var sourceCode = '';
+        var sourceCode = '' + this.getIndentation();
         if (this.variable instanceof Integer_1.default)
-            sourceCode = "scanf(\"%d\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%d\", &" + this.variable.name + ');';
         else if (this.variable instanceof Long_1.default)
-            sourceCode = "scanf(\"%lld\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%lld\", &" + this.variable.name + ');';
         else if (this.variable instanceof Float_1.default)
-            sourceCode = "scanf(\"%f\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%f\", &" + this.variable.name + ');';
         else if (this.variable instanceof Double_1.default)
-            sourceCode = "scanf(\"%lf\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%lf\", &" + this.variable.name + ');';
         else if (this.variable instanceof Char_1.default)
-            sourceCode = "scanf(\"%c\", &" + this.variable.name + ');';
+            sourceCode += "scanf(\"%c\", &" + this.variable.name + ');';
         else if (this.variable instanceof String_1.default)
-            sourceCode = "scanf(\"%s\", " + this.variable.name + ');';
+            sourceCode += "scanf(\"%s\", " + this.variable.name + ');';
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    InputStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Integer_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextInt();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else if (this.variable instanceof Long_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextLong();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else if (this.variable instanceof Float_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextFloat();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else if (this.variable instanceof Double_1.default) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextDouble();\n');
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n');
+        }
+        else {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextLine();\n');
+        }
+        return sourceCodeContainer;
+    };
+    InputStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(input())\n');
+        else if (this.variable instanceof Float_1.default || this.variable instanceof Double_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(input())\n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = input()\n');
         return sourceCodeContainer;
     };
     return InputStatement;
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Double":22,"../variable/Float":23,"../variable/Integer":24,"../variable/Long":25,"../variable/String":26,"./Statement":9,"./helper/options/Option":19}],8:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"../variable/Char":23,"../variable/Double":24,"../variable/Float":25,"../variable/Integer":26,"../variable/Long":27,"../variable/String":28,"./Statement":11,"./helper/options/Option":21}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -961,11 +1213,59 @@ var OutputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    OutputStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        var prefix = this.isNewLine ? 'System.out.println(' : 'System.out.print(';
+        if (this.type == 'variable')
+            sourceCode += prefix + this.variable.name + ');';
+        else if (this.type == 'text')
+            sourceCode += prefix + "\"" + this.text + "\");";
+        else if (this.type == 'ascii') {
+            if (this.isNewLine)
+                sourceCode += "System.out.printf(\"%c\\n\", " + this.asciiCode + ');';
+            else
+                sourceCode += "System.out.printf(\"%c\", " + this.asciiCode + ');';
+        }
+        else
+            sourceCode += "System.out.printf(\"" + this.escapeSequence + "\");";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    OutputStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        if (this.type == 'variable') {
+            if (this.isNewLine)
+                sourceCode += 'print(' + this.variable.name + ')';
+            else
+                sourceCode += 'print(' + this.variable.name + ", end='')";
+        }
+        else if (this.type == 'text') {
+            if (this.isNewLine)
+                sourceCode += "print(\"" + this.text + "\")";
+            else
+                sourceCode += "print(\"" + this.text + "\", end='')";
+        }
+        else if (this.type == 'ascii') {
+            if (this.isNewLine)
+                sourceCode += "print(chr(" + this.asciiCode + "))";
+            else
+                sourceCode += "print(chr(" + this.asciiCode + "), end='')";
+        }
+        else
+            sourceCode += "print(\"" + this.escapeSequence + "\")";
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     return OutputStatement;
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":31,"../variable/Char":21,"../variable/Double":22,"../variable/Float":23,"../variable/Integer":24,"../variable/Long":25,"./Statement":9,"./helper/options/Option":19}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"../variable/Char":23,"../variable/Double":24,"../variable/Float":25,"../variable/Integer":26,"../variable/Long":27,"./Statement":11,"./helper/options/Option":21}],11:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1009,11 +1309,13 @@ var Statement = /** @class */ (function () {
     Statement.prototype.cloneStatement = function (statementCount) { return new ReturnClone_1.default(this, false); };
     Statement.prototype.findStatement = function (statement) { return false; };
     Statement.prototype.generateCSourceCode = function () { return []; };
+    Statement.prototype.generateJavaSourceCode = function () { return []; };
+    Statement.prototype.generatePythonSourceCode = function () { return []; };
     return Statement;
 }());
 exports.default = Statement;
 
-},{"../../utilities/ReturnClone":31}],10:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1142,11 +1444,25 @@ var SwitchStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    SwitchStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateJavaSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
     return SwitchStatement;
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/options/Option":19}],11:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"./Statement":11,"./helper/options/Option":21}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1298,11 +1614,67 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(whileStatement, true);
     };
+    WhileStatement.prototype.generateCSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateCSourceCode() + ')\n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'do\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        if (!this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateCSourceCode() + ');\n');
+        return sourceCodeContainer;
+    };
+    WhileStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateJavaSourceCode() + ')\n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'do\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        if (!this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateJavaSourceCode() + ');\n');
+        return sourceCodeContainer;
+    };
     return WhileStatement;
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"../../utilities/ReturnClone":31,"./Statement":9,"./helper/options/Option":19}],12:[function(require,module,exports){
+},{"../../utilities/ReturnClone":33,"./Statement":11,"./helper/options/Option":21}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Arithmetic = /** @class */ (function () {
@@ -1367,7 +1739,7 @@ var Arithmetic = /** @class */ (function () {
 }());
 exports.default = Arithmetic;
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1529,17 +1901,50 @@ var Case = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
         return sourceCodeContainer;
     };
+    Case.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                sourceCodeContainer.push(this.getIndentation() + "case '" + this.condition.secondVariable.value + "':\n");
+            else
+                sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
+        }
+        else
+            sourceCodeContainer.push(this.getIndentation() + "default:");
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
+        return sourceCodeContainer;
+    };
     return Case;
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":31,"../../../variable/Char":21,"../../Statement":9,"../options/Option":19}],14:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":33,"../../../variable/Char":23,"../../Statement":11,"../options/Option":21}],16:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Char_1 = __importDefault(require("../../../variable/Char"));
+var Double_1 = __importDefault(require("../../../variable/Double"));
+var Float_1 = __importDefault(require("../../../variable/Float"));
+var Integer_1 = __importDefault(require("../../../variable/Integer"));
+var Long_1 = __importDefault(require("../../../variable/Long"));
 var String_1 = __importDefault(require("../../../variable/String"));
 var Condition = /** @class */ (function () {
     function Condition(firstVariable, operator, secondVariable, isCustomValue) {
@@ -1578,15 +1983,90 @@ var Condition = /** @class */ (function () {
             if (this.secondVariable instanceof Char_1.default)
                 sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
             else if (this.secondVariable instanceof String_1.default)
-                sourceCode = 'strcmp(' + this.firstVariable.name + ", \"" + this.secondVariable.value + "\") " + this.operator + '0';
+                sourceCode = 'strcmp(' + this.firstVariable.name + ", \"" + this.secondVariable.value + "\") " + this.operator + ' 0';
             else
                 sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
         }
         else {
             if (this.secondVariable instanceof String_1.default)
-                sourceCode = 'strcmp(' + this.firstVariable.name + ", " + this.secondVariable.name + ") " + this.operator + '0';
+                sourceCode = 'strcmp(' + this.firstVariable.name + ", " + this.secondVariable.name + ") " + this.operator + ' 0';
             else
                 sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        }
+        return sourceCode;
+    };
+    Condition.prototype.generateJavaSourceCode = function () {
+        var sourceCode = '';
+        if (this.isCustomValue) {
+            if (this.secondVariable instanceof Char_1.default)
+                sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+            else if (this.secondVariable instanceof String_1.default)
+                sourceCode = this.firstVariable.name + ".compareTo(\"" + this.secondVariable.value + "\") " + this.operator + ' 0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
+        }
+        else {
+            if (this.secondVariable instanceof String_1.default)
+                sourceCode = this.firstVariable.name + ".compareTo(\"" + this.secondVariable.name + "\") " + this.operator + ' 0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        }
+        return sourceCode;
+    };
+    Condition.prototype.generatePythonSourceCode = function () {
+        var sourceCode = '';
+        if (this.isCustomValue) {
+            if (this.firstVariable instanceof Char_1.default || this.secondVariable instanceof Char_1.default) {
+                if (this.firstVariable instanceof Char_1.default) {
+                    if (this.secondVariable instanceof Integer_1.default || this.secondVariable instanceof Float_1.default
+                        || this.secondVariable instanceof Long_1.default || this.secondVariable instanceof Double_1.default) {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + ' chr(' + this.secondVariable.value + ')';
+                    }
+                    else {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+                    }
+                }
+                else if (this.secondVariable instanceof Char_1.default) {
+                    if (this.firstVariable instanceof Integer_1.default || this.firstVariable instanceof Float_1.default
+                        || this.firstVariable instanceof Long_1.default || this.firstVariable instanceof Double_1.default) {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + " ord('" + this.secondVariable.value + "')";
+                    }
+                    else {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+                    }
+                }
+            }
+            else {
+                if (this.firstVariable instanceof String_1.default)
+                    sourceCode = this.firstVariable.name + ' ' + this.operator + " \"" + this.secondVariable.value + "\"";
+                else
+                    sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
+            }
+        }
+        else {
+            if (this.firstVariable instanceof Char_1.default || this.secondVariable instanceof Char_1.default) {
+                if (this.firstVariable instanceof Char_1.default) {
+                    if (this.secondVariable instanceof Integer_1.default || this.secondVariable instanceof Float_1.default
+                        || this.secondVariable instanceof Long_1.default || this.secondVariable instanceof Double_1.default) {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + ' chr(' + this.secondVariable.name + ')';
+                    }
+                    else {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + " " + this.secondVariable.name;
+                    }
+                }
+                else if (this.secondVariable instanceof Char_1.default) {
+                    if (this.firstVariable instanceof Integer_1.default || this.firstVariable instanceof Float_1.default
+                        || this.firstVariable instanceof Long_1.default || this.firstVariable instanceof Double_1.default) {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + " ord(" + this.secondVariable.name + ")";
+                    }
+                    else {
+                        sourceCode = this.firstVariable.name + ' ' + this.operator + " " + this.secondVariable.name;
+                    }
+                }
+            }
+            else {
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+            }
         }
         return sourceCode;
     };
@@ -1594,7 +2074,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":21,"../../../variable/String":26}],15:[function(require,module,exports){
+},{"../../../variable/Char":23,"../../../variable/Double":24,"../../../variable/Float":25,"../../../variable/Integer":26,"../../../variable/Long":27,"../../../variable/String":28}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -1606,7 +2086,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1709,11 +2189,73 @@ var Elif = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    Elif.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? '&&' : '||';
+            sourceCode += 'else if(' + this.firstCondition.generateJavaSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateJavaSourceCode() + ')\n';
+        }
+        else {
+            sourceCode += 'else if(' + this.firstCondition.generateJavaSourceCode() + ')\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    Elif.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? 'and' : 'or';
+            sourceCode += 'elif ' + this.firstCondition.generatePythonSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generatePythonSourceCode() + ':\n';
+        }
+        else {
+            sourceCode += 'elif ' + this.firstCondition.generatePythonSourceCode() + ':\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        return sourceCodeContainer;
+    };
     return Elif;
 }(If_1.default));
 exports.default = Elif;
 
-},{"../../../../utilities/ReturnClone":31,"./If":18}],17:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":33,"./If":20}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1852,11 +2394,57 @@ var Else = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    Else.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'else\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    Else.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        sourceCode += 'else:\n';
+        sourceCodeContainer.push(sourceCode);
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        return sourceCodeContainer;
+    };
     return Else;
 }(Statement_1.default));
 exports.default = Else;
 
-},{"../../../../utilities/ReturnClone":31,"../../Statement":9,"../options/Option":19}],18:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":33,"../../Statement":11,"../options/Option":21}],20:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2026,11 +2614,73 @@ var If = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    If.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? '&&' : '||';
+            sourceCode += 'if(' + this.firstCondition.generateJavaSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateJavaSourceCode() + ')\n';
+        }
+        else {
+            sourceCode += 'if(' + this.firstCondition.generateJavaSourceCode() + ')\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateJavaSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    If.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            var symbol = this.logicalOperator == 'AND' ? 'and' : 'or';
+            sourceCode += 'if ' + this.firstCondition.generatePythonSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generatePythonSourceCode() + ':\n';
+        }
+        else {
+            sourceCode += 'if ' + this.firstCondition.generatePythonSourceCode() + ':\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        return sourceCodeContainer;
+    };
     return If;
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../../../utilities/ReturnClone":31,"../../Statement":9,"../options/Option":19}],19:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":33,"../../Statement":11,"../options/Option":21}],21:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2127,7 +2777,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":30,"../../AssignmentStatement":3,"../../DeclareStatement":4,"../../ForStatement":5,"../../IfStatement":6,"../../InputStatement":7,"../../OutputStatement":8,"../../SwitchStatement":10,"../../WhileStatement":11,"./OptionSelection":20}],20:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":32,"../../AssignmentStatement":5,"../../DeclareStatement":6,"../../ForStatement":7,"../../IfStatement":8,"../../InputStatement":9,"../../OutputStatement":10,"../../SwitchStatement":12,"../../WhileStatement":13,"./OptionSelection":22}],22:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2369,7 +3019,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":30,"../../../../utilities/ReturnPaste":32,"../../AssignmentStatement":3,"../../DeclareStatement":4,"../../ForStatement":5,"../../IfStatement":6,"../../InputStatement":7,"../../OutputStatement":8,"../../SwitchStatement":10,"../../WhileStatement":11,"../case/Case":13,"../ifs/Else":17,"../ifs/If":18}],21:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":32,"../../../../utilities/ReturnPaste":34,"../../AssignmentStatement":5,"../../DeclareStatement":6,"../../ForStatement":7,"../../IfStatement":8,"../../InputStatement":9,"../../OutputStatement":10,"../../SwitchStatement":12,"../../WhileStatement":13,"../case/Case":15,"../ifs/Else":19,"../ifs/If":20}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2405,7 +3055,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":29,"./Variable":27}],22:[function(require,module,exports){
+},{"../../utilities/Return":31,"./Variable":29}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2447,7 +3097,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":29,"./Variable":27}],23:[function(require,module,exports){
+},{"../../utilities/Return":31,"./Variable":29}],25:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2489,7 +3139,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":29,"./Variable":27}],24:[function(require,module,exports){
+},{"../../utilities/Return":31,"./Variable":29}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2531,7 +3181,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":29,"./Variable":27}],25:[function(require,module,exports){
+},{"../../utilities/Return":31,"./Variable":29}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2571,7 +3221,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":29,"./Variable":27}],26:[function(require,module,exports){
+},{"../../utilities/Return":31,"./Variable":29}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2604,7 +3254,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":29,"./Variable":27}],27:[function(require,module,exports){
+},{"../../utilities/Return":31,"./Variable":29}],29:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2633,7 +3283,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":29}],28:[function(require,module,exports){
+},{"../../utilities/Return":31}],30:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2662,6 +3312,8 @@ var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStat
 var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
 var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignment/Arithmetic"));
 var C_1 = __importDefault(require("../classes/languages/C"));
+var Java_1 = __importDefault(require("../classes/languages/Java"));
+var Python_1 = __importDefault(require("../classes/languages/Python"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -4911,8 +5563,8 @@ $(document).ready(function () {
         var temp = [];
         var caseStatements = [];
         var firstCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
-        var secondCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
-        var thirdCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        var secondCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 2), true), undefined, false);
+        var thirdCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 3), true), undefined, false);
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Hello"));
         firstCase.updateChildStatement(temp);
         temp = [];
@@ -4977,8 +5629,10 @@ $(document).ready(function () {
     // Source Code Logic
     $(document).on('click', '#btn-generate-source-code', function () {
         var c = new C_1.default(listStatement);
+        var java = new Java_1.default(listStatement);
+        var python = new Python_1.default(listStatement);
         $('#source-code-container').val('');
-        $('#source-code-container').val(c.generateSourceCode());
+        $('#source-code-container').val(python.generateSourceCode());
         // resizeTextArea()
     });
     // function resizeTextArea()  {
@@ -4993,7 +5647,7 @@ $(document).ready(function () {
     //   };
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/statement/AssignmentStatement":3,"../classes/statement/DeclareStatement":4,"../classes/statement/ForStatement":5,"../classes/statement/IfStatement":6,"../classes/statement/InputStatement":7,"../classes/statement/OutputStatement":8,"../classes/statement/SwitchStatement":10,"../classes/statement/WhileStatement":11,"../classes/statement/helper/assignment/Arithmetic":12,"../classes/statement/helper/case/Case":13,"../classes/statement/helper/general/Condition":14,"../classes/statement/helper/ifs/Elif":16,"../classes/statement/helper/ifs/Else":17,"../classes/statement/helper/ifs/If":18,"../classes/statement/helper/options/Option":19,"../classes/variable/Char":21,"../classes/variable/Double":22,"../classes/variable/Float":23,"../classes/variable/Integer":24,"../classes/variable/Long":25,"../classes/variable/String":26}],29:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/languages/Java":3,"../classes/languages/Python":4,"../classes/statement/AssignmentStatement":5,"../classes/statement/DeclareStatement":6,"../classes/statement/ForStatement":7,"../classes/statement/IfStatement":8,"../classes/statement/InputStatement":9,"../classes/statement/OutputStatement":10,"../classes/statement/SwitchStatement":12,"../classes/statement/WhileStatement":13,"../classes/statement/helper/assignment/Arithmetic":14,"../classes/statement/helper/case/Case":15,"../classes/statement/helper/general/Condition":16,"../classes/statement/helper/ifs/Elif":18,"../classes/statement/helper/ifs/Else":19,"../classes/statement/helper/ifs/If":20,"../classes/statement/helper/options/Option":21,"../classes/variable/Char":23,"../classes/variable/Double":24,"../classes/variable/Float":25,"../classes/variable/Integer":26,"../classes/variable/Long":27,"../classes/variable/String":28}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -5005,7 +5659,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],30:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -5019,7 +5673,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],31:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone = /** @class */ (function () {
@@ -5032,7 +5686,7 @@ var ReturnClone = /** @class */ (function () {
 }());
 exports.default = ReturnClone;
 
-},{}],32:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -5044,4 +5698,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[28]);
+},{}]},{},[30]);

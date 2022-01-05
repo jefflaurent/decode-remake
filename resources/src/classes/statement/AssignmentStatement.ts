@@ -174,6 +174,69 @@ class AssignmentStatement extends Statement {
             this.listArithmetic, this.listOperator, this.listIsCustom, this.variable, this.isCustomValue, this.start, this.length)
         return new ReturnClone(newStatement, true)
     }
+
+    generateCSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let prefix = this.getIndentation() + this.targetVariable.name + ' = '
+
+        if(this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n')
+        }   
+        else if(this.type == 'variable') {
+            if(this.isCustomValue) {
+                if(this.variable instanceof Char)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n")
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n')
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n')
+        }
+        else if(this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'strlen(' + this.variable.name + ');\n')
+        }
+        else {
+            let start
+            if(this.start == 1)
+                start = this.variable.name
+            else 
+                start = this.variable.name + '+' + (this.start - 1)
+
+            sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n')
+        }
+
+        return sourceCodeContainer
+    }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let prefix = this.getIndentation() + this.targetVariable.name + ' = '
+
+        if(this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n')
+        }   
+        else if(this.type == 'variable') {
+            if(this.isCustomValue) {
+                if(this.variable instanceof Char)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n")
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n')
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n')
+        }
+        else if(this.type == 'length') {
+            sourceCodeContainer.push(prefix + this.variable.name + '.length();\n')
+        }
+        else {
+            let start = this.start - 1
+            let end =  start + this.length
+            
+            sourceCodeContainer.push(prefix + this.variable.name + '.substring(' + start + ', ' + end + ');\n')
+        }
+
+        return sourceCodeContainer
+    }
 }
 
 export default AssignmentStatement

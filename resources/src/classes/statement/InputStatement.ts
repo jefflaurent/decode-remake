@@ -72,25 +72,64 @@ class InputStatement extends Statement {
     }
 
     generateCSourceCode(): string[] {
-        let sourceCode = ''
+        let sourceCode = '' + this.getIndentation()
         
         if(this.variable instanceof Integer)
-            sourceCode = `scanf("%d", &` + this.variable.name + ');'
+            sourceCode += `scanf("%d", &` + this.variable.name + ');'
         else if(this.variable instanceof Long)
-            sourceCode = `scanf("%lld", &` + this.variable.name + ');'
+            sourceCode += `scanf("%lld", &` + this.variable.name + ');'
         else if(this.variable instanceof Float)
-            sourceCode = `scanf("%f", &` + this.variable.name + ');'
+            sourceCode += `scanf("%f", &` + this.variable.name + ');'
         else if(this.variable instanceof Double)
-            sourceCode = `scanf("%lf", &` + this.variable.name + ');'
+            sourceCode += `scanf("%lf", &` + this.variable.name + ');'
         else if(this.variable instanceof Char)
-            sourceCode = `scanf("%c", &` + this.variable.name + ');'
+            sourceCode += `scanf("%c", &` + this.variable.name + ');'
         else if(this.variable instanceof String)
-            sourceCode = `scanf("%s", ` + this.variable.name + ');'
+            sourceCode += `scanf("%s", ` + this.variable.name + ');'
         
         sourceCode += '\n'
 
         let sourceCodeContainer: string[] = []
         sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        if(this.variable instanceof Integer) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextInt();\n')
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n')
+        }
+        else if(this.variable instanceof Long) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextLong();\n')
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n')
+        }
+        else if(this.variable instanceof Float) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextFloat();\n')
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n')
+        }
+        else if(this.variable instanceof Double) {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextDouble();\n')
+            sourceCodeContainer.push(this.getIndentation() + 'scan.nextLine();\n')
+        }
+        else {
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = scan.nextLine();\n')
+        }
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+
+        if(this.variable instanceof Integer || this.variable instanceof Long)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(input())\n')
+        else if(this.variable instanceof Float || this.variable instanceof Double)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(input())\n')
+        else
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = input()\n')
 
         return sourceCodeContainer
     }

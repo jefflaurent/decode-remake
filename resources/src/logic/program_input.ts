@@ -27,6 +27,8 @@ import AssignmentStatement from '../classes/statement/AssignmentStatement'
 import Return from '../utilities/Return'
 import Arithmetic from '../classes/statement/helper/assignment/Arithmetic'
 import C from '../classes/languages/C'
+import Java from '../classes/languages/Java'
+import Python from '../classes/languages/Python'
 declare var bootstrap: any
 
 $(document).ready(function() {
@@ -2869,8 +2871,8 @@ $(document).ready(function() {
         let temp = []
         let caseStatements = []
         let firstCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true), undefined, false)
-        let secondCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true), undefined, false)
-        let thirdCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true), undefined, false)
+        let secondCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 2), true), undefined, false)
+        let thirdCase = new Case(1, statementCount++, new Condition(variable, '==', new Integer('x', 3), true), undefined, false)
         temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, "Hello"))
         firstCase.updateChildStatement(temp)
         temp = []
@@ -2957,8 +2959,11 @@ $(document).ready(function() {
 
     $(document).on('click', '#btn-generate-source-code', function() {
         let c: C = new C(listStatement)
+        let java: Java = new Java(listStatement)
+        let python: Python = new Python(listStatement)
+        
         $('#source-code-container').val('')
-        $('#source-code-container').val(c.generateSourceCode())
+        $('#source-code-container').val(python.generateSourceCode())
         // resizeTextArea()
     })
 

@@ -113,6 +113,18 @@ var IfStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.ifOperations[i].generateCSourceCode());
         return sourceCodeContainer;
     };
+    IfStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateJavaSourceCode());
+        return sourceCodeContainer;
+    };
+    IfStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode());
+        return sourceCodeContainer;
+    };
     return IfStatement;
 }(Statement_1.default));
 exports.default = IfStatement;

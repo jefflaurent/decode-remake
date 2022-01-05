@@ -108,22 +108,62 @@ class DeclareStatement extends Statement {
         sourceCode += this.getIndentation()
         
         if(this.variable instanceof Integer)
-            sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';'
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';'
         else if(this.variable instanceof Long)
-            sourceCode = 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';'
+            sourceCode += 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';'
         else if(this.variable instanceof Float)
-            sourceCode = 'float ' + this.variable.name + ' = ' + this.variable.value + ';'
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + ';'
         else if(this.variable instanceof Double)
-            sourceCode = 'double ' + this.variable.name + ' = ' + this.variable.value + ';'
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';'
         else if(this.variable instanceof Char)
-            sourceCode = 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
         else if(this.variable instanceof String)
-            sourceCode = 'char[' + this.variable.value.length +'] ' + this.variable.name + ' = ' +  `"` + this.variable.value + `";`
+            sourceCode += 'char[' + this.variable.value.length +'] ' + this.variable.name + ' = ' +  `"` + this.variable.value + `";`
     
         sourceCode += '\n'
 
         let sourceCodeContainer: string[] = []
         sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
+    generateJavaSourceCode(): string[] {
+        let sourceCode = ''
+        sourceCode += this.getIndentation()
+        
+        if(this.variable instanceof Integer)
+            sourceCode += 'Integer ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Long)
+            sourceCode += 'Long ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Float)
+            sourceCode += 'Float ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Double)
+            sourceCode += 'Double ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Char)
+            sourceCode += 'Character ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
+        else if(this.variable instanceof String)
+            sourceCode += 'String ' + this.variable.name + ' = ' + `"` + this.variable.value + `";`   
+
+        sourceCode += '\n'
+
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+
+        if(this.variable instanceof Char)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ` = '` + this.variable.value + `'\n`)
+        else if(this.variable instanceof String)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ` = "` + this.variable.value + `"\n`)
+        else if(this.variable instanceof Integer || this.variable instanceof Long)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(' + this.variable.value + ')\n')
+        else if(this.variable instanceof Float || this.variable instanceof Double)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(' + this.variable.value + ')\n')
 
         return sourceCodeContainer
     }

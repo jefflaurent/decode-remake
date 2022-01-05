@@ -26,6 +26,8 @@ var OutputStatement_1 = __importDefault(require("../classes/statement/OutputStat
 var AssignmentStatement_1 = __importDefault(require("../classes/statement/AssignmentStatement"));
 var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignment/Arithmetic"));
 var C_1 = __importDefault(require("../classes/languages/C"));
+var Java_1 = __importDefault(require("../classes/languages/Java"));
+var Python_1 = __importDefault(require("../classes/languages/Python"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -2275,8 +2277,8 @@ $(document).ready(function () {
         var temp = [];
         var caseStatements = [];
         var firstCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
-        var secondCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
-        var thirdCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true), undefined, false);
+        var secondCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 2), true), undefined, false);
+        var thirdCase = new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 3), true), undefined, false);
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, "Hello"));
         firstCase.updateChildStatement(temp);
         temp = [];
@@ -2341,8 +2343,10 @@ $(document).ready(function () {
     // Source Code Logic
     $(document).on('click', '#btn-generate-source-code', function () {
         var c = new C_1.default(listStatement);
+        var java = new Java_1.default(listStatement);
+        var python = new Python_1.default(listStatement);
         $('#source-code-container').val('');
-        $('#source-code-container').val(c.generateSourceCode());
+        $('#source-code-container').val(python.generateSourceCode());
         // resizeTextArea()
     });
     // function resizeTextArea()  {

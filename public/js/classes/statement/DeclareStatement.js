@@ -108,20 +108,52 @@ var DeclareStatement = /** @class */ (function (_super) {
         var sourceCode = '';
         sourceCode += this.getIndentation();
         if (this.variable instanceof Integer_1.default)
-            sourceCode = 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Long_1.default)
-            sourceCode = 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Float_1.default)
-            sourceCode = 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Double_1.default)
-            sourceCode = 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
         else if (this.variable instanceof Char_1.default)
-            sourceCode = 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
         else if (this.variable instanceof String_1.default)
-            sourceCode = 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+            sourceCode += 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    DeclareStatement.prototype.generateJavaSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        if (this.variable instanceof Integer_1.default)
+            sourceCode += 'Integer ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode += 'Long ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode += 'Float ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode += 'Double ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode += 'Character ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+        else if (this.variable instanceof String_1.default)
+            sourceCode += 'String ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    DeclareStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Char_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = '" + this.variable.value + "'\n");
+        else if (this.variable instanceof String_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = \"" + this.variable.value + "\"\n");
+        else if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(' + this.variable.value + ')\n');
+        else if (this.variable instanceof Float_1.default || this.variable instanceof Double_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(' + this.variable.value + ')\n');
         return sourceCodeContainer;
     };
     return DeclareStatement;
