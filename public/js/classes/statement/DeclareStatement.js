@@ -124,6 +124,26 @@ var DeclareStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    DeclareStatement.prototype.generateCppSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        if (this.variable instanceof Integer_1.default)
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode += 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+        else if (this.variable instanceof String_1.default)
+            sourceCode += 'string ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     DeclareStatement.prototype.generateJavaSourceCode = function () {
         var sourceCode = '';
         sourceCode += this.getIndentation();
@@ -139,6 +159,26 @@ var DeclareStatement = /** @class */ (function (_super) {
             sourceCode += 'Character ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
         else if (this.variable instanceof String_1.default)
             sourceCode += 'String ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    DeclareStatement.prototype.generateCsSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        if (this.variable instanceof Integer_1.default)
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Long_1.default)
+            sourceCode += 'long ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Float_1.default)
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + 'f;';
+        else if (this.variable instanceof Double_1.default)
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';';
+        else if (this.variable instanceof Char_1.default)
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
+        else if (this.variable instanceof String_1.default)
+            sourceCode += 'string ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);

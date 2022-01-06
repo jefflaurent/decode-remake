@@ -214,6 +214,41 @@ class Case extends Statement {
 
         return sourceCodeContainer;
     }
+
+    generateCsSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        if(!this.isDefault) {
+            if(this.condition.secondVariable instanceof Char)
+                sourceCodeContainer.push(this.getIndentation() + `case '` + this.condition.secondVariable.value + `':\n`) 
+            else
+                sourceCodeContainer.push(this.getIndentation() + `case ` + this.condition.secondVariable.value + `:\n`) 
+        }
+        else 
+            sourceCodeContainer.push(this.getIndentation() + `default:`)
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCsSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+    
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n')
+
+        return sourceCodeContainer;
+    }
 }
 
 export default Case

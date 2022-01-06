@@ -120,6 +120,31 @@ var OutputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    OutputStatement.prototype.generateCppSourceCode = function () {
+        var sourceCode = '' + this.getIndentation();
+        if (this.type == 'variable') {
+            if (this.isNewLine)
+                sourceCode += 'cout << ' + this.variable.name + " << \"\n\";";
+            else
+                sourceCode += 'cout << ' + this.variable.name + ';';
+        }
+        else if (this.type == 'text') {
+            if (this.isNewLine)
+                sourceCode += "cout << \"" + this.text + "\" << \"\n\";";
+            else
+                sourceCode += "cout << \"" + this.text + "\";";
+        }
+        else if (this.type == 'ascii')
+            if (this.isNewLine)
+                sourceCode += "cout << \"" + this.text + "\" << \"\n\";";
+            else
+                sourceCode += "cout << \"" + this.text + "\";";
+        else
+            sourceCode += "cout << \"" + this.escapeSequence + "\";";
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     OutputStatement.prototype.generateJavaSourceCode = function () {
         var sourceCode = '';
         sourceCode += this.getIndentation();
@@ -136,6 +161,23 @@ var OutputStatement = /** @class */ (function (_super) {
         }
         else
             sourceCode += "System.out.printf(\"" + this.escapeSequence + "\");";
+        sourceCode += '\n';
+        var sourceCodeContainer = [];
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
+    OutputStatement.prototype.generateCsSourceCode = function () {
+        var sourceCode = '';
+        sourceCode += this.getIndentation();
+        var prefix = this.isNewLine ? 'Console.WriteLine(' : 'Console.Write(';
+        if (this.type == 'variable')
+            sourceCode += prefix + this.variable.name + ');';
+        else if (this.type == 'text')
+            sourceCode += prefix + "\"" + this.text + "\");";
+        else if (this.type == 'ascii')
+            sourceCode += prefix + '(char)' + this.asciiCode + '));';
+        else
+            sourceCode += prefix + "\"" + this.escapeSequence + "\");";
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);

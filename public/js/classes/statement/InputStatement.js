@@ -116,6 +116,29 @@ var InputStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    InputStatement.prototype.generateCsSourceCode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof Integer_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToInt32(Console.ReadLine());\n');
+        else if (this.variable instanceof Long_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToInt64(Console.ReadLine());\n');
+        else if (this.variable instanceof Float_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float.Parse(Console.ReadLine());\n');
+        else if (this.variable instanceof Double_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToDouble(Console.ReadLine());\n');
+        else if (this.variable instanceof Char_1.default)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToChar(Console.ReadLine());\n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Console.ReadLine();\n');
+        return sourceCodeContainer;
+    };
+    InputStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        sourceCode += 'cin >> ' + this.variable.name + '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     InputStatement.prototype.generatePythonSourceCode = function () {
         var sourceCodeContainer = [];
         if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)

@@ -130,6 +130,35 @@ class OutputStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generateCppSourceCode(): string[] {
+        let sourceCode = '' + this.getIndentation()
+
+        if(this.type == 'variable') {
+            if(this.isNewLine) 
+                sourceCode += 'cout << ' + this.variable.name + ` << "\n";`
+            else
+                sourceCode += 'cout << ' + this.variable.name + ';'
+        }
+        else if(this.type == 'text') {
+            if(this.isNewLine) 
+                sourceCode += `cout << "` + this.text + `" << "\n";`
+            else
+                sourceCode += `cout << "` + this.text + `";`
+        }
+        else if(this.type == 'ascii')
+            if(this.isNewLine) 
+                sourceCode += `cout << "` + this.text + `" << "\n";`
+            else
+                sourceCode += `cout << "` + this.text + `";`
+        else
+            sourceCode += `cout << "` + this.escapeSequence + `";`
+
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
     generateJavaSourceCode(): string[] {
         let sourceCode: string = ''
         sourceCode += this.getIndentation()
@@ -147,6 +176,28 @@ class OutputStatement extends Statement {
         }
         else
             sourceCode += `System.out.printf("` + this.escapeSequence + `");`
+
+        sourceCode += '\n'
+
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
+    generateCsSourceCode(): string[] {
+        let sourceCode: string = ''
+        sourceCode += this.getIndentation()
+        let prefix = this.isNewLine ? 'Console.WriteLine(' : 'Console.Write('
+        
+        if(this.type == 'variable') 
+            sourceCode += prefix + this.variable.name + ');'
+        else if(this.type == 'text')
+            sourceCode += prefix + `"` + this.text + `");`
+        else if(this.type == 'ascii')
+            sourceCode += prefix + '(char)' + this.asciiCode + '));'
+        else
+            sourceCode += prefix + `"` + this.escapeSequence + `");`
 
         sourceCode += '\n'
 

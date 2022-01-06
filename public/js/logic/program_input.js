@@ -28,6 +28,7 @@ var Arithmetic_1 = __importDefault(require("../classes/statement/helper/assignme
 var C_1 = __importDefault(require("../classes/languages/C"));
 var Java_1 = __importDefault(require("../classes/languages/Java"));
 var Python_1 = __importDefault(require("../classes/languages/Python"));
+var Cs_1 = __importDefault(require("../classes/languages/Cs"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -2345,8 +2346,9 @@ $(document).ready(function () {
         var c = new C_1.default(listStatement);
         var java = new Java_1.default(listStatement);
         var python = new Python_1.default(listStatement);
+        var cs = new Cs_1.default(listStatement);
         $('#source-code-container').val('');
-        $('#source-code-container').val(python.generateSourceCode());
+        $('#source-code-container').val(cs.generateSourceCode());
         // resizeTextArea()
     });
     // function resizeTextArea()  {

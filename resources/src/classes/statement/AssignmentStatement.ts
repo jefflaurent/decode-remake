@@ -237,6 +237,35 @@ class AssignmentStatement extends Statement {
 
         return sourceCodeContainer
     }
+
+    generateCsSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let prefix = this.getIndentation() + this.targetVariable.name + ' = '
+
+        if(this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n')
+        }   
+        else if(this.type == 'variable') {
+            if(this.isCustomValue) {
+                if(this.variable instanceof Char)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n")
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n')
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n')
+        }
+        else if(this.type == 'length') {
+            sourceCodeContainer.push(prefix + this.variable.name + '.Length;\n')
+        }
+        else {
+            let start = this.start - 1
+            
+            sourceCodeContainer.push(prefix + this.variable.name + '.Substring(' + start + ', ' + this.length + ');\n')
+        }
+
+        return sourceCodeContainer
+    }
 }
 
 export default AssignmentStatement

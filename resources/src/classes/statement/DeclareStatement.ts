@@ -128,6 +128,31 @@ class DeclareStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generateCppSourceCode(): string[] {
+        let sourceCode = ''
+        sourceCode += this.getIndentation()
+        
+        if(this.variable instanceof Integer)
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Long)
+            sourceCode += 'long long int ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Float)
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Double)
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Char)
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
+        else if(this.variable instanceof String)
+            sourceCode += 'string ' + this.variable.name + ' = ' +  `"` + this.variable.value + `";`
+    
+        sourceCode += '\n'
+
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
     generateJavaSourceCode(): string[] {
         let sourceCode = ''
         sourceCode += this.getIndentation()
@@ -144,6 +169,31 @@ class DeclareStatement extends Statement {
             sourceCode += 'Character ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
         else if(this.variable instanceof String)
             sourceCode += 'String ' + this.variable.name + ' = ' + `"` + this.variable.value + `";`   
+
+        sourceCode += '\n'
+
+        let sourceCodeContainer: string[] = []
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
+    generateCsSourceCode(): string[] {
+        let sourceCode = ''
+        sourceCode += this.getIndentation()
+        
+        if(this.variable instanceof Integer)
+            sourceCode += 'int ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Long)
+            sourceCode += 'long ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Float)
+            sourceCode += 'float ' + this.variable.name + ' = ' + this.variable.value + 'f;'
+        else if(this.variable instanceof Double)
+            sourceCode += 'double ' + this.variable.name + ' = ' + this.variable.value + ';'
+        else if(this.variable instanceof Char)
+            sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
+        else if(this.variable instanceof String)
+            sourceCode += 'string ' + this.variable.name + ' = ' + `"` + this.variable.value + `";`   
 
         sourceCode += '\n'
 

@@ -125,11 +125,29 @@ class IfStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        for(let i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCppSourceCode())
+
+        return sourceCodeContainer
+    }
+
     generateJavaSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         
         for(let i = 0; i < this.ifOperations.length; i++)
             sourceCodeContainer.push(this.ifOperations[i].generateJavaSourceCode())
+
+        return sourceCodeContainer
+    }
+
+    generateCsSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        for(let i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCsSourceCode())
 
         return sourceCodeContainer
     }

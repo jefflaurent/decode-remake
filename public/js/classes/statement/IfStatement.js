@@ -113,10 +113,22 @@ var IfStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.ifOperations[i].generateCSourceCode());
         return sourceCodeContainer;
     };
+    IfStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCppSourceCode());
+        return sourceCodeContainer;
+    };
     IfStatement.prototype.generateJavaSourceCode = function () {
         var sourceCodeContainer = [];
         for (var i = 0; i < this.ifOperations.length; i++)
             sourceCodeContainer.push(this.ifOperations[i].generateJavaSourceCode());
+        return sourceCodeContainer;
+    };
+    IfStatement.prototype.generateCsSourceCode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generateCsSourceCode());
         return sourceCodeContainer;
     };
     IfStatement.prototype.generatePythonSourceCode = function () {

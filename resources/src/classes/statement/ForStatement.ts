@@ -219,6 +219,53 @@ class ForStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+
+        sourceCode += 'for(' + this.variable.name + ' = 0; ' 
+        sourceCode += this.condition.generateCSourceCode()
+        sourceCode += '; '
+        if(this.isIncrement) {
+            if(this.addValueBy == 1) 
+                sourceCode += this.variable.name + '++ )'
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
+        }
+        else {
+            if(this.addValueBy == 1) 
+                sourceCode += this.variable.name + '-- )'
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
+        }
+        sourceCode += '\n'
+
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCppSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
     generateJavaSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         let sourceCode = '' + this.getIndentation()
@@ -262,6 +309,93 @@ class ForStatement extends Statement {
         }
 
         sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
+    generateCsSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+
+        sourceCode += 'for(' + this.variable.name + ' = 0; ' 
+        sourceCode += this.condition.generateCsSourceCode()
+        sourceCode += '; '
+        if(this.isIncrement) {
+            if(this.addValueBy == 1) 
+                sourceCode += this.variable.name + '++ )'
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
+        }
+        else {
+            if(this.addValueBy == 1) 
+                sourceCode += this.variable.name + '-- )'
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
+        }
+        sourceCode += '\n'
+
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCsSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+        let condition = ''
+        let updateValue = ''
+        if(this.condition.isCustomValue)
+            condition = this.condition.secondVariable.value
+        else
+            condition = this.condition.secondVariable.name
+
+        if(this.isIncrement)
+            updateValue = this.addValueBy + ''
+        else
+            updateValue = '-' + this.addValueBy
+
+        sourceCode += 'for i in range(' + this.variable.name + ', ' + condition + ', ' + updateValue + '):\n'
+
+        sourceCodeContainer.push(sourceCode)
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
 
         return sourceCodeContainer
     }

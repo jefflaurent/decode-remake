@@ -76,6 +76,24 @@ var Condition = /** @class */ (function () {
         }
         return sourceCode;
     };
+    Condition.prototype.generateCsSourceCode = function () {
+        var sourceCode = '';
+        if (this.isCustomValue) {
+            if (this.secondVariable instanceof Char_1.default)
+                sourceCode = this.firstVariable.name + ' ' + this.operator + " '" + this.secondVariable.value + "'";
+            else if (this.secondVariable instanceof String_1.default)
+                sourceCode = this.firstVariable.name + ".Compare(\"" + this.secondVariable.value + "\") " + this.operator + ' 0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value;
+        }
+        else {
+            if (this.secondVariable instanceof String_1.default)
+                sourceCode = this.firstVariable.name + ".Compare(\"" + this.secondVariable.name + "\") " + this.operator + ' 0';
+            else
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name;
+        }
+        return sourceCode;
+    };
     Condition.prototype.generatePythonSourceCode = function () {
         var sourceCode = '';
         if (this.isCustomValue) {

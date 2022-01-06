@@ -29,6 +29,7 @@ import Arithmetic from '../classes/statement/helper/assignment/Arithmetic'
 import C from '../classes/languages/C'
 import Java from '../classes/languages/Java'
 import Python from '../classes/languages/Python'
+import Cs from '../classes/languages/Cs'
 declare var bootstrap: any
 
 $(document).ready(function() {
@@ -2961,9 +2962,10 @@ $(document).ready(function() {
         let c: C = new C(listStatement)
         let java: Java = new Java(listStatement)
         let python: Python = new Python(listStatement)
+        let cs: Cs = new Cs(listStatement)
         
         $('#source-code-container').val('')
-        $('#source-code-container').val(python.generateSourceCode())
+        $('#source-code-container').val(cs.generateSourceCode())
         // resizeTextArea()
     })
 

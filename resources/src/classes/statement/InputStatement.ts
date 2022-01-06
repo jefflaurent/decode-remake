@@ -121,6 +121,35 @@ class InputStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generateCsSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        if(this.variable instanceof Integer) 
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToInt32(Console.ReadLine());\n')
+        else if(this.variable instanceof Long) 
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToInt64(Console.ReadLine());\n')
+        else if(this.variable instanceof Float) 
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float.Parse(Console.ReadLine());\n')
+        else if(this.variable instanceof Double)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToDouble(Console.ReadLine());\n')
+        else if(this.variable instanceof Char)
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToChar(Console.ReadLine());\n')
+        else
+        sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Console.ReadLine();\n')
+
+        return sourceCodeContainer
+    }
+
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        
+        sourceCode += 'cin >> ' + this.variable.name + '\n'
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
     generatePythonSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
 

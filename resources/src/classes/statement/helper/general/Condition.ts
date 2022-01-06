@@ -92,6 +92,27 @@ class Condition {
         return sourceCode
     }
 
+    generateCsSourceCode(): string {
+        let sourceCode = ''
+
+        if(this.isCustomValue) {
+            if(this.secondVariable instanceof Char)
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ` '` + this.secondVariable.value + `'`
+            else if(this.secondVariable instanceof String) 
+                sourceCode = this.firstVariable.name + `.Compare("` + this.secondVariable.value + `") ` + this.operator + ' 0'
+            else 
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.value
+        }
+        else {
+            if(this.secondVariable instanceof String) 
+                sourceCode = this.firstVariable.name + `.Compare("` + this.secondVariable.name + `") ` + this.operator + ' 0'
+            else 
+                sourceCode = this.firstVariable.name + ' ' + this.operator + ' ' + this.secondVariable.name
+        }
+
+        return sourceCode
+    }
+
     generatePythonSourceCode(): string {
         let sourceCode = ''
 

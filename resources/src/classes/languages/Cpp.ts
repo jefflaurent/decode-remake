@@ -1,6 +1,6 @@
 import Statement from "../statement/Statement";
 
-class C {
+class Cpp {
     
     listStatement: Statement[] 
     sourceCode: string
@@ -19,8 +19,9 @@ class C {
 
     generateStartingTemplate() {
         this.sourceCode = ''
-        this.sourceCode += '#include<stdio.h>\n'
-        this.sourceCode += '#include<string.h>\n\n'
+        this.sourceCode += '#include<iostream>\n'
+        this.sourceCode += '#include<string.h>\n'
+        this.sourceCode += 'using namespace std;\n\n'
         this.sourceCode += 'int main()\n'
         this.sourceCode += '{\n'
     }
@@ -55,4 +56,4 @@ class C {
     }
 }
 
-export default C
+export default Cpp

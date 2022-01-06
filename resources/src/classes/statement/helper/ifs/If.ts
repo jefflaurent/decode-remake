@@ -197,6 +197,45 @@ class If extends Statement {
         return sourceCodeContainer
     }
 
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+        
+        if(this.logicalOperator != undefined && this.secondCondition != undefined) {
+            let symbol = this.logicalOperator == 'AND' ? '&&' : '||'
+
+            sourceCode += 'if(' + this.firstCondition.generateCSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateCSourceCode() + ')\n'
+        }
+        else {
+            sourceCode += 'if(' + this.firstCondition.generateCSourceCode() + ')\n' 
+        }
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCppSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
     generateJavaSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         let sourceCode = '' + this.getIndentation()
@@ -220,6 +259,45 @@ class If extends Statement {
             else {
                 for(let i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generateJavaSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
+    generateCsSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+        
+        if(this.logicalOperator != undefined && this.secondCondition != undefined) {
+            let symbol = this.logicalOperator == 'AND' ? '&&' : '||'
+
+            sourceCode += 'if(' + this.firstCondition.generateCsSourceCode() + ' ' + symbol + ' '
+                + this.secondCondition.generateCsSourceCode() + ')\n'
+        }
+        else {
+            sourceCode += 'if(' + this.firstCondition.generateCsSourceCode() + ')\n' 
+        }
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCsSourceCode()
                     temp = temp.flat(Infinity)
     
                     for(let j = 0; j < temp.length; j++)

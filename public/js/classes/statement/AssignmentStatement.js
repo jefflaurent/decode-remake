@@ -214,6 +214,31 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    AssignmentStatement.prototype.generateCsSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + this.variable.name + '.Length;\n');
+        }
+        else {
+            var start = this.start - 1;
+            sourceCodeContainer.push(prefix + this.variable.name + '.Substring(' + start + ', ' + this.length + ');\n');
+        }
+        return sourceCodeContainer;
+    };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;
