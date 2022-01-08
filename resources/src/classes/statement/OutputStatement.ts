@@ -135,23 +135,25 @@ class OutputStatement extends Statement {
 
         if(this.type == 'variable') {
             if(this.isNewLine) 
-                sourceCode += 'cout << ' + this.variable.name + ` << "\n";`
+                sourceCode += 'cout << ' + this.variable.name + ` << "\\n";`
             else
                 sourceCode += 'cout << ' + this.variable.name + ';'
         }
         else if(this.type == 'text') {
             if(this.isNewLine) 
-                sourceCode += `cout << "` + this.text + `" << "\n";`
+                sourceCode += `cout << "` + this.text + `" << "\\n";`
             else
                 sourceCode += `cout << "` + this.text + `";`
         }
         else if(this.type == 'ascii')
             if(this.isNewLine) 
-                sourceCode += `cout << "` + this.text + `" << "\n";`
+                sourceCode += `cout << "` + this.text + `" << "\\n";`
             else
                 sourceCode += `cout << "` + this.text + `";`
         else
             sourceCode += `cout << "` + this.escapeSequence + `";`
+
+        sourceCode += '\n'
 
         let sourceCodeContainer: string[] = []
         sourceCodeContainer.push(sourceCode)

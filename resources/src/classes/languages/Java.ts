@@ -1,15 +1,15 @@
 import { timers } from "jquery"
 import Statement from "../statement/Statement"
+import Language from "./Language"
 
-class Java {
-
+class Java extends Language{
 
     listStatement: Statement[] 
     sourceCode: string
 
     constructor(listStatement: Statement[]) {
-        this.listStatement = listStatement
-    }  
+        super(listStatement)
+    }
 
     generateSourceCode(): string {
         this.generateStartingTemplate()
@@ -53,16 +53,6 @@ class Java {
         this.sourceCode += '\t\tnew Decode();\n'
         this.sourceCode += '\t}\n'
         this.sourceCode += '}'
-    }
-
-    getIndentation(level: number): string {
-        let indentation = ''
-        let tab = '\t'
-        
-        for(let i = 0; i < level; i++) 
-            indentation += tab
-        
-        return indentation
     }
 }
 

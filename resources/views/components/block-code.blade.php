@@ -25,13 +25,13 @@
                         <div class="col-4 col-sm-4 d-flex justify-content-between">
                             <div class="col-1 col-sm-1"></div>
                             <div class="col-5 col-sm-5 d-flex justify-content-end align-items-center">
-                                <select name="" class="form-select" id="">
-                                    <option value="">C</option>
-                                    <option value="">C++</option>
-                                    <option value="">C#</option>
-                                    <option value="">Java</option>
-                                    <option value="">Python</option>
-                                    <option value="">Pseudocode</option>
+                                <select class="form-select selected-programming-language">
+                                    <option value="c">C</option>
+                                    <option value="cpp">C++</option>
+                                    <option value="cs">C#</option>
+                                    <option value="java">Java</option>
+                                    <option value="python">Python</option>
+                                    <option value="pseudocode">Pseudocode</option>
                                 </select>
                             </div>
                             <div class="col-1 col-sm-1"></div>

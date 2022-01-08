@@ -1,13 +1,13 @@
 import Statement from "../statement/Statement";
+import Language from "./Language";
 
-class Cs {
+class Cs extends Language {
     
     listStatement: Statement []
     sourceCode: string
     
     constructor(listStatement: Statement[]) {
-        this.listStatement = listStatement
-        this.sourceCode = ''
+        super(listStatement)
     }
 
     generateSourceCode(): string {
@@ -51,16 +51,6 @@ class Cs {
         this.sourceCode += '\t\tnew Decode();\n'
         this.sourceCode += '\t}\n'
         this.sourceCode += '}'
-    }
-
-    getIndentation(level: number): string {
-        let indentation = ''
-        let tab = '\t'
-        
-        for(let i = 0; i < level; i++) 
-            indentation += tab
-        
-        return indentation
     }
 }
 

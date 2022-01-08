@@ -116,6 +116,16 @@ class IfStatement extends Statement {
         return new ReturnClone(ifStatement, true)
     }
 
+    turnOffOption(): void {
+        if(this.option != undefined)
+            this.option.isSelectionActive = false
+
+        if(this.ifOperations != undefined) {
+            for(let i = 0; i < this.ifOperations.length; i++)
+                this.ifOperations[i].turnOffOption()
+        }
+    }
+
     generateCSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         

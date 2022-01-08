@@ -107,6 +107,14 @@ var IfStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(ifStatement, true);
     };
+    IfStatement.prototype.turnOffOption = function () {
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
+        if (this.ifOperations != undefined) {
+            for (var i = 0; i < this.ifOperations.length; i++)
+                this.ifOperations[i].turnOffOption();
+        }
+    };
     IfStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         for (var i = 0; i < this.ifOperations.length; i++)

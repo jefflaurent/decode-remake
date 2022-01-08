@@ -206,14 +206,10 @@ class DeclareStatement extends Statement {
     generatePythonSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
 
-        if(this.variable instanceof Char)
+        if(this.variable instanceof String || this.variable instanceof Char)
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + ` = '` + this.variable.value + `'\n`)
-        else if(this.variable instanceof String)
-            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ` = "` + this.variable.value + `"\n`)
-        else if(this.variable instanceof Integer || this.variable instanceof Long)
-            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(' + this.variable.value + ')\n')
-        else if(this.variable instanceof Float || this.variable instanceof Double)
-            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(' + this.variable.value + ')\n')
+        else
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ` = ` + this.variable.value + `\n`)
 
         return sourceCodeContainer
     }

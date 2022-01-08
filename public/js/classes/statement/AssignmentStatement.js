@@ -138,10 +138,22 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return undefined;
     };
     AssignmentStatement.prototype.findTypeArithmetic = function (variable) {
+        if (this.targetVariable.name == variable.name)
+            return this;
         var temp = false;
         if (this.listArithmetic != undefined) {
             for (var i = 0; i < this.listArithmetic.length; i++) {
-                temp = this.listArithmetic[i].findVariable(variable);
+                console.log(this.listArithmetic[i]);
+                console.log(this.listIsCustom[i]);
+                if (this.listArithmetic[i] instanceof Variable_1.default) {
+                    if (this.listIsCustom[i] == false) {
+                        if (this.listArithmetic[i].name == variable.name)
+                            return this;
+                    }
+                }
+                else {
+                    temp = this.listArithmetic[i].findVariable(variable);
+                }
                 if (temp)
                     return this;
             }
@@ -236,6 +248,32 @@ var AssignmentStatement = /** @class */ (function (_super) {
         else {
             var start = this.start - 1;
             sourceCodeContainer.push(prefix + this.variable.name + '.Substring(' + start + ', ' + this.length + ');\n');
+        }
+        return sourceCodeContainer;
+    };
+    AssignmentStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + '\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default || this.variable instanceof String)
+                    sourceCodeContainer.push(prefix + "\"" + this.variable.value + "\"\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + '\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + '\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'len(' + this.variable.name + ')\n');
+        }
+        else {
+            var start = this.start - 1;
+            var end = start + this.length;
+            sourceCodeContainer.push(prefix + this.variable.name + '[' + start + ':' + end + ']\n');
         }
         return sourceCodeContainer;
     };

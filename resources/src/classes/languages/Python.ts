@@ -1,13 +1,13 @@
 import Statement from "../statement/Statement"
+import Language from "./Language"
 
-class Python {
+class Python extends Language {
 
     listStatement: Statement[] 
     sourceCode: string
 
     constructor(listStatement: Statement[]) {
-        this.listStatement = listStatement
-        this.sourceCode = ''
+        super(listStatement)
     }  
 
     generateSourceCode(): string {

@@ -1,9 +1,26 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var Cs = /** @class */ (function () {
+var Language_1 = __importDefault(require("./Language"));
+var Cs = /** @class */ (function (_super) {
+    __extends(Cs, _super);
     function Cs(listStatement) {
-        this.listStatement = listStatement;
-        this.sourceCode = '';
+        return _super.call(this, listStatement) || this;
     }
     Cs.prototype.generateSourceCode = function () {
         this.generateStartingTemplate();
@@ -40,13 +57,6 @@ var Cs = /** @class */ (function () {
         this.sourceCode += '\t}\n';
         this.sourceCode += '}';
     };
-    Cs.prototype.getIndentation = function (level) {
-        var indentation = '';
-        var tab = '\t';
-        for (var i = 0; i < level; i++)
-            indentation += tab;
-        return indentation;
-    };
     return Cs;
-}());
+}(Language_1.default));
 exports.default = Cs;

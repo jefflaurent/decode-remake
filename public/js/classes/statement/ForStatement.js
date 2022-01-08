@@ -143,6 +143,16 @@ var ForStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(forStatement, true);
     };
+    ForStatement.prototype.turnOffOption = function () {
+        if (this.option[0] != undefined)
+            this.option[0].isSelectionActive = false;
+        if (this.option[1] != undefined)
+            this.option[1].isSelectionActive = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption();
+        }
+    };
     ForStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var sourceCode = '' + this.getIndentation();
@@ -152,13 +162,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -192,13 +202,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -232,13 +242,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -272,13 +282,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }

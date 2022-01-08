@@ -170,6 +170,18 @@ class WhileStatement extends Statement {
         return new ReturnClone(whileStatement, true)
     }
 
+    turnOffOption(): void {
+        if(this.option[0] != undefined)
+            this.option[0].isSelectionActive = false
+        if(this.option[1] != undefined)
+            this.option[1].isSelectionActive = false
+
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption()
+        }
+    }
+
     generateCSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         let temp
@@ -311,6 +323,32 @@ class WhileStatement extends Statement {
         if(!this.isWhile) 
             sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateCsSourceCode() + ');\n')
         
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        sourceCodeContainer.push(this.getIndentation() + 'while ' + this.firstCondition.generatePythonSourceCode() + ':\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
         return sourceCodeContainer
     }
 }

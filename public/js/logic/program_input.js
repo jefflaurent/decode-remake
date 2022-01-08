@@ -29,6 +29,7 @@ var C_1 = __importDefault(require("../classes/languages/C"));
 var Java_1 = __importDefault(require("../classes/languages/Java"));
 var Python_1 = __importDefault(require("../classes/languages/Python"));
 var Cs_1 = __importDefault(require("../classes/languages/Cs"));
+var Cpp_1 = __importDefault(require("../classes/languages/Cpp"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -274,8 +275,7 @@ $(document).ready(function () {
             createDeclareDataVariable(true, true);
             isNumericValue = true;
         }
-        var btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-            addClass('col-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable');
+        var btn = createGreenButton('Variable').addClass('col-sm-3 col-3 addVariableDeclareBtn').data('value', isNumericValue);
         var createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
             addClass('col-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create');
         $('#pcInputContainerLower').append(btn);
@@ -335,6 +335,7 @@ $(document).ready(function () {
         insertToVariableList();
         // Push statement to canvas
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     // Click input variable button
@@ -402,12 +403,14 @@ $(document).ready(function () {
                 statement = new InputStatement_1.default(statementCount++, 1, variable);
                 handleAdd(statement);
                 restructureStatement();
+                turnOffOptions();
                 drawCanvas();
             }
         }
     });
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
+        blankTemplate();
         if ($(this).data('value') == 'blank')
             blankTemplate();
         else if ($(this).data('value') == 'declare')
@@ -428,6 +431,7 @@ $(document).ready(function () {
             oddEvenTemplate();
         finishAction();
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     function deleteVariable(variable) {
@@ -645,6 +649,7 @@ $(document).ready(function () {
             switchStatement.updateCaseStatement(caseStatement);
             handleAdd(switchStatement);
             restructureStatement();
+            turnOffOptions();
             drawCanvas();
         }
     }
@@ -858,6 +863,7 @@ $(document).ready(function () {
             ifStatement.updateIfOperations(ifStatements);
             handleAdd(ifStatement);
             restructureStatement();
+            turnOffOptions();
             drawCanvas();
         }
     });
@@ -1000,7 +1006,7 @@ $(document).ready(function () {
         var heading4 = $('<strong></strong>').text('Value');
         var secondSelectContainerClassName = isRequired ? 'first-second-value-container-' + ifCount : 'second-second-value-container-' + customIfCount;
         var secondSelectContainer = $('<div></div>').addClass(secondSelectContainerClassName);
-        var secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + ifCount;
+        var secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + customIfCount;
         var secondSelect = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', secondSelectId);
         secondSelectContainer.append(secondSelect);
         if (!isRequired) {
@@ -1192,6 +1198,7 @@ $(document).ready(function () {
                 statement = new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable);
                 handleAdd(statement);
                 restructureStatement();
+                turnOffOptions();
                 drawCanvas();
             }
         }
@@ -1214,6 +1221,7 @@ $(document).ready(function () {
         }
         handleAdd(output);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     // Repetition
@@ -1365,6 +1373,7 @@ $(document).ready(function () {
             return;
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     function createRepetitionStatement(statementType) {
@@ -1525,6 +1534,7 @@ $(document).ready(function () {
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'length', firstVariable, undefined, undefined, undefined, secondVariable, undefined, undefined, undefined);
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function createStringAssignmentSub() {
@@ -1581,6 +1591,7 @@ $(document).ready(function () {
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'sub', firstVariable, undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length));
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     $(document).on('change', '.choose-action-type', function () {
@@ -1840,6 +1851,7 @@ $(document).ready(function () {
         var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined);
         handleAdd(assignmentStatement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function createArithmeticAssignment(idx) {
@@ -1983,6 +1995,7 @@ $(document).ready(function () {
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined);
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     // Canvas logic
@@ -2028,6 +2041,13 @@ $(document).ready(function () {
             statement.writeToCanvas(blockCanvasInstance);
         }
     }
+    function turnOffOptions() {
+        if (option != undefined)
+            option.isSelectionActive = false;
+        if (listStatement != undefined)
+            for (var i = 0; i < listStatement.length; i++)
+                listStatement[i].turnOffOption();
+    }
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', function (event) {
@@ -2066,6 +2086,7 @@ $(document).ready(function () {
                         createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
                         finishAction();
                         restructureStatement();
+                        turnOffOptions();
                         drawCanvas();
                         return;
                     }
@@ -2109,10 +2130,18 @@ $(document).ready(function () {
         var returnPaste;
         if (clipboard == undefined) {
             createErrorMessage('Clipboard is empty!', 'bcErrorContainer');
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            drawCanvas();
             return;
         }
         if (clipboard.findStatement(returnClick.statement)) {
             createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            drawCanvas();
             return;
         }
         var splitted = returnClick.option.optionId.split('-');
@@ -2126,6 +2155,7 @@ $(document).ready(function () {
         }
         finishAction();
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function handleDelete() {
@@ -2141,6 +2171,7 @@ $(document).ready(function () {
         }
         finishAction();
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function finishAction() {
@@ -2242,6 +2273,8 @@ $(document).ready(function () {
     function nestedForTemplate() {
         var variable = new Integer_1.default('i', 0);
         var variable2 = new Integer_1.default('j', 0);
+        var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var declareStatement2 = new DeclareStatement_1.default(statementCount++, 1, variable2);
         var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, true, true, 1, new Condition_1.default(variable, '<', new Integer_1.default('x', 2), true));
         var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, variable2, true, true, 1, new Condition_1.default(variable2, '<', new Integer_1.default('x', 3), true));
         var temp = [];
@@ -2253,6 +2286,8 @@ $(document).ready(function () {
         temp = [];
         temp.push(nestedForStatement);
         forStatement.updateChildStatement(temp);
+        handleAdd(declareStatement);
+        handleAdd(declareStatement2);
         handleAdd(forStatement);
     }
     function menuTemplate() {
@@ -2343,12 +2378,25 @@ $(document).ready(function () {
     }
     // Source Code Logic
     $(document).on('click', '#btn-generate-source-code', function () {
-        var c = new C_1.default(listStatement);
-        var java = new Java_1.default(listStatement);
-        var python = new Python_1.default(listStatement);
-        var cs = new Cs_1.default(listStatement);
+        var language = $('.selected-programming-language').find('option').filter(':selected').val();
+        var lang;
+        if (language == 'c') {
+            lang = new C_1.default(listStatement);
+        }
+        else if (language == 'cpp') {
+            lang = new Cpp_1.default(listStatement);
+        }
+        else if (language == 'cs') {
+            lang = new Cs_1.default(listStatement);
+        }
+        else if (language == 'java') {
+            lang = new Java_1.default(listStatement);
+        }
+        else if (language == 'python') {
+            lang = new Python_1.default(listStatement);
+        }
         $('#source-code-container').val('');
-        $('#source-code-container').val(cs.generateSourceCode());
+        $('#source-code-container').val(lang.generateSourceCode());
         // resizeTextArea()
     });
     // function resizeTextArea()  {

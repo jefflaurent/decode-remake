@@ -172,6 +172,18 @@ class ForStatement extends Statement {
         return new ReturnClone(forStatement, true)
     }
 
+    turnOffOption(): void {
+        if(this.option[0] != undefined)
+            this.option[0].isSelectionActive = false
+        if(this.option[1] != undefined)
+            this.option[1].isSelectionActive = false
+
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption()
+        }
+    }
+
     generateCSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         let sourceCode = '' + this.getIndentation()
@@ -182,13 +194,13 @@ class ForStatement extends Statement {
         sourceCode += '; '
         if(this.isIncrement) {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '++ )'
+                sourceCode += this.variable.name + '++)'
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
         }
         else {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '-- )'
+                sourceCode += this.variable.name + '--)'
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
         }
@@ -229,13 +241,13 @@ class ForStatement extends Statement {
         sourceCode += '; '
         if(this.isIncrement) {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '++ )'
+                sourceCode += this.variable.name + '++)'
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
         }
         else {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '-- )'
+                sourceCode += this.variable.name + '--)'
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
         }
@@ -276,13 +288,13 @@ class ForStatement extends Statement {
         sourceCode += '; '
         if(this.isIncrement) {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '++ )'
+                sourceCode += this.variable.name + '++)'
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
         }
         else {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '-- )'
+                sourceCode += this.variable.name + '--)'
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
         }
@@ -323,13 +335,13 @@ class ForStatement extends Statement {
         sourceCode += '; '
         if(this.isIncrement) {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '++ )'
+                sourceCode += this.variable.name + '++)'
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')'
         }
         else {
             if(this.addValueBy == 1) 
-                sourceCode += this.variable.name + '-- )'
+                sourceCode += this.variable.name + '--)'
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')'
         }

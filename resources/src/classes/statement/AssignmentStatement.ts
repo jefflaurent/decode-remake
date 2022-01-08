@@ -147,11 +147,24 @@ class AssignmentStatement extends Statement {
     }
 
     findTypeArithmetic(variable: Variable): Statement | undefined {
+        if(this.targetVariable.name == variable.name) 
+            return this
+
         let temp: boolean = false
         
         if(this.listArithmetic != undefined) {
             for(let i = 0; i < this.listArithmetic.length; i++) {
-                temp = this.listArithmetic[i].findVariable(variable)
+                console.log(this.listArithmetic[i])
+                console.log(this.listIsCustom[i])
+                if(this.listArithmetic[i] instanceof Variable) {
+                    if(this.listIsCustom[i] == false) {
+                        if(this.listArithmetic[i].name == variable.name)
+                            return this
+                    }
+                }
+                else {
+                    temp = this.listArithmetic[i].findVariable(variable)
+                }
                 if(temp)
                     return this
             }
@@ -262,6 +275,36 @@ class AssignmentStatement extends Statement {
             let start = this.start - 1
             
             sourceCodeContainer.push(prefix + this.variable.name + '.Substring(' + start + ', ' + this.length + ');\n')
+        }
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let prefix = this.getIndentation() + this.targetVariable.name + ' = '
+
+        if(this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + '\n')
+        }   
+        else if(this.type == 'variable') {
+            if(this.isCustomValue) {
+                if(this.variable instanceof Char || this.variable instanceof String)
+                    sourceCodeContainer.push(prefix + `"` + this.variable.value + `"\n`)
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + '\n')
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + '\n')
+        }
+        else if(this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'len(' + this.variable.name + ')\n')
+        }
+        else {
+            let start = this.start - 1
+            let end =  start + this.length
+            
+            sourceCodeContainer.push(prefix + this.variable.name + '[' + start + ':' + end + ']\n')
         }
 
         return sourceCodeContainer

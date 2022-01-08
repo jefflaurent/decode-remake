@@ -145,6 +145,15 @@ class Case extends Statement {
         return new ReturnClone(caseStatement, true)
     }
 
+    turnOffOption(): void {
+        this.option.isSelectionActive = false
+
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption()
+        }
+    }
+
     generateCSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         let temp
@@ -178,6 +187,41 @@ class Case extends Statement {
         sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n')
 
         return sourceCodeContainer;
+    }
+
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        if(!this.isDefault) {
+            if(this.condition.secondVariable instanceof Char)
+                sourceCodeContainer.push(this.getIndentation() + `case '` + this.condition.secondVariable.value + `':\n`) 
+            else
+                sourceCodeContainer.push(this.getIndentation() + `case ` + this.condition.secondVariable.value + `:\n`) 
+        }
+        else 
+            sourceCodeContainer.push(this.getIndentation() + `default:`)
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCppSourceCode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+    
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n')
+
+        return sourceCodeContainer
     }
 
     generateJavaSourceCode(): string[] {

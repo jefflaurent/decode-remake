@@ -85,12 +85,30 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":18}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":20}],2:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var C = /** @class */ (function () {
+var Language_1 = __importDefault(require("./Language"));
+var C = /** @class */ (function (_super) {
+    __extends(C, _super);
     function C(listStatement) {
-        this.listStatement = listStatement;
+        return _super.call(this, listStatement) || this;
     }
     C.prototype.generateSourceCode = function () {
         this.generateStartingTemplate();
@@ -120,24 +138,92 @@ var C = /** @class */ (function () {
         this.sourceCode += '\treturn 0;\n';
         this.sourceCode += '}';
     };
-    C.prototype.getIndentation = function (level) {
-        var indentation = '';
-        var tab = '\t';
-        for (var i = 0; i < level; i++)
-            indentation += tab;
-        return indentation;
-    };
     return C;
-}());
+}(Language_1.default));
 exports.default = C;
 
-},{}],3:[function(require,module,exports){
+},{"./Language":6}],3:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var Cs = /** @class */ (function () {
-    function Cs(listStatement) {
-        this.listStatement = listStatement;
+var Language_1 = __importDefault(require("./Language"));
+var Cpp = /** @class */ (function (_super) {
+    __extends(Cpp, _super);
+    function Cpp(listStatement) {
+        return _super.call(this, listStatement) || this;
+    }
+    Cpp.prototype.generateSourceCode = function () {
+        this.generateStartingTemplate();
+        this.generateBody();
+        this.generateFinishTemplate();
+        return this.sourceCode;
+    };
+    Cpp.prototype.generateStartingTemplate = function () {
         this.sourceCode = '';
+        this.sourceCode += '#include<iostream>\n';
+        this.sourceCode += '#include<string.h>\n';
+        this.sourceCode += 'using namespace std;\n\n';
+        this.sourceCode += 'int main()\n';
+        this.sourceCode += '{\n';
+    };
+    Cpp.prototype.generateBody = function () {
+        var temp = [];
+        for (var i = 0; i < this.listStatement.length; i++) {
+            temp = this.listStatement[i].generateCppSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++) {
+                this.sourceCode += this.getIndentation(1) + temp[j];
+            }
+        }
+    };
+    Cpp.prototype.generateFinishTemplate = function () {
+        this.sourceCode += '\n';
+        this.sourceCode += '\treturn 0;\n';
+        this.sourceCode += '}';
+    };
+    return Cpp;
+}(Language_1.default));
+exports.default = Cpp;
+
+},{"./Language":6}],4:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Language_1 = __importDefault(require("./Language"));
+var Cs = /** @class */ (function (_super) {
+    __extends(Cs, _super);
+    function Cs(listStatement) {
+        return _super.call(this, listStatement) || this;
     }
     Cs.prototype.generateSourceCode = function () {
         this.generateStartingTemplate();
@@ -174,23 +260,34 @@ var Cs = /** @class */ (function () {
         this.sourceCode += '\t}\n';
         this.sourceCode += '}';
     };
-    Cs.prototype.getIndentation = function (level) {
-        var indentation = '';
-        var tab = '\t';
-        for (var i = 0; i < level; i++)
-            indentation += tab;
-        return indentation;
-    };
     return Cs;
-}());
+}(Language_1.default));
 exports.default = Cs;
 
-},{}],4:[function(require,module,exports){
+},{"./Language":6}],5:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var Java = /** @class */ (function () {
+var Language_1 = __importDefault(require("./Language"));
+var Java = /** @class */ (function (_super) {
+    __extends(Java, _super);
     function Java(listStatement) {
-        this.listStatement = listStatement;
+        return _super.call(this, listStatement) || this;
     }
     Java.prototype.generateSourceCode = function () {
         this.generateStartingTemplate();
@@ -228,24 +325,57 @@ var Java = /** @class */ (function () {
         this.sourceCode += '\t}\n';
         this.sourceCode += '}';
     };
-    Java.prototype.getIndentation = function (level) {
+    return Java;
+}(Language_1.default));
+exports.default = Java;
+
+},{"./Language":6}],6:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Language = /** @class */ (function () {
+    function Language(listStatement) {
+        this.listStatement = listStatement;
+        this.sourceCode = '';
+    }
+    Language.prototype.generateSourceCode = function () { return ''; };
+    Language.prototype.generateStartingTemplate = function () { };
+    Language.prototype.generateBody = function () { };
+    Language.prototype.generateFinishTemplate = function () { };
+    Language.prototype.getIndentation = function (level) {
         var indentation = '';
         var tab = '\t';
         for (var i = 0; i < level; i++)
             indentation += tab;
         return indentation;
     };
-    return Java;
+    return Language;
 }());
-exports.default = Java;
+exports.default = Language;
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var Python = /** @class */ (function () {
+var Language_1 = __importDefault(require("./Language"));
+var Python = /** @class */ (function (_super) {
+    __extends(Python, _super);
     function Python(listStatement) {
-        this.listStatement = listStatement;
-        this.sourceCode = '';
+        return _super.call(this, listStatement) || this;
     }
     Python.prototype.generateSourceCode = function () {
         this.generateBody();
@@ -262,10 +392,10 @@ var Python = /** @class */ (function () {
         }
     };
     return Python;
-}());
+}(Language_1.default));
 exports.default = Python;
 
-},{}],6:[function(require,module,exports){
+},{"./Language":6}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -406,10 +536,22 @@ var AssignmentStatement = /** @class */ (function (_super) {
         return undefined;
     };
     AssignmentStatement.prototype.findTypeArithmetic = function (variable) {
+        if (this.targetVariable.name == variable.name)
+            return this;
         var temp = false;
         if (this.listArithmetic != undefined) {
             for (var i = 0; i < this.listArithmetic.length; i++) {
-                temp = this.listArithmetic[i].findVariable(variable);
+                console.log(this.listArithmetic[i]);
+                console.log(this.listIsCustom[i]);
+                if (this.listArithmetic[i] instanceof Variable_1.default) {
+                    if (this.listIsCustom[i] == false) {
+                        if (this.listArithmetic[i].name == variable.name)
+                            return this;
+                    }
+                }
+                else {
+                    temp = this.listArithmetic[i].findVariable(variable);
+                }
                 if (temp)
                     return this;
             }
@@ -507,11 +649,37 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    AssignmentStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + '\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default || this.variable instanceof String)
+                    sourceCodeContainer.push(prefix + "\"" + this.variable.value + "\"\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + '\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + '\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'len(' + this.variable.name + ')\n');
+        }
+        else {
+            var start = this.start - 1;
+            var end = start + this.length;
+            sourceCodeContainer.push(prefix + this.variable.name + '[' + start + ':' + end + ']\n');
+        }
+        return sourceCodeContainer;
+    };
     return AssignmentStatement;
 }(Statement_1.default));
 exports.default = AssignmentStatement;
 
-},{"../../utilities/ReturnClone":34,"../variable/Char":24,"../variable/Variable":30,"./Statement":12,"./helper/options/Option":22}],7:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Variable":32,"./Statement":14,"./helper/options/Option":24}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -700,21 +868,17 @@ var DeclareStatement = /** @class */ (function (_super) {
     };
     DeclareStatement.prototype.generatePythonSourceCode = function () {
         var sourceCodeContainer = [];
-        if (this.variable instanceof Char_1.default)
+        if (this.variable instanceof String_1.default || this.variable instanceof Char_1.default)
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = '" + this.variable.value + "'\n");
-        else if (this.variable instanceof String_1.default)
-            sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = \"" + this.variable.value + "\"\n");
-        else if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)
-            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = int(' + this.variable.value + ')\n');
-        else if (this.variable instanceof Float_1.default || this.variable instanceof Double_1.default)
-            sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = float(' + this.variable.value + ')\n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = " + this.variable.value + "\n");
         return sourceCodeContainer;
     };
     return DeclareStatement;
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../../utilities/ReturnClone":34,"../variable/Char":24,"../variable/Double":25,"../variable/Float":26,"../variable/Integer":27,"../variable/Long":28,"../variable/String":29,"./Statement":12,"./helper/options/Option":22}],8:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./Statement":14,"./helper/options/Option":24}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -860,6 +1024,16 @@ var ForStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(forStatement, true);
     };
+    ForStatement.prototype.turnOffOption = function () {
+        if (this.option[0] != undefined)
+            this.option[0].isSelectionActive = false;
+        if (this.option[1] != undefined)
+            this.option[1].isSelectionActive = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption();
+        }
+    };
     ForStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var sourceCode = '' + this.getIndentation();
@@ -869,13 +1043,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -909,13 +1083,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -949,13 +1123,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -989,13 +1163,13 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += '; ';
         if (this.isIncrement) {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '++ )';
+                sourceCode += this.variable.name + '++)';
             else
                 sourceCode += this.variable.name + ' += ' + this.addValueBy + ')';
         }
         else {
             if (this.addValueBy == 1)
-                sourceCode += this.variable.name + '-- )';
+                sourceCode += this.variable.name + '--)';
             else
                 sourceCode += this.variable.name + ' -= ' + this.addValueBy + ')';
         }
@@ -1057,7 +1231,7 @@ var ForStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":34,"./Statement":12,"./helper/options/Option":22}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"./Statement":14,"./helper/options/Option":24}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1167,6 +1341,14 @@ var IfStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(ifStatement, true);
     };
+    IfStatement.prototype.turnOffOption = function () {
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
+        if (this.ifOperations != undefined) {
+            for (var i = 0; i < this.ifOperations.length; i++)
+                this.ifOperations[i].turnOffOption();
+        }
+    };
     IfStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         for (var i = 0; i < this.ifOperations.length; i++)
@@ -1201,7 +1383,7 @@ var IfStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"../../utilities/ReturnClone":34,"./Statement":12,"./helper/ifs/If":21}],10:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"./Statement":14,"./helper/ifs/If":23}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1297,6 +1479,13 @@ var InputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    InputStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        sourceCode += 'cin >> ' + this.variable.name + ';' + '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     InputStatement.prototype.generateJavaSourceCode = function () {
         var sourceCodeContainer = [];
         if (this.variable instanceof Integer_1.default) {
@@ -1336,13 +1525,6 @@ var InputStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Console.ReadLine();\n');
         return sourceCodeContainer;
     };
-    InputStatement.prototype.generateCppSourceCode = function () {
-        var sourceCodeContainer = [];
-        var sourceCode = '' + this.getIndentation();
-        sourceCode += 'cin >> ' + this.variable.name + '\n';
-        sourceCodeContainer.push(sourceCode);
-        return sourceCodeContainer;
-    };
     InputStatement.prototype.generatePythonSourceCode = function () {
         var sourceCodeContainer = [];
         if (this.variable instanceof Integer_1.default || this.variable instanceof Long_1.default)
@@ -1357,7 +1539,7 @@ var InputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../../utilities/ReturnClone":34,"../variable/Char":24,"../variable/Double":25,"../variable/Float":26,"../variable/Integer":27,"../variable/Long":28,"../variable/String":29,"./Statement":12,"./helper/options/Option":22}],11:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./Statement":14,"./helper/options/Option":24}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1484,23 +1666,24 @@ var OutputStatement = /** @class */ (function (_super) {
         var sourceCode = '' + this.getIndentation();
         if (this.type == 'variable') {
             if (this.isNewLine)
-                sourceCode += 'cout << ' + this.variable.name + " << \"\n\";";
+                sourceCode += 'cout << ' + this.variable.name + " << \"\\n\";";
             else
                 sourceCode += 'cout << ' + this.variable.name + ';';
         }
         else if (this.type == 'text') {
             if (this.isNewLine)
-                sourceCode += "cout << \"" + this.text + "\" << \"\n\";";
+                sourceCode += "cout << \"" + this.text + "\" << \"\\n\";";
             else
                 sourceCode += "cout << \"" + this.text + "\";";
         }
         else if (this.type == 'ascii')
             if (this.isNewLine)
-                sourceCode += "cout << \"" + this.text + "\" << \"\n\";";
+                sourceCode += "cout << \"" + this.text + "\" << \"\\n\";";
             else
                 sourceCode += "cout << \"" + this.text + "\";";
         else
             sourceCode += "cout << \"" + this.escapeSequence + "\";";
+        sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
@@ -1574,7 +1757,7 @@ var OutputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":34,"../variable/Char":24,"../variable/Double":25,"../variable/Float":26,"../variable/Integer":27,"../variable/Long":28,"./Statement":12,"./helper/options/Option":22}],12:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"./Statement":14,"./helper/options/Option":24}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -1594,6 +1777,14 @@ var Statement = /** @class */ (function () {
                 this.childStatement[i].level = this.level + 1;
                 this.childStatement[i].updateChildLevel();
             }
+        }
+    };
+    Statement.prototype.turnOffOption = function () {
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption();
         }
     };
     Statement.prototype.moveToSurface = function () {
@@ -1626,7 +1817,7 @@ var Statement = /** @class */ (function () {
 }());
 exports.default = Statement;
 
-},{"../../utilities/ReturnClone":34}],13:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36}],15:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1741,6 +1932,14 @@ var SwitchStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(switchStatement, true);
     };
+    SwitchStatement.prototype.turnOffOption = function () {
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
+        if (this.caseStatement != undefined) {
+            for (var i = 0; i < this.caseStatement.length; i++)
+                this.caseStatement[i].turnOffOption();
+        }
+    };
     SwitchStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var temp;
@@ -1748,6 +1947,20 @@ var SwitchStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '{\n');
         for (var i = 0; i < this.caseStatement.length; i++) {
             temp = this.caseStatement[i].generateCSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    SwitchStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateCppSourceCode();
             temp = temp.flat(Infinity);
             for (var j = 0; j < temp.length; j++)
                 sourceCodeContainer.push(temp[j]);
@@ -1787,7 +2000,7 @@ var SwitchStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":34,"./Statement":12,"./helper/options/Option":22}],14:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"./Statement":14,"./helper/options/Option":24}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1939,6 +2152,16 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(whileStatement, true);
     };
+    WhileStatement.prototype.turnOffOption = function () {
+        if (this.option[0] != undefined)
+            this.option[0].isSelectionActive = false;
+        if (this.option[1] != undefined)
+            this.option[1].isSelectionActive = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption();
+        }
+    };
     WhileStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var temp;
@@ -2051,11 +2274,32 @@ var WhileStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateCsSourceCode() + ');\n');
         return sourceCodeContainer;
     };
+    WhileStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'while ' + this.firstCondition.generatePythonSourceCode() + ':\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        return sourceCodeContainer;
+    };
     return WhileStatement;
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"../../utilities/ReturnClone":34,"./Statement":12,"./helper/options/Option":22}],15:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"./Statement":14,"./helper/options/Option":24}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Arithmetic = /** @class */ (function () {
@@ -2120,7 +2364,7 @@ var Arithmetic = /** @class */ (function () {
 }());
 exports.default = Arithmetic;
 
-},{}],16:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2253,6 +2497,13 @@ var Case = /** @class */ (function (_super) {
         caseStatement.updateChildStatement(childStatement);
         return new ReturnClone_1.default(caseStatement, true);
     };
+    Case.prototype.turnOffOption = function () {
+        this.option.isSelectionActive = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption();
+        }
+    };
     Case.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var temp;
@@ -2270,6 +2521,35 @@ var Case = /** @class */ (function (_super) {
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generateCSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
+        return sourceCodeContainer;
+    };
+    Case.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                sourceCodeContainer.push(this.getIndentation() + "case '" + this.condition.secondVariable.value + "':\n");
+            else
+                sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
+        }
+        else
+            sourceCodeContainer.push(this.getIndentation() + "default:");
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generateCppSourceCode();
                     temp = temp.flat(Infinity);
                     for (var j = 0; j < temp.length; j++)
                         sourceCodeContainer.push(temp[j]);
@@ -2344,7 +2624,7 @@ var Case = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":34,"../../../variable/Char":24,"../../Statement":12,"../options/Option":22}],17:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":36,"../../../variable/Char":26,"../../Statement":14,"../options/Option":24}],19:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2502,7 +2782,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":24,"../../../variable/Double":25,"../../../variable/Float":26,"../../../variable/Integer":27,"../../../variable/Long":28,"../../../variable/String":29}],18:[function(require,module,exports){
+},{"../../../variable/Char":26,"../../../variable/Double":27,"../../../variable/Float":28,"../../../variable/Integer":29,"../../../variable/Long":30,"../../../variable/String":31}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -2514,7 +2794,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2747,7 +3027,7 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"../../../../utilities/ReturnClone":34,"./If":21}],20:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":36,"./If":23}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2982,7 +3262,7 @@ var Else = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Else;
 
-},{"../../../../utilities/ReturnClone":34,"../../Statement":12,"../options/Option":22}],21:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":36,"../../Statement":14,"../options/Option":24}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3282,7 +3562,7 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../../../utilities/ReturnClone":34,"../../Statement":12,"../options/Option":22}],22:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":36,"../../Statement":14,"../options/Option":24}],24:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3379,7 +3659,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":33,"../../AssignmentStatement":6,"../../DeclareStatement":7,"../../ForStatement":8,"../../IfStatement":9,"../../InputStatement":10,"../../OutputStatement":11,"../../SwitchStatement":13,"../../WhileStatement":14,"./OptionSelection":23}],23:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":35,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../SwitchStatement":15,"../../WhileStatement":16,"./OptionSelection":25}],25:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3621,7 +3901,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":33,"../../../../utilities/ReturnPaste":35,"../../AssignmentStatement":6,"../../DeclareStatement":7,"../../ForStatement":8,"../../IfStatement":9,"../../InputStatement":10,"../../OutputStatement":11,"../../SwitchStatement":13,"../../WhileStatement":14,"../case/Case":16,"../ifs/Else":20,"../ifs/If":21}],24:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":35,"../../../../utilities/ReturnPaste":37,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../SwitchStatement":15,"../../WhileStatement":16,"../case/Case":18,"../ifs/Else":22,"../ifs/If":23}],26:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3657,7 +3937,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":32,"./Variable":30}],25:[function(require,module,exports){
+},{"../../utilities/Return":34,"./Variable":32}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3699,7 +3979,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":32,"./Variable":30}],26:[function(require,module,exports){
+},{"../../utilities/Return":34,"./Variable":32}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3741,7 +4021,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":32,"./Variable":30}],27:[function(require,module,exports){
+},{"../../utilities/Return":34,"./Variable":32}],29:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3783,7 +4063,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":32,"./Variable":30}],28:[function(require,module,exports){
+},{"../../utilities/Return":34,"./Variable":32}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3823,7 +4103,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":32,"./Variable":30}],29:[function(require,module,exports){
+},{"../../utilities/Return":34,"./Variable":32}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3856,7 +4136,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":32,"./Variable":30}],30:[function(require,module,exports){
+},{"../../utilities/Return":34,"./Variable":32}],32:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3885,7 +4165,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":32}],31:[function(require,module,exports){
+},{"../../utilities/Return":34}],33:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3917,6 +4197,7 @@ var C_1 = __importDefault(require("../classes/languages/C"));
 var Java_1 = __importDefault(require("../classes/languages/Java"));
 var Python_1 = __importDefault(require("../classes/languages/Python"));
 var Cs_1 = __importDefault(require("../classes/languages/Cs"));
+var Cpp_1 = __importDefault(require("../classes/languages/Cpp"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -4162,8 +4443,7 @@ $(document).ready(function () {
             createDeclareDataVariable(true, true);
             isNumericValue = true;
         }
-        var btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-            addClass('col-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable');
+        var btn = createGreenButton('Variable').addClass('col-sm-3 col-3 addVariableDeclareBtn').data('value', isNumericValue);
         var createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
             addClass('col-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create');
         $('#pcInputContainerLower').append(btn);
@@ -4223,6 +4503,7 @@ $(document).ready(function () {
         insertToVariableList();
         // Push statement to canvas
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     // Click input variable button
@@ -4290,12 +4571,14 @@ $(document).ready(function () {
                 statement = new InputStatement_1.default(statementCount++, 1, variable);
                 handleAdd(statement);
                 restructureStatement();
+                turnOffOptions();
                 drawCanvas();
             }
         }
     });
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
+        blankTemplate();
         if ($(this).data('value') == 'blank')
             blankTemplate();
         else if ($(this).data('value') == 'declare')
@@ -4316,6 +4599,7 @@ $(document).ready(function () {
             oddEvenTemplate();
         finishAction();
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     function deleteVariable(variable) {
@@ -4533,6 +4817,7 @@ $(document).ready(function () {
             switchStatement.updateCaseStatement(caseStatement);
             handleAdd(switchStatement);
             restructureStatement();
+            turnOffOptions();
             drawCanvas();
         }
     }
@@ -4746,6 +5031,7 @@ $(document).ready(function () {
             ifStatement.updateIfOperations(ifStatements);
             handleAdd(ifStatement);
             restructureStatement();
+            turnOffOptions();
             drawCanvas();
         }
     });
@@ -4888,7 +5174,7 @@ $(document).ready(function () {
         var heading4 = $('<strong></strong>').text('Value');
         var secondSelectContainerClassName = isRequired ? 'first-second-value-container-' + ifCount : 'second-second-value-container-' + customIfCount;
         var secondSelectContainer = $('<div></div>').addClass(secondSelectContainerClassName);
-        var secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + ifCount;
+        var secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + customIfCount;
         var secondSelect = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', secondSelectId);
         secondSelectContainer.append(secondSelect);
         if (!isRequired) {
@@ -5080,6 +5366,7 @@ $(document).ready(function () {
                 statement = new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable);
                 handleAdd(statement);
                 restructureStatement();
+                turnOffOptions();
                 drawCanvas();
             }
         }
@@ -5102,6 +5389,7 @@ $(document).ready(function () {
         }
         handleAdd(output);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     // Repetition
@@ -5253,6 +5541,7 @@ $(document).ready(function () {
             return;
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     function createRepetitionStatement(statementType) {
@@ -5413,6 +5702,7 @@ $(document).ready(function () {
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'length', firstVariable, undefined, undefined, undefined, secondVariable, undefined, undefined, undefined);
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function createStringAssignmentSub() {
@@ -5469,6 +5759,7 @@ $(document).ready(function () {
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'sub', firstVariable, undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length));
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     $(document).on('change', '.choose-action-type', function () {
@@ -5728,6 +6019,7 @@ $(document).ready(function () {
         var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined);
         handleAdd(assignmentStatement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function createArithmeticAssignment(idx) {
@@ -5871,6 +6163,7 @@ $(document).ready(function () {
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined);
         handleAdd(statement);
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     });
     // Canvas logic
@@ -5916,6 +6209,13 @@ $(document).ready(function () {
             statement.writeToCanvas(blockCanvasInstance);
         }
     }
+    function turnOffOptions() {
+        if (option != undefined)
+            option.isSelectionActive = false;
+        if (listStatement != undefined)
+            for (var i = 0; i < listStatement.length; i++)
+                listStatement[i].turnOffOption();
+    }
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', function (event) {
@@ -5954,6 +6254,7 @@ $(document).ready(function () {
                         createErrorMessage('Could not copy declare statement!', 'bcErrorContainer');
                         finishAction();
                         restructureStatement();
+                        turnOffOptions();
                         drawCanvas();
                         return;
                     }
@@ -5997,10 +6298,18 @@ $(document).ready(function () {
         var returnPaste;
         if (clipboard == undefined) {
             createErrorMessage('Clipboard is empty!', 'bcErrorContainer');
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            drawCanvas();
             return;
         }
         if (clipboard.findStatement(returnClick.statement)) {
             createErrorMessage('Could not paste statement here!', 'bcErrorContainer');
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            drawCanvas();
             return;
         }
         var splitted = returnClick.option.optionId.split('-');
@@ -6014,6 +6323,7 @@ $(document).ready(function () {
         }
         finishAction();
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function handleDelete() {
@@ -6029,6 +6339,7 @@ $(document).ready(function () {
         }
         finishAction();
         restructureStatement();
+        turnOffOptions();
         drawCanvas();
     }
     function finishAction() {
@@ -6130,6 +6441,8 @@ $(document).ready(function () {
     function nestedForTemplate() {
         var variable = new Integer_1.default('i', 0);
         var variable2 = new Integer_1.default('j', 0);
+        var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var declareStatement2 = new DeclareStatement_1.default(statementCount++, 1, variable2);
         var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, true, true, 1, new Condition_1.default(variable, '<', new Integer_1.default('x', 2), true));
         var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, variable2, true, true, 1, new Condition_1.default(variable2, '<', new Integer_1.default('x', 3), true));
         var temp = [];
@@ -6141,6 +6454,8 @@ $(document).ready(function () {
         temp = [];
         temp.push(nestedForStatement);
         forStatement.updateChildStatement(temp);
+        handleAdd(declareStatement);
+        handleAdd(declareStatement2);
         handleAdd(forStatement);
     }
     function menuTemplate() {
@@ -6231,12 +6546,25 @@ $(document).ready(function () {
     }
     // Source Code Logic
     $(document).on('click', '#btn-generate-source-code', function () {
-        var c = new C_1.default(listStatement);
-        var java = new Java_1.default(listStatement);
-        var python = new Python_1.default(listStatement);
-        var cs = new Cs_1.default(listStatement);
+        var language = $('.selected-programming-language').find('option').filter(':selected').val();
+        var lang;
+        if (language == 'c') {
+            lang = new C_1.default(listStatement);
+        }
+        else if (language == 'cpp') {
+            lang = new Cpp_1.default(listStatement);
+        }
+        else if (language == 'cs') {
+            lang = new Cs_1.default(listStatement);
+        }
+        else if (language == 'java') {
+            lang = new Java_1.default(listStatement);
+        }
+        else if (language == 'python') {
+            lang = new Python_1.default(listStatement);
+        }
         $('#source-code-container').val('');
-        $('#source-code-container').val(cs.generateSourceCode());
+        $('#source-code-container').val(lang.generateSourceCode());
         // resizeTextArea()
     });
     // function resizeTextArea()  {
@@ -6251,7 +6579,7 @@ $(document).ready(function () {
     //   };
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/languages/Cs":3,"../classes/languages/Java":4,"../classes/languages/Python":5,"../classes/statement/AssignmentStatement":6,"../classes/statement/DeclareStatement":7,"../classes/statement/ForStatement":8,"../classes/statement/IfStatement":9,"../classes/statement/InputStatement":10,"../classes/statement/OutputStatement":11,"../classes/statement/SwitchStatement":13,"../classes/statement/WhileStatement":14,"../classes/statement/helper/assignment/Arithmetic":15,"../classes/statement/helper/case/Case":16,"../classes/statement/helper/general/Condition":17,"../classes/statement/helper/ifs/Elif":19,"../classes/statement/helper/ifs/Else":20,"../classes/statement/helper/ifs/If":21,"../classes/statement/helper/options/Option":22,"../classes/variable/Char":24,"../classes/variable/Double":25,"../classes/variable/Float":26,"../classes/variable/Integer":27,"../classes/variable/Long":28,"../classes/variable/String":29}],32:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/languages/Cpp":3,"../classes/languages/Cs":4,"../classes/languages/Java":5,"../classes/languages/Python":7,"../classes/statement/AssignmentStatement":8,"../classes/statement/DeclareStatement":9,"../classes/statement/ForStatement":10,"../classes/statement/IfStatement":11,"../classes/statement/InputStatement":12,"../classes/statement/OutputStatement":13,"../classes/statement/SwitchStatement":15,"../classes/statement/WhileStatement":16,"../classes/statement/helper/assignment/Arithmetic":17,"../classes/statement/helper/case/Case":18,"../classes/statement/helper/general/Condition":19,"../classes/statement/helper/ifs/Elif":21,"../classes/statement/helper/ifs/Else":22,"../classes/statement/helper/ifs/If":23,"../classes/statement/helper/options/Option":24,"../classes/variable/Char":26,"../classes/variable/Double":27,"../classes/variable/Float":28,"../classes/variable/Integer":29,"../classes/variable/Long":30,"../classes/variable/String":31}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -6263,7 +6591,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -6277,7 +6605,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone = /** @class */ (function () {
@@ -6290,7 +6618,7 @@ var ReturnClone = /** @class */ (function () {
 }());
 exports.default = ReturnClone;
 
-},{}],35:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -6302,4 +6630,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[31]);
+},{}]},{},[33]);

@@ -124,6 +124,16 @@ class SwitchStatement extends Statement {
         return new ReturnClone(switchStatement, true)
     }
 
+    turnOffOption(): void {
+        if(this.option != undefined)
+            this.option.isSelectionActive = false
+
+        if(this.caseStatement != undefined) {
+            for(let i = 0; i < this.caseStatement.length; i++)
+                this.caseStatement[i].turnOffOption()
+        }
+    }
+
     generateCSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
         let temp
@@ -133,6 +143,26 @@ class SwitchStatement extends Statement {
         
         for(let i = 0; i < this.caseStatement.length; i++) {
             temp = this.caseStatement[i].generateCSourceCode()
+            temp = temp.flat(Infinity)
+
+            for(let j =0 ; j < temp.length; j++) 
+                sourceCodeContainer.push(temp[j])
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let temp
+
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n')
+        sourceCodeContainer.push(this.getIndentation() + '{\n')
+        
+        for(let i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateCppSourceCode()
             temp = temp.flat(Infinity)
 
             for(let j =0 ; j < temp.length; j++) 

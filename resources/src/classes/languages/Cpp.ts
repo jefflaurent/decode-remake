@@ -1,12 +1,13 @@
 import Statement from "../statement/Statement";
+import Language from "./Language";
 
-class Cpp {
+class Cpp extends Language {
     
     listStatement: Statement[] 
     sourceCode: string
 
     constructor(listStatement: Statement[]) {
-        this.listStatement = listStatement
+        super(listStatement)
     }  
 
     generateSourceCode(): string {
@@ -30,7 +31,7 @@ class Cpp {
         let temp: string[] = []
 
         for(let i = 0; i < this.listStatement.length; i++) {
-            temp = this.listStatement[i].generateCSourceCode()
+            temp = this.listStatement[i].generateCppSourceCode()
             temp = temp.flat(Infinity)
 
             for(let j = 0; j < temp.length; j++) {
@@ -43,16 +44,6 @@ class Cpp {
         this.sourceCode += '\n'
         this.sourceCode += '\treturn 0;\n'
         this.sourceCode += '}'
-    }
-
-    getIndentation(level: number): string {
-        let indentation = ''
-        let tab = '\t'
-        
-        for(let i = 0; i < level; i++) 
-            indentation += tab
-        
-        return indentation
     }
 }
 

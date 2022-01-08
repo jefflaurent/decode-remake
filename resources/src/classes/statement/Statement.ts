@@ -29,6 +29,16 @@ class Statement {
         }
     }
 
+    turnOffOption(): void {
+        if(this.option != undefined)
+            this.option.isSelectionActive = false
+
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption()
+        }
+    }
+
     moveToSurface(): void {
         this.level = 1
         this.parent = undefined

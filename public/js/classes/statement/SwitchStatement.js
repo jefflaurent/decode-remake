@@ -112,6 +112,14 @@ var SwitchStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(switchStatement, true);
     };
+    SwitchStatement.prototype.turnOffOption = function () {
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
+        if (this.caseStatement != undefined) {
+            for (var i = 0; i < this.caseStatement.length; i++)
+                this.caseStatement[i].turnOffOption();
+        }
+    };
     SwitchStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var temp;
@@ -119,6 +127,20 @@ var SwitchStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '{\n');
         for (var i = 0; i < this.caseStatement.length; i++) {
             temp = this.caseStatement[i].generateCSourceCode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    SwitchStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'switch(' + this.variable.name + ')\n');
+        sourceCodeContainer.push(this.getIndentation() + '{\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generateCppSourceCode();
             temp = temp.flat(Infinity);
             for (var j = 0; j < temp.length; j++)
                 sourceCodeContainer.push(temp[j]);

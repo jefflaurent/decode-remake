@@ -93,6 +93,13 @@ var InputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    InputStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        sourceCode += 'cin >> ' + this.variable.name + ';' + '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     InputStatement.prototype.generateJavaSourceCode = function () {
         var sourceCodeContainer = [];
         if (this.variable instanceof Integer_1.default) {
@@ -130,13 +137,6 @@ var InputStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Convert.ToChar(Console.ReadLine());\n');
         else
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = Console.ReadLine();\n');
-        return sourceCodeContainer;
-    };
-    InputStatement.prototype.generateCppSourceCode = function () {
-        var sourceCodeContainer = [];
-        var sourceCode = '' + this.getIndentation();
-        sourceCode += 'cin >> ' + this.variable.name + '\n';
-        sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
     InputStatement.prototype.generatePythonSourceCode = function () {

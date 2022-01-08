@@ -149,6 +149,16 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return new ReturnClone_1.default(whileStatement, true);
     };
+    WhileStatement.prototype.turnOffOption = function () {
+        if (this.option[0] != undefined)
+            this.option[0].isSelectionActive = false;
+        if (this.option[1] != undefined)
+            this.option[1].isSelectionActive = false;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++)
+                this.childStatement[i].turnOffOption();
+        }
+    };
     WhileStatement.prototype.generateCSourceCode = function () {
         var sourceCodeContainer = [];
         var temp;
@@ -259,6 +269,27 @@ var WhileStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         if (!this.isWhile)
             sourceCodeContainer.push(this.getIndentation() + 'while(' + this.firstCondition.generateCsSourceCode() + ');\n');
+        return sourceCodeContainer;
+    };
+    WhileStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'while ' + this.firstCondition.generatePythonSourceCode() + ':\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePythonSourceCode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
         return sourceCodeContainer;
     };
     return WhileStatement;

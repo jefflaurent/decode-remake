@@ -30,6 +30,8 @@ import C from '../classes/languages/C'
 import Java from '../classes/languages/Java'
 import Python from '../classes/languages/Python'
 import Cs from '../classes/languages/Cs'
+import Cpp from '../classes/languages/Cpp'
+import Language from '../classes/languages/Language'
 declare var bootstrap: any
 
 $(document).ready(function() {
@@ -319,8 +321,7 @@ $(document).ready(function() {
             isNumericValue = true
         }
 
-        let btn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-3').
-                    addClass('col-3').addClass('addVariableDeclareBtn').data('value', isNumericValue).text('Add Variable')
+        let btn = createGreenButton('Variable').addClass('col-sm-3 col-3 addVariableDeclareBtn').data('value', isNumericValue)
         let createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
                             addClass('col-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create')
 
@@ -390,6 +391,7 @@ $(document).ready(function() {
         insertToVariableList()
         // Push statement to canvas
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     })
 
@@ -467,6 +469,7 @@ $(document).ready(function() {
                 statement = new InputStatement(statementCount++, 1, variable)
                 handleAdd(statement)
                 restructureStatement()
+                turnOffOptions()
                 drawCanvas()
             }
         }
@@ -474,6 +477,7 @@ $(document).ready(function() {
 
     // Click template button
     $(document).on('click', '.generateTemplate', function() {
+        blankTemplate()
         if($(this).data('value') == 'blank')
             blankTemplate()
         else if($(this).data('value') == 'declare')
@@ -495,6 +499,7 @@ $(document).ready(function() {
 
         finishAction()
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     })
 
@@ -754,6 +759,7 @@ $(document).ready(function() {
             switchStatement.updateCaseStatement(caseStatement)
             handleAdd(switchStatement)
             restructureStatement()
+            turnOffOptions()
             drawCanvas()
         }
     }
@@ -1002,6 +1008,7 @@ $(document).ready(function() {
 
             handleAdd(ifStatement)
             restructureStatement()
+            turnOffOptions()
             drawCanvas()
         }
     })
@@ -1085,7 +1092,7 @@ $(document).ready(function() {
     function validateIfStatementInput(firstValue: string, secondValue: string, isVariable: boolean): Variable[] | undefined {         
         let firstVariable = findVariable($(firstValue).find('option').filter(':selected').val() as string)
         let secondVariable = undefined
-        let listVariable = []
+        let listVariable = [] 
 
         if(firstVariable == undefined) {
             createErrorMessage('Please select a variable', 'pcInputErrorContainer')
@@ -1177,7 +1184,7 @@ $(document).ready(function() {
         let secondSelectContainerClassName = isRequired ? 'first-second-value-container-' + ifCount : 'second-second-value-container-' + customIfCount
         let secondSelectContainer = $('<div></div>').addClass(secondSelectContainerClassName)
         
-        let secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + ifCount
+        let secondSelectId = isRequired ? 'first-if-select-second-variable-' + ifCount : 'second-if-select-second-variable-' + customIfCount
         let secondSelect = createSelect(listVariable, 12, true).addClass('mb-2').attr('id', secondSelectId)
         secondSelectContainer.append(secondSelect)
 
@@ -1286,7 +1293,7 @@ $(document).ready(function() {
         let targetId = $(this).data('value')
         let targetContainerClass = '#list-' + targetId
         
-        $('#first-if-input-box-' + targetId).children().last().remove();
+        $('#first-if-input-box-' + targetId).children().last().remove()
         $(targetContainerClass).append(createIfPropertiesInput(false, targetId))
     })
 
@@ -1400,6 +1407,7 @@ $(document).ready(function() {
                 statement = new OutputStatement(statementCount++, 1, true, 'variable', variable)
                 handleAdd(statement)
                 restructureStatement()
+                turnOffOptions()
                 drawCanvas()
             }
         }
@@ -1424,6 +1432,7 @@ $(document).ready(function() {
         
         handleAdd(output)
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     })
 
@@ -1610,6 +1619,7 @@ $(document).ready(function() {
             
         handleAdd(statement)
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     })
 
@@ -1803,6 +1813,7 @@ $(document).ready(function() {
         
         handleAdd(statement)
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     }
 
@@ -1868,6 +1879,7 @@ $(document).ready(function() {
 
         handleAdd(statement)
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     }
 
@@ -2346,6 +2358,7 @@ $(document).ready(function() {
     
         handleAdd(assignmentStatement)
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     }
 
@@ -2512,8 +2525,10 @@ $(document).ready(function() {
         }
         let statement = new AssignmentStatement(statementCount++, 1, 'variable', 
             firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined)
+
         handleAdd(statement)
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     })
 
@@ -2571,6 +2586,15 @@ $(document).ready(function() {
         }
     }
 
+    function turnOffOptions() {
+        if(option != undefined)
+            option.isSelectionActive = false
+
+        if(listStatement != undefined)
+            for(let i = 0; i < listStatement.length; i++) 
+                (listStatement[i] as Statement).turnOffOption()
+    }
+
     // Handle Event
     function handleCanvasClick() {
         canvas.addEventListener('click', (event: any) => {
@@ -2613,6 +2637,7 @@ $(document).ready(function() {
                         createErrorMessage('Could not copy declare statement!', 'bcErrorContainer')
                         finishAction()
                         restructureStatement()
+                        turnOffOptions()
                         drawCanvas()
                         return
                     }
@@ -2661,11 +2686,19 @@ $(document).ready(function() {
 
         if(clipboard == undefined) {
             createErrorMessage('Clipboard is empty!', 'bcErrorContainer')
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            drawCanvas()
             return
         }
         
         if(clipboard.findStatement(returnClick.statement)) {
             createErrorMessage('Could not paste statement here!', 'bcErrorContainer')
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            drawCanvas()
             return
         }
         
@@ -2683,6 +2716,7 @@ $(document).ready(function() {
 
         finishAction()
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     }
 
@@ -2701,6 +2735,7 @@ $(document).ready(function() {
 
         finishAction()
         restructureStatement()
+        turnOffOptions()
         drawCanvas()
     }
 
@@ -2829,6 +2864,9 @@ $(document).ready(function() {
         let variable = new Integer('i', 0)
         let variable2 = new Integer('j', 0)
 
+        let declareStatement = new DeclareStatement(statementCount++, 1, variable)
+        let declareStatement2 = new DeclareStatement(statementCount++, 1, variable2)
+
         let forStatement = new ForStatement(1, statementCount++, undefined, variable, true, true, 1, new Condition(variable, '<', new Integer('x', 2), true))
         let nestedForStatement = new ForStatement(1, statementCount++, undefined, variable2, true, true, 1, new Condition(variable2, '<', new Integer('x', 3), true))
         let temp = []
@@ -2843,6 +2881,8 @@ $(document).ready(function() {
         temp.push(nestedForStatement)   
         forStatement.updateChildStatement(temp)
 
+        handleAdd(declareStatement)
+        handleAdd(declareStatement2)
         handleAdd(forStatement)
     }
 
@@ -2959,13 +2999,27 @@ $(document).ready(function() {
     // Source Code Logic
 
     $(document).on('click', '#btn-generate-source-code', function() {
-        let c: C = new C(listStatement)
-        let java: Java = new Java(listStatement)
-        let python: Python = new Python(listStatement)
-        let cs: Cs = new Cs(listStatement)
+        let language = $('.selected-programming-language').find('option').filter(':selected').val() as string
+        let lang: Language
+
+        if(language == 'c') {
+            lang = new C(listStatement)
+        }
+        else if(language == 'cpp') {
+            lang = new Cpp(listStatement)
+        }
+        else if(language == 'cs') {
+            lang = new Cs(listStatement)
+        }
+        else if(language == 'java') {
+            lang = new Java(listStatement)
+        }
+        else if(language == 'python') {
+            lang = new Python(listStatement)
+        }
         
         $('#source-code-container').val('')
-        $('#source-code-container').val(cs.generateSourceCode())
+        $('#source-code-container').val(lang.generateSourceCode())
         // resizeTextArea()
     })
 
