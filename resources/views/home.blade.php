@@ -8,6 +8,11 @@
             @include('components.program-control')
         </div>
         <div class="col-lg-7">
+            @auth
+            <div class="col-lg-12 mb-4">
+                @include('components.projects')
+            </div>
+            @endauth
             <div class="col-lg-12">
                @include('components.templates')
             </div>
