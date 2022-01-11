@@ -24,18 +24,34 @@
                                     <span class="navbar-toggler-icon" style="color: black"></span>
                                 </button>
                             </div>
-                            <div class="col-lg-1" style="width: 100%">
-                                <strong class="col-lg-12 d-flex justify-content-end">
-                                    <a href="" class="link-secondary text-decoration-none col-lg-12">
-                                        <div class="col-lg-12 d-flex align-items-center">
-                                            <div class="col-lg-4 d-flex justify-content-end p-2">
-                                                <i class="fas fa-sign-out-alt"></i>
+                            <div class="col-lg-1" style="width: 100%;">
+                                <strong class="col-lg-12 col-12 col-sm-12 d-flex justify-content-end">
+                                    @auth
+                                        <form action="/logout" method="post" class="col-lg-7 col-7 col-sm-7"> 
+                                            {{ csrf_field() }}
+                                            <button type="submit" class="link-secondary text-decoration-none" style="background: none; padding: 0; border: 0">
+                                                <div class="col-lg-12 d-flex align-items-center">
+                                                    <div class="col-lg-4 d-flex justify-content-end p-2">
+                                                        <i class="fas fa-sign-out-alt"></i>
+                                                    </div>
+                                                    <div class="col-lg-8 d-flex justify-content-start" style="padding: 0; margin: 0;">
+                                                        <strong>Sign Out</strong> 
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="/login" class="link-secondary text-decoration-none justify-content-end col-lg-7 col-7 col-sm-7">
+                                            <div class="col-lg-12 col-12 col-sm-12 d-flex align-items-center justify-content-end">
+                                                <div class="col-lg-4 d-flex justify-content-end p-2">
+                                                    <i class="fas fa-sign-in-alt"></i>
+                                                </div>
+                                                <div class="col-lg-8 d-flex justify-content-start" style="padding: 0; margin: 0;">
+                                                    Sign In
+                                                </div>
                                             </div>
-                                            <div class="col-lg-8 d-flex justify-content-start" style="padding: 0; margin: 0;">
-                                                Sign Out
-                                            </div>
-                                        </div>
-                                    </a>
+                                        </a>
+                                    @endif
                                 </strong>
                             </div>
                         </div>
@@ -65,18 +81,34 @@
                             <div class="col-lg-4"></div>
                         </div>
                         <div class="col-lg-6 d-flex justify-content-end d-none d-lg-flex">
-                            <div class="col-lg-2">
-                                <strong>
-                                    <a href="" class="link-secondary text-decoration-none">
-                                        <div class="row d-flex align-items-center">
-                                            <div class="col-lg-4 d-flex justify-content-end">
-                                                <i class="fas fa-sign-out-alt"></i>
+                            <div class="col-lg-12 col-12 col-sm-12" >
+                                <strong class="col-12 col-sm-12 d-flex justify-content-end">
+                                    @auth
+                                        <form action="/logout" method="post" class="col-lg-3 col-3 col-sm-3"> 
+                                            {{ csrf_field() }}
+                                            <button type="submit" class="link-secondary text-decoration-none" style="background: none; padding: 0; border: 0">
+                                                <div class="col-lg-12 d-flex align-items-center">
+                                                    <div class="col-lg-4 d-flex justify-content-end p-2">
+                                                        <i class="fas fa-sign-out-alt"></i>
+                                                    </div>
+                                                    <div class="col-lg-8 d-flex justify-content-start" style="padding: 0; margin: 0;">
+                                                        <strong>Sign Out</strong> 
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="/login" class="link-secondary text-decoration-none col-lg-7 col-7 col-sm-7 d-flex justify-content-end">
+                                            <div class="col-lg-5 col-5 col-sm-5 d-flex align-items-center">
+                                                <div class="col-lg-4 d-flex justify-content-end p-2">
+                                                    <i class="fas fa-sign-in-alt"></i>
+                                                </div>
+                                                <div class="col-lg-8 d-flex justify-content-start" style="padding: 0; margin: 0;">
+                                                    Sign In
+                                                </div>
                                             </div>
-                                            <div class="col-lg-8 d-flex justify-content-start" style="padding: 0; margin: 0;">
-                                                Sign Out
-                                            </div>
-                                        </div>
-                                    </a>
+                                        </a>
+                                    @endif
                                 </strong>
                             </div>
                         </div>

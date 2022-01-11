@@ -15,8 +15,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/decode', function() {
-    return view('home');
-});
+Route::get('/decode', 'DecodeController@home')->name('home');
 
 Route::post('/decode/download', 'SourceCodeController@download');
+
+Route::get('/login', 'AuthController@showLogin')->name('login')->middleware('guest');
+
+Route::post('/login', 'AuthController@login');
+
+Route::post('/logout', 'AuthController@logout');
