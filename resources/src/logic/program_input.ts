@@ -392,6 +392,8 @@ $(document).ready(function() {
         // Push statement to canvas
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     })
 
@@ -470,6 +472,8 @@ $(document).ready(function() {
                 handleAdd(statement)
                 restructureStatement()
                 turnOffOptions()
+                clearSourceCode()
+                initInput('Program Input')
                 drawCanvas()
             }
         }
@@ -477,6 +481,8 @@ $(document).ready(function() {
 
     // Click template button
     $(document).on('click', '.generateTemplate', function() {
+        initInput('Program Input')
+        clearSourceCode()
         blankTemplate()
         if($(this).data('value') == 'blank')
             blankTemplate()
@@ -500,6 +506,8 @@ $(document).ready(function() {
         finishAction()
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     })
 
@@ -541,11 +549,18 @@ $(document).ready(function() {
             container.addClass('mb-3')
             $('#pcInputContainer').append(container)
 
-            let inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                                addClass('col-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select')
+            let inputBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select')
+            let btmContainer = 
+            $('<div>', {class: 'col-sm-12 col-12 d-flex justify-content-evenly align-items-center'}).append(
+                $('<div>', {class: 'col-sm-5 col-5'}),
+                $('<div>', {class: 'col-sm-5 col-5 d-flex align-items-center'}).append(
+                    $('<input>', {class: 'form-check-input col-sm-1 col-1 d-flex align-items-center', type: 'checkbox', id: 'new-line-variable'}),
+                    $('<label>', {class: 'form-check-label col-sm-11 col-11 d-flex align-items-center ms-2', for: 'new-line-variable'}).text('Add new line')
+                ),
+                inputBtn
+            )
+            $('#pcInputContainerLower').append(btmContainer)
 
-            $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-10'))
-            $('#pcInputContainerLower').append(inputBtn)
         }
         else {
             initInput('Output Text')
@@ -760,6 +775,8 @@ $(document).ready(function() {
             handleAdd(switchStatement)
             restructureStatement()
             turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
             drawCanvas()
         }
     }
@@ -961,17 +978,20 @@ $(document).ready(function() {
 
     $(document).on('click', '.delete-if-stmnt', function() {
         let targetId = $(this).data('value')
+
         if($('#list-if-' + targetId).data('value') == 'else')
             isElsed = false
+        else if($('#list-if-' + targetId).data('value') == 'elif') {
+            let targetIdx = ifToBeValidated.indexOf(targetId)
+            ifToBeValidated.splice(targetIdx, 1)
+        }
+
         $('#list-' + targetId).remove();
         $('#list-if-' + targetId).remove();
 
         if($('#list-1').hasClass('active') == true) {
             ($(`#list-tab-if a[href="#list-1"]`) as any).tab('show');
         }
-
-        let targetIdx = ifToBeValidated.indexOf(targetId)
-        ifToBeValidated.splice(targetIdx, 1)
     })
 
     $(document).on('click', '.delete-additional-condition', function() {
@@ -1009,6 +1029,8 @@ $(document).ready(function() {
             handleAdd(ifStatement)
             restructureStatement()
             turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
             drawCanvas()
         }
     })
@@ -1389,6 +1411,7 @@ $(document).ready(function() {
             let text = $('#chosenOutputVariable').find('option').filter(':selected').text().split(' ')[1] as string
             let variable: Variable | undefined = undefined
             let statement: Statement
+            let isNewLine: boolean = $('#new-line-variable').is(':checked')
 
             if(text == '(Integer)') 
                 variable = getVariable(listInteger, variableName)
@@ -1404,10 +1427,12 @@ $(document).ready(function() {
                 variable = getVariable(listString, variableName)
             
             if(variable != undefined) {
-                statement = new OutputStatement(statementCount++, 1, true, 'variable', variable)
+                statement = new OutputStatement(statementCount++, 1, isNewLine, 'variable', variable)
                 handleAdd(statement)
                 restructureStatement()
                 turnOffOptions()
+                clearSourceCode()
+                initInput('Program Input')
                 drawCanvas()
             }
         }
@@ -1433,6 +1458,8 @@ $(document).ready(function() {
         handleAdd(output)
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     })
 
@@ -1620,6 +1647,8 @@ $(document).ready(function() {
         handleAdd(statement)
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     })
 
@@ -1686,10 +1715,8 @@ $(document).ready(function() {
 
     function validateRepetitionInput(): boolean {
         let variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val() as string
-        let variable: Variable
         let tempVariable: Variable
         let result: Return
-        let isCustom = false
 
         if(variableName == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
@@ -1697,10 +1724,7 @@ $(document).ready(function() {
             return false
         }
 
-        variable = findVariable(variableName)
-
         if($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
-            isCustom = true
             let value = $('#chosen-for-loop-value').val() as string
             tempVariable = createVariableFromValue(value)
             
@@ -1718,14 +1742,12 @@ $(document).ready(function() {
             }
         }
         else {
-            isCustom = false
             let variableName = $('#chosen-for-loop-value').find('option').filter(':selected').val() as string
             if(variableName == '') {
                 createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
                 $('#chosen-for-loop-value').addClass('input-error')
                 return false
             }
-            tempVariable = findVariable(variableName)
         }
 
         return true
@@ -1814,6 +1836,8 @@ $(document).ready(function() {
         handleAdd(statement)
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     }
 
@@ -1880,6 +1904,8 @@ $(document).ready(function() {
         handleAdd(statement)
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     }
 
@@ -2359,6 +2385,8 @@ $(document).ready(function() {
         handleAdd(assignmentStatement)
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     }
 
@@ -2529,6 +2557,8 @@ $(document).ready(function() {
         handleAdd(statement)
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     })
 
@@ -2638,6 +2668,8 @@ $(document).ready(function() {
                         finishAction()
                         restructureStatement()
                         turnOffOptions()
+                        clearSourceCode()
+                        initInput('Program Input')
                         drawCanvas()
                         return
                     }
@@ -2648,10 +2680,6 @@ $(document).ready(function() {
                     clipboard = returnClick.statement
                     lastSelectedOption = returnClick.option.optionName
                     handleDelete()
-                }
-                else if(returnClick.option.optionName == 'EDT') {
-                    clipboard = returnClick.statement
-                    lastSelectedOption = returnClick.option.optionName
                 }
             }
         })
@@ -2689,6 +2717,8 @@ $(document).ready(function() {
             finishAction()
             restructureStatement()
             turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
             drawCanvas()
             return
         }
@@ -2698,6 +2728,8 @@ $(document).ready(function() {
             finishAction()
             restructureStatement()
             turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
             drawCanvas()
             return
         }
@@ -2717,6 +2749,8 @@ $(document).ready(function() {
         finishAction()
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     }
 
@@ -2736,6 +2770,8 @@ $(document).ready(function() {
         finishAction()
         restructureStatement()
         turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
         drawCanvas()
     }
 
@@ -2872,8 +2908,8 @@ $(document).ready(function() {
         let temp = []
 
         temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'i: '))
-        temp.push(new OutputStatement(statementCount++, 1, true, 'variable', variable))
-        temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, 'j: '))
+        temp.push(new OutputStatement(statementCount++, 1, false, 'variable', variable))
+        temp.push(new OutputStatement(statementCount++, 1, false, 'text', undefined, ' j: '))
         temp.push(new OutputStatement(statementCount++, 1, true, 'variable', variable2))
         nestedForStatement.updateChildStatement(temp)
 
@@ -2944,6 +2980,9 @@ $(document).ready(function() {
         let j = new Integer('j', 0)
 
         let declareStatement = new DeclareStatement(statementCount++, 1, variable)
+        let declareI = new DeclareStatement(statementCount++, 1, i)
+        let declareJ = new DeclareStatement(statementCount++, 1, j)
+        let outputStatement = new OutputStatement(statementCount++, 1, false, 'text', undefined, 'Input square size: ', undefined, undefined)
         let inputStatement = new InputStatement(statementCount++, 1, variable)
 
         let forStatement = new ForStatement(1, statementCount++, undefined, i, true, true, 1, new Condition(i, '<', variable, false))
@@ -2958,7 +2997,11 @@ $(document).ready(function() {
         temp.push(new OutputStatement(statementCount++, 1, true, 'text', undefined, ''))
         forStatement.updateChildStatement(temp)
 
+
+        handleAdd(declareI)
+        handleAdd(declareJ)
         handleAdd(declareStatement)
+        handleAdd(outputStatement)
         handleAdd(inputStatement)
         handleAdd(forStatement)
     }
@@ -2968,6 +3011,7 @@ $(document).ready(function() {
         allVariableNames['number'] = true
         listInteger.push(variable)
 
+        let outputStatement = new OutputStatement(statementCount++, 1, false, 'text', undefined, 'Please input a number: ', undefined, undefined)
         let ifStatement = new IfStatement(1, statementCount++, undefined)
         let firstIf = new If(1, statementCount++, new Condition(variable, '==', new Integer('x', 0), true))
         let secondIf = new Elif(1, statementCount++, new Condition(variable, '==', new Integer('x', 1), true))
@@ -2991,12 +3035,17 @@ $(document).ready(function() {
             variable, listArithmetic, undefined, undefined, undefined, undefined, undefined, undefined)
 
         handleAdd(new DeclareStatement(statementCount++, 1, variable))
+        handleAdd(outputStatement)
         handleAdd(new InputStatement(statementCount++, 1, variable))
         handleAdd(assignmentStatement)
         handleAdd(ifStatement)
     }
 
     // Source Code Logic
+
+    function clearSourceCode(): void {
+        $('#source-code-container').val('')
+    }
 
     $(document).on('click', '#btn-generate-source-code', function() {
         let language = $('.selected-programming-language').find('option').filter(':selected').val() as string
@@ -3020,20 +3069,32 @@ $(document).ready(function() {
         
         $('#source-code-container').val('')
         $('#source-code-container').val(lang.generateSourceCode())
-        // resizeTextArea()
     })
 
-    // function resizeTextArea()  {
-    //     let str = ($('#source-code-container') as any).value;
-    //     let cols = ($('#source-code-container') as any).cols;
+    let fontSize = 14
 
-    //     var lineCount = 0;
+    $(document).on('click', '.change-font-size', function() {
+        if($(this).data('value') == 'plus')
+            $('#source-code-container').css('font-size', ++fontSize + 'px')
+        else 
+            $('#source-code-container').css('font-size', --fontSize + 'px')
 
-    //     let temp = str.split('\n')
-    //     for(let i = 0; i < temp.length; i++) { 
-    //         lineCount +=  Math.ceil( temp[i].length / cols )
-    //     }
+        $('#font-size-input').val(fontSize)
+    })
 
-    //     ($('#source-code-container') as any).rows = lineCount + 1;
-    //   };
+    $(document).on('change', '#font-size-input',  function() {
+        let temp = $('#font-size-input').val() as string
+        let tempFontSize = parseInt(temp)
+
+        if(isNaN(tempFontSize) || tempFontSize < 1 || tempFontSize > 40) {
+            fontSize = 14
+            $('#source-code-container').css('font-size', fontSize + 'px')
+            $('#font-size-input').val(fontSize)
+        }
+        else {
+            fontSize = tempFontSize
+            $('#source-code-container').css('font-size', fontSize + 'px')
+            $('#font-size-input').val(fontSize)
+        }
+    })
 })

@@ -18,3 +18,5 @@ Route::get('/', function () {
 Route::get('/decode', function() {
     return view('home');
 });
+
+Route::post('/decode/download', 'SourceCodeController@download');

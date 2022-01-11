@@ -6,6 +6,7 @@ import Double from "../variable/Double";
 import Float from "../variable/Float";
 import Integer from "../variable/Integer";
 import Long from "../variable/Long";
+import String from "../variable/String";
 import Variable from "../variable/Variable";
 import Option from "./helper/options/Option";
 import Statement from "./Statement";

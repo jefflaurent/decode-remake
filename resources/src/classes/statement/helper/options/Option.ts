@@ -64,7 +64,6 @@ class Option {
         temp.push(new OptionSelection(this.optionId, 'MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent))
         temp.push(new OptionSelection(this.optionId, 'CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent))
         temp.push(new OptionSelection(this.optionId, 'DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent))
-        temp.push(new OptionSelection(this.optionId, 'EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent))
         
         return temp
     }

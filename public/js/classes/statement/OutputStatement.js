@@ -22,6 +22,7 @@ var Double_1 = __importDefault(require("../variable/Double"));
 var Float_1 = __importDefault(require("../variable/Float"));
 var Integer_1 = __importDefault(require("../variable/Integer"));
 var Long_1 = __importDefault(require("../variable/Long"));
+var String_1 = __importDefault(require("../variable/String"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
@@ -106,7 +107,7 @@ var OutputStatement = /** @class */ (function (_super) {
                 sourceCode += "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Char_1.default)
                 sourceCode += "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
-            else if (this.variable instanceof String)
+            else if (this.variable instanceof String_1.default)
                 sourceCode += "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
         }
         else if (this.type == 'text')

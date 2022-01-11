@@ -216,6 +216,41 @@ class AssignmentStatement extends Statement {
                 start = this.variable.name + '+' + (this.start - 1)
 
             sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n')
+            sourceCodeContainer.push(this.targetVariable.name + '[' + (this.start-1 + this.length) + '] = ' + `'\\0'` + ';\n')
+        }
+
+        return sourceCodeContainer
+    }
+
+    generateCppSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let prefix = this.getIndentation() + this.targetVariable.name + ' = '
+
+        if(this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n')
+        }   
+        else if(this.type == 'variable') {
+            if(this.isCustomValue) {
+                if(this.variable instanceof Char)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n")
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n')
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n')
+        }
+        else if(this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'strlen(' + this.variable.name + ');\n')
+        }
+        else {
+            let start
+            if(this.start == 1)
+                start = this.variable.name
+            else 
+                start = this.variable.name + '+' + (this.start - 1)
+
+            sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n')
+            sourceCodeContainer.push(this.targetVariable.name + '[' + (this.start-1 + this.length) + '] = ' + `'\\0'` + ';\n')
         }
 
         return sourceCodeContainer

@@ -118,7 +118,7 @@ var DeclareStatement = /** @class */ (function (_super) {
         else if (this.variable instanceof Char_1.default)
             sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
         else if (this.variable instanceof String_1.default)
-            sourceCode += 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+            sourceCode += 'char ' + this.variable.name + '[' + (this.variable.value.length + 1) + ']' + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);

@@ -197,6 +197,37 @@ var AssignmentStatement = /** @class */ (function (_super) {
             else
                 start = this.variable.name + '+' + (this.start - 1);
             sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n');
+            sourceCodeContainer.push(this.targetVariable.name + '[' + (this.start - 1 + this.length) + '] = ' + "'\\0'" + ';\n');
+        }
+        return sourceCodeContainer;
+    };
+    AssignmentStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'strlen(' + this.variable.name + ');\n');
+        }
+        else {
+            var start = void 0;
+            if (this.start == 1)
+                start = this.variable.name;
+            else
+                start = this.variable.name + '+' + (this.start - 1);
+            sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n');
+            sourceCodeContainer.push(this.targetVariable.name + '[' + (this.start - 1 + this.length) + '] = ' + "'\\0'" + ';\n');
         }
         return sourceCodeContainer;
     };

@@ -118,7 +118,7 @@ class DeclareStatement extends Statement {
         else if(this.variable instanceof Char)
             sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';"
         else if(this.variable instanceof String)
-            sourceCode += 'char[' + this.variable.value.length +'] ' + this.variable.name + ' = ' +  `"` + this.variable.value + `";`
+            sourceCode += 'char '  + this.variable.name + '[' + (this.variable.value.length + 1) +']' + ' = ' +  `"` + this.variable.value + `";`
     
         sourceCode += '\n'
 

@@ -103,7 +103,7 @@ var ForStatement = /** @class */ (function (_super) {
             if (this.variable.name == variable.name)
                 return this;
         }
-        if (!this.condition.findVariable(variable))
+        if (this.condition.findVariable(variable))
             return this;
         var temp = undefined;
         if (this.childStatement) {
@@ -327,7 +327,7 @@ var ForStatement = /** @class */ (function (_super) {
             updateValue = this.addValueBy + '';
         else
             updateValue = '-' + this.addValueBy;
-        sourceCode += 'for i in range(' + this.variable.name + ', ' + condition + ', ' + updateValue + '):\n';
+        sourceCode += 'for ' + this.variable.name + ' in range(0, ' + condition + ', ' + updateValue + '):\n';
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)

@@ -6,7 +6,6 @@ import Float from "../variable/Float";
 import Integer from "../variable/Integer";
 import Long from "../variable/Long";
 import Variable from "../variable/Variable";
-import DeclareStatement from "./DeclareStatement";
 import Condition from "./helper/general/Condition";
 import Option from "./helper/options/Option";
 import Statement from "./Statement";
@@ -61,13 +60,13 @@ class ForStatement extends Statement {
             if(this.addValueBy == 1) 
                 text += this.variable.name + '++ )'
             else
-                text += this.variable.name + ' += ' + this.addValueBy + ' )'
+                text += this.variable.name  + ' += ' + this.addValueBy + ' )'
         }
         else {
             if(this.addValueBy == 1) 
-                text += this.variable.name + '-- )'
+                text += this.variable.name  + '-- )'
             else
-                text += this.variable.name + ' -= ' + this.addValueBy + ' )'
+                text += this.variable.name  + ' -= ' + this.addValueBy + ' )'
         }
 
         // FOR ( ; ; )
@@ -118,7 +117,7 @@ class ForStatement extends Statement {
                 return this
         }
 
-        if(!this.condition.findVariable(variable))
+        if(this.condition.findVariable(variable))
             return this
 
         let temp: Statement | undefined = undefined
@@ -374,7 +373,7 @@ class ForStatement extends Statement {
 
     generatePythonSourceCode(): string[] {
         let sourceCodeContainer: string[] = []
-        let sourceCode = '' + this.getIndentation()
+        let sourceCode = '' + this.getIndentation() 
         let temp
         let condition = ''
         let updateValue = ''
@@ -388,7 +387,7 @@ class ForStatement extends Statement {
         else
             updateValue = '-' + this.addValueBy
 
-        sourceCode += 'for i in range(' + this.variable.name + ', ' + condition + ', ' + updateValue + '):\n'
+        sourceCode += 'for ' + this.variable.name + ' in range(0, ' + condition + ', ' + updateValue + '):\n'
 
         sourceCodeContainer.push(sourceCode)
 

@@ -595,6 +595,37 @@ var AssignmentStatement = /** @class */ (function (_super) {
             else
                 start = this.variable.name + '+' + (this.start - 1);
             sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n');
+            sourceCodeContainer.push(this.targetVariable.name + '[' + (this.start - 1 + this.length) + '] = ' + "'\\0'" + ';\n');
+        }
+        return sourceCodeContainer;
+    };
+    AssignmentStatement.prototype.generateCppSourceCode = function () {
+        var sourceCodeContainer = [];
+        var prefix = this.getIndentation() + this.targetVariable.name + ' = ';
+        if (this.type == 'arithmetic') {
+            sourceCodeContainer.push(prefix + this.generateArithmeticText() + ';\n');
+        }
+        else if (this.type == 'variable') {
+            if (this.isCustomValue) {
+                if (this.variable instanceof Char_1.default)
+                    sourceCodeContainer.push(prefix + "'" + this.variable.value + "';\n");
+                else
+                    sourceCodeContainer.push(prefix + this.variable.value + ';\n');
+            }
+            else
+                sourceCodeContainer.push(prefix + this.variable.name + ';\n');
+        }
+        else if (this.type == 'length') {
+            sourceCodeContainer.push(prefix + 'strlen(' + this.variable.name + ');\n');
+        }
+        else {
+            var start = void 0;
+            if (this.start == 1)
+                start = this.variable.name;
+            else
+                start = this.variable.name + '+' + (this.start - 1);
+            sourceCodeContainer.push(this.getIndentation() + 'strncpy(' + this.targetVariable.name + ', ' + start + ', ' + this.length + ');\n');
+            sourceCodeContainer.push(this.targetVariable.name + '[' + (this.start - 1 + this.length) + '] = ' + "'\\0'" + ';\n');
         }
         return sourceCodeContainer;
     };
@@ -800,7 +831,7 @@ var DeclareStatement = /** @class */ (function (_super) {
         else if (this.variable instanceof Char_1.default)
             sourceCode += 'char ' + this.variable.name + ' = ' + "'" + this.variable.value + "';";
         else if (this.variable instanceof String_1.default)
-            sourceCode += 'char[' + this.variable.value.length + '] ' + this.variable.name + ' = ' + "\"" + this.variable.value + "\";";
+            sourceCode += 'char ' + this.variable.name + '[' + (this.variable.value.length + 1) + ']' + ' = ' + "\"" + this.variable.value + "\";";
         sourceCode += '\n';
         var sourceCodeContainer = [];
         sourceCodeContainer.push(sourceCode);
@@ -984,7 +1015,7 @@ var ForStatement = /** @class */ (function (_super) {
             if (this.variable.name == variable.name)
                 return this;
         }
-        if (!this.condition.findVariable(variable))
+        if (this.condition.findVariable(variable))
             return this;
         var temp = undefined;
         if (this.childStatement) {
@@ -1208,7 +1239,7 @@ var ForStatement = /** @class */ (function (_super) {
             updateValue = this.addValueBy + '';
         else
             updateValue = '-' + this.addValueBy;
-        sourceCode += 'for i in range(' + this.variable.name + ', ' + condition + ', ' + updateValue + '):\n';
+        sourceCode += 'for ' + this.variable.name + ' in range(0, ' + condition + ', ' + updateValue + '):\n';
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
@@ -1564,6 +1595,7 @@ var Double_1 = __importDefault(require("../variable/Double"));
 var Float_1 = __importDefault(require("../variable/Float"));
 var Integer_1 = __importDefault(require("../variable/Integer"));
 var Long_1 = __importDefault(require("../variable/Long"));
+var String_1 = __importDefault(require("../variable/String"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var OutputStatement = /** @class */ (function (_super) {
@@ -1648,7 +1680,7 @@ var OutputStatement = /** @class */ (function (_super) {
                 sourceCode += "printf(\"%lf" + newLine + "\", " + this.variable.name + ');';
             else if (this.variable instanceof Char_1.default)
                 sourceCode += "printf(\"%c" + newLine + "\", " + this.variable.name + ');';
-            else if (this.variable instanceof String)
+            else if (this.variable instanceof String_1.default)
                 sourceCode += "printf(\"%s" + newLine + "\", " + this.variable.name + ');';
         }
         else if (this.type == 'text')
@@ -1757,7 +1789,7 @@ var OutputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"./Statement":14,"./helper/options/Option":24}],14:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./Statement":14,"./helper/options/Option":24}],14:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3614,7 +3646,6 @@ var Option = /** @class */ (function () {
         temp.push(new OptionSelection_1.default(this.optionId, 'MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent));
         temp.push(new OptionSelection_1.default(this.optionId, 'CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent));
         temp.push(new OptionSelection_1.default(this.optionId, 'DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent));
-        temp.push(new OptionSelection_1.default(this.optionId, 'EDT', '#e3e029', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent));
         return temp;
     };
     Option.prototype.draw = function (canvas) {
@@ -4504,6 +4535,8 @@ $(document).ready(function () {
         // Push statement to canvas
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     });
     // Click input variable button
@@ -4572,12 +4605,16 @@ $(document).ready(function () {
                 handleAdd(statement);
                 restructureStatement();
                 turnOffOptions();
+                clearSourceCode();
+                initInput('Program Input');
                 drawCanvas();
             }
         }
     });
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
+        initInput('Program Input');
+        clearSourceCode();
         blankTemplate();
         if ($(this).data('value') == 'blank')
             blankTemplate();
@@ -4600,6 +4637,8 @@ $(document).ready(function () {
         finishAction();
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     });
     function deleteVariable(variable) {
@@ -4635,10 +4674,9 @@ $(document).ready(function () {
             container.append(select);
             container.addClass('mb-3');
             $('#pcInputContainer').append(container);
-            var inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                addClass('col-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select');
-            $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-10'));
-            $('#pcInputContainerLower').append(inputBtn);
+            var inputBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'outputVariableBtn').data('value', $(this).data('value')).text('Select');
+            var btmContainer = $('<div>', { class: 'col-sm-12 col-12 d-flex justify-content-evenly align-items-center' }).append($('<div>', { class: 'col-sm-5 col-5' }), $('<div>', { class: 'col-sm-5 col-5 d-flex align-items-center' }).append($('<input>', { class: 'form-check-input col-sm-1 col-1 d-flex align-items-center', type: 'checkbox', id: 'new-line-variable' }), $('<label>', { class: 'form-check-label col-sm-11 col-11 d-flex align-items-center ms-2', for: 'new-line-variable' }).text('Add new line')), inputBtn);
+            $('#pcInputContainerLower').append(btmContainer);
         }
         else {
             initInput('Output Text');
@@ -4818,6 +4856,8 @@ $(document).ready(function () {
             handleAdd(switchStatement);
             restructureStatement();
             turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
             drawCanvas();
         }
     }
@@ -4995,13 +5035,15 @@ $(document).ready(function () {
         var targetId = $(this).data('value');
         if ($('#list-if-' + targetId).data('value') == 'else')
             isElsed = false;
+        else if ($('#list-if-' + targetId).data('value') == 'elif') {
+            var targetIdx = ifToBeValidated.indexOf(targetId);
+            ifToBeValidated.splice(targetIdx, 1);
+        }
         $('#list-' + targetId).remove();
         $('#list-if-' + targetId).remove();
         if ($('#list-1').hasClass('active') == true) {
             $("#list-tab-if a[href=\"#list-1\"]").tab('show');
         }
-        var targetIdx = ifToBeValidated.indexOf(targetId);
-        ifToBeValidated.splice(targetIdx, 1);
     });
     $(document).on('click', '.delete-additional-condition', function () {
         var targetId = $(this).data('value');
@@ -5032,6 +5074,8 @@ $(document).ready(function () {
             handleAdd(ifStatement);
             restructureStatement();
             turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
             drawCanvas();
         }
     });
@@ -5350,6 +5394,7 @@ $(document).ready(function () {
             var text = $('#chosenOutputVariable').find('option').filter(':selected').text().split(' ')[1];
             var variable = undefined;
             var statement = void 0;
+            var isNewLine = $('#new-line-variable').is(':checked');
             if (text == '(Integer)')
                 variable = getVariable(listInteger, variableName);
             else if (text == '(Long)')
@@ -5363,10 +5408,12 @@ $(document).ready(function () {
             else
                 variable = getVariable(listString, variableName);
             if (variable != undefined) {
-                statement = new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable);
+                statement = new OutputStatement_1.default(statementCount++, 1, isNewLine, 'variable', variable);
                 handleAdd(statement);
                 restructureStatement();
                 turnOffOptions();
+                clearSourceCode();
+                initInput('Program Input');
                 drawCanvas();
             }
         }
@@ -5390,6 +5437,8 @@ $(document).ready(function () {
         handleAdd(output);
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     });
     // Repetition
@@ -5542,6 +5591,8 @@ $(document).ready(function () {
         handleAdd(statement);
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     });
     function createRepetitionStatement(statementType) {
@@ -5598,18 +5649,14 @@ $(document).ready(function () {
     }
     function validateRepetitionInput() {
         var variableName = $('#chosen-for-loop-variable').find('option').filter(':selected').val();
-        var variable;
         var tempVariable;
         var result;
-        var isCustom = false;
         if (variableName == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
             $('#chosen-for-loop-variable').addClass('input-error');
             return false;
         }
-        variable = findVariable(variableName);
         if ($('.choose-for-loop-value-type').find('option').filter(':selected').val() == 'custom') {
-            isCustom = true;
             var value = $('#chosen-for-loop-value').val();
             tempVariable = createVariableFromValue(value);
             if (tempVariable instanceof String_1.default) {
@@ -5625,14 +5672,12 @@ $(document).ready(function () {
             }
         }
         else {
-            isCustom = false;
             var variableName_1 = $('#chosen-for-loop-value').find('option').filter(':selected').val();
             if (variableName_1 == '') {
                 createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
                 $('#chosen-for-loop-value').addClass('input-error');
                 return false;
             }
-            tempVariable = findVariable(variableName_1);
         }
         return true;
     }
@@ -5703,6 +5748,8 @@ $(document).ready(function () {
         handleAdd(statement);
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     }
     function createStringAssignmentSub() {
@@ -5760,6 +5807,8 @@ $(document).ready(function () {
         handleAdd(statement);
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     }
     $(document).on('change', '.choose-action-type', function () {
@@ -6020,6 +6069,8 @@ $(document).ready(function () {
         handleAdd(assignmentStatement);
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     }
     function createArithmeticAssignment(idx) {
@@ -6164,6 +6215,8 @@ $(document).ready(function () {
         handleAdd(statement);
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     });
     // Canvas logic
@@ -6255,6 +6308,8 @@ $(document).ready(function () {
                         finishAction();
                         restructureStatement();
                         turnOffOptions();
+                        clearSourceCode();
+                        initInput('Program Input');
                         drawCanvas();
                         return;
                     }
@@ -6265,10 +6320,6 @@ $(document).ready(function () {
                     clipboard = returnClick.statement;
                     lastSelectedOption = returnClick.option.optionName;
                     handleDelete();
-                }
-                else if (returnClick.option.optionName == 'EDT') {
-                    clipboard = returnClick.statement;
-                    lastSelectedOption = returnClick.option.optionName;
                 }
             }
         });
@@ -6301,6 +6352,8 @@ $(document).ready(function () {
             finishAction();
             restructureStatement();
             turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
             drawCanvas();
             return;
         }
@@ -6309,6 +6362,8 @@ $(document).ready(function () {
             finishAction();
             restructureStatement();
             turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
             drawCanvas();
             return;
         }
@@ -6324,6 +6379,8 @@ $(document).ready(function () {
         finishAction();
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     }
     function handleDelete() {
@@ -6340,6 +6397,8 @@ $(document).ready(function () {
         finishAction();
         restructureStatement();
         turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
         drawCanvas();
     }
     function finishAction() {
@@ -6447,8 +6506,8 @@ $(document).ready(function () {
         var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, variable2, true, true, 1, new Condition_1.default(variable2, '<', new Integer_1.default('x', 3), true));
         var temp = [];
         temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'i: '));
-        temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable));
-        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'j: '));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'variable', variable));
+        temp.push(new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, ' j: '));
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'variable', variable2));
         nestedForStatement.updateChildStatement(temp);
         temp = [];
@@ -6505,6 +6564,9 @@ $(document).ready(function () {
         var i = new Integer_1.default('i', 0);
         var j = new Integer_1.default('j', 0);
         var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
+        var declareI = new DeclareStatement_1.default(statementCount++, 1, i);
+        var declareJ = new DeclareStatement_1.default(statementCount++, 1, j);
+        var outputStatement = new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'Input square size: ', undefined, undefined);
         var inputStatement = new InputStatement_1.default(statementCount++, 1, variable);
         var forStatement = new ForStatement_1.default(1, statementCount++, undefined, i, true, true, 1, new Condition_1.default(i, '<', variable, false));
         var nestedForStatement = new ForStatement_1.default(1, statementCount++, undefined, j, true, true, 1, new Condition_1.default(j, '<', variable, false));
@@ -6515,7 +6577,10 @@ $(document).ready(function () {
         temp.push(nestedForStatement);
         temp.push(new OutputStatement_1.default(statementCount++, 1, true, 'text', undefined, ''));
         forStatement.updateChildStatement(temp);
+        handleAdd(declareI);
+        handleAdd(declareJ);
         handleAdd(declareStatement);
+        handleAdd(outputStatement);
         handleAdd(inputStatement);
         handleAdd(forStatement);
     }
@@ -6523,6 +6588,7 @@ $(document).ready(function () {
         var variable = new Integer_1.default('number', 0);
         allVariableNames['number'] = true;
         listInteger.push(variable);
+        var outputStatement = new OutputStatement_1.default(statementCount++, 1, false, 'text', undefined, 'Please input a number: ', undefined, undefined);
         var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
         var firstIf = new If_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 0), true));
         var secondIf = new Elif_1.default(1, statementCount++, new Condition_1.default(variable, '==', new Integer_1.default('x', 1), true));
@@ -6540,11 +6606,15 @@ $(document).ready(function () {
         listArithmetic.push(new Arithmetic_1.default(variable, new Integer_1.default('x', 2), undefined, undefined, '%', false, true));
         var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', variable, listArithmetic, undefined, undefined, undefined, undefined, undefined, undefined);
         handleAdd(new DeclareStatement_1.default(statementCount++, 1, variable));
+        handleAdd(outputStatement);
         handleAdd(new InputStatement_1.default(statementCount++, 1, variable));
         handleAdd(assignmentStatement);
         handleAdd(ifStatement);
     }
     // Source Code Logic
+    function clearSourceCode() {
+        $('#source-code-container').val('');
+    }
     $(document).on('click', '#btn-generate-source-code', function () {
         var language = $('.selected-programming-language').find('option').filter(':selected').val();
         var lang;
@@ -6565,18 +6635,29 @@ $(document).ready(function () {
         }
         $('#source-code-container').val('');
         $('#source-code-container').val(lang.generateSourceCode());
-        // resizeTextArea()
     });
-    // function resizeTextArea()  {
-    //     let str = ($('#source-code-container') as any).value;
-    //     let cols = ($('#source-code-container') as any).cols;
-    //     var lineCount = 0;
-    //     let temp = str.split('\n')
-    //     for(let i = 0; i < temp.length; i++) { 
-    //         lineCount +=  Math.ceil( temp[i].length / cols )
-    //     }
-    //     ($('#source-code-container') as any).rows = lineCount + 1;
-    //   };
+    var fontSize = 14;
+    $(document).on('click', '.change-font-size', function () {
+        if ($(this).data('value') == 'plus')
+            $('#source-code-container').css('font-size', ++fontSize + 'px');
+        else
+            $('#source-code-container').css('font-size', --fontSize + 'px');
+        $('#font-size-input').val(fontSize);
+    });
+    $(document).on('change', '#font-size-input', function () {
+        var temp = $('#font-size-input').val();
+        var tempFontSize = parseInt(temp);
+        if (isNaN(tempFontSize) || tempFontSize < 1 || tempFontSize > 40) {
+            fontSize = 14;
+            $('#source-code-container').css('font-size', fontSize + 'px');
+            $('#font-size-input').val(fontSize);
+        }
+        else {
+            fontSize = tempFontSize;
+            $('#source-code-container').css('font-size', fontSize + 'px');
+            $('#font-size-input').val(fontSize);
+        }
+    });
 });
 
 },{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/languages/Cpp":3,"../classes/languages/Cs":4,"../classes/languages/Java":5,"../classes/languages/Python":7,"../classes/statement/AssignmentStatement":8,"../classes/statement/DeclareStatement":9,"../classes/statement/ForStatement":10,"../classes/statement/IfStatement":11,"../classes/statement/InputStatement":12,"../classes/statement/OutputStatement":13,"../classes/statement/SwitchStatement":15,"../classes/statement/WhileStatement":16,"../classes/statement/helper/assignment/Arithmetic":17,"../classes/statement/helper/case/Case":18,"../classes/statement/helper/general/Condition":19,"../classes/statement/helper/ifs/Elif":21,"../classes/statement/helper/ifs/Else":22,"../classes/statement/helper/ifs/If":23,"../classes/statement/helper/options/Option":24,"../classes/variable/Char":26,"../classes/variable/Double":27,"../classes/variable/Float":28,"../classes/variable/Integer":29,"../classes/variable/Long":30,"../classes/variable/String":31}],34:[function(require,module,exports){

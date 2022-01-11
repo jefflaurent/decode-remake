@@ -65,6 +65,7 @@
         #source-code-container {
             padding: 2%;
             border: 0.1vh solid #C4C4C4;
+            font-size: 14px;
             font-family: Consolas;
             background-color: white; 
             resize: none; 
