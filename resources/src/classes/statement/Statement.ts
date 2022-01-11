@@ -51,7 +51,7 @@ class Statement {
     getIndentation(): string {
         let indentation = ''
         let tab = '\t'
-        
+
         for(let i = 1; i < this.level; i++) 
             indentation += tab
         

@@ -131,7 +131,8 @@ var Case = /** @class */ (function (_super) {
         return new ReturnClone_1.default(caseStatement, true);
     };
     Case.prototype.turnOffOption = function () {
-        this.option.isSelectionActive = false;
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
         if (this.childStatement != undefined) {
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].turnOffOption();

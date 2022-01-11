@@ -3,7 +3,12 @@ import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
 import Variable from "../variable/Variable";
 import Case from "./helper/case/Case";
+import Condition from "./helper/general/Condition";
+import Elif from "./helper/ifs/Elif";
+import Else from "./helper/ifs/Else";
+import If from "./helper/ifs/If";
 import Option from "./helper/options/Option";
+import IfStatement from "./IfStatement";
 import Statement from "./Statement";
 
 class SwitchStatement extends Statement {
@@ -130,7 +135,7 @@ class SwitchStatement extends Statement {
 
         if(this.caseStatement != undefined) {
             for(let i = 0; i < this.caseStatement.length; i++)
-                this.caseStatement[i].turnOffOption()
+                (this.caseStatement[i] as unknown as Case).turnOffOption()
         }
     }
 
@@ -210,6 +215,38 @@ class SwitchStatement extends Statement {
         }
 
         sourceCodeContainer.push(this.getIndentation() + '}\n')
+
+        return sourceCodeContainer
+    }
+
+    generatePythonSourceCode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let ifStatement = new IfStatement(this.level, 0, undefined)
+        let ifOperations = []
+        let tempCondition: Condition | undefined  = undefined
+        let tempChildStatement: Statement[] | undefined = undefined 
+        let temp
+
+        for(let i = 0; i < this.caseStatement.length; i++) { 
+            tempCondition = (this.caseStatement[i] as unknown as Case).condition
+            tempChildStatement = this.caseStatement[i].childStatement
+            
+            if(i == 0) 
+                ifOperations.push(new If(this.level, 0, tempCondition, undefined, undefined, tempChildStatement))
+            else {
+                if((this.caseStatement[i] as unknown as Case).isDefault)
+                    ifOperations.push(new Else(this.level, 0, tempChildStatement)) 
+                else 
+                    ifOperations.push(new Elif(this.level, 0, tempCondition, undefined, undefined, tempChildStatement))
+            }
+        }
+
+        ifStatement.updateIfOperations(ifOperations)
+        temp = ifStatement.generatePythonSourceCode()
+        temp = temp.flat(Infinity)
+
+        for(let j =0 ; j < temp.length; j++) 
+            sourceCodeContainer.push(temp[j])
 
         return sourceCodeContainer
     }

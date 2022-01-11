@@ -392,8 +392,10 @@ class ForStatement extends Statement {
         sourceCodeContainer.push(sourceCode)
 
         if(this.childStatement != undefined) {
-            if(this.childStatement.length == 0)
-                sourceCodeContainer.push('\n')
+            if(this.childStatement.length == 0) {
+                let tempPrint = '' + this.getIndentation() + '\t' + `print('')` + '\n'
+                sourceCodeContainer.push(tempPrint)
+            }
             else {
                 for(let i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode()
@@ -405,7 +407,8 @@ class ForStatement extends Statement {
             }
         }
         else {
-            sourceCodeContainer.push('\n')
+            let tempPrint = '' + this.getIndentation() + '\t' + `print('')` + '\n'
+            sourceCodeContainer.push(tempPrint)
         }
 
         return sourceCodeContainer

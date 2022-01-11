@@ -16,6 +16,7 @@ class Else extends Statement {
         this.color = '#2bea15'
         this.option = undefined
         this.init()
+        this.updateChildLevel()
     }
 
     generateId(number: number): string {
@@ -133,7 +134,7 @@ class Else extends Statement {
         sourceCodeContainer.push(this.getIndentation() + '{\n')
 
         if(this.childStatement != undefined) {
-            if(this.childStatement.length == 0)
+            if(this.childStatement.length == 0) 
                 sourceCodeContainer.push('\n')
             else {
                 for(let i = 0; i < this.childStatement.length; i++) {
@@ -250,8 +251,10 @@ class Else extends Statement {
         sourceCodeContainer.push(sourceCode)
 
         if(this.childStatement != undefined) {
-            if(this.childStatement.length == 0)
-                sourceCodeContainer.push('\n')
+            if(this.childStatement.length == 0) {
+                let tempPrint = '' + this.getIndentation() + '\t' + `print('')` + '\n'
+                sourceCodeContainer.push(tempPrint)
+            }
             else {
                 for(let i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode()
@@ -263,7 +266,8 @@ class Else extends Statement {
             }
         }
         else {
-            sourceCodeContainer.push('\n')
+            let tempPrint = '' + this.getIndentation() + '\t' + `print('')` + '\n'
+            sourceCodeContainer.push(tempPrint)
         }
 
         return sourceCodeContainer

@@ -572,6 +572,7 @@ $(document).ready(function () {
     var ifToBeValidated = [];
     var isElsed = false;
     $(document).on('click', '.selection', function () {
+        ifCount = 1;
         if ($(this).data('value') == 'if-else') {
             initInput('Selection Properties');
             createIfSelection();

@@ -32,6 +32,7 @@ var If = /** @class */ (function (_super) {
         _this.color = '#2bea15';
         _this.option = undefined;
         _this.init();
+        _this.updateChildLevel();
         return _this;
     }
     If.prototype.generateId = function (number) {
@@ -277,8 +278,10 @@ var If = /** @class */ (function (_super) {
         }
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
-            if (this.childStatement.length == 0)
-                sourceCodeContainer.push('\n');
+            if (this.childStatement.length == 0) {
+                var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+                sourceCodeContainer.push(tempPrint);
+            }
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode();
@@ -289,7 +292,8 @@ var If = /** @class */ (function (_super) {
             }
         }
         else {
-            sourceCodeContainer.push('\n');
+            var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+            sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
     };

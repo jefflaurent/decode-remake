@@ -1242,8 +1242,10 @@ var ForStatement = /** @class */ (function (_super) {
         sourceCode += 'for ' + this.variable.name + ' in range(0, ' + condition + ', ' + updateValue + '):\n';
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
-            if (this.childStatement.length == 0)
-                sourceCodeContainer.push('\n');
+            if (this.childStatement.length == 0) {
+                var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+                sourceCodeContainer.push(tempPrint);
+            }
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode();
@@ -1254,7 +1256,8 @@ var ForStatement = /** @class */ (function (_super) {
             }
         }
         else {
-            sourceCodeContainer.push('\n');
+            var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+            sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
     };
@@ -1869,7 +1872,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Elif_1 = __importDefault(require("./helper/ifs/Elif"));
+var Else_1 = __importDefault(require("./helper/ifs/Else"));
+var If_1 = __importDefault(require("./helper/ifs/If"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
+var IfStatement_1 = __importDefault(require("./IfStatement"));
 var Statement_1 = __importDefault(require("./Statement"));
 var SwitchStatement = /** @class */ (function (_super) {
     __extends(SwitchStatement, _super);
@@ -2028,11 +2035,37 @@ var SwitchStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(this.getIndentation() + '}\n');
         return sourceCodeContainer;
     };
+    SwitchStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var ifStatement = new IfStatement_1.default(this.level, 0, undefined);
+        var ifOperations = [];
+        var tempCondition = undefined;
+        var tempChildStatement = undefined;
+        var temp;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            tempCondition = this.caseStatement[i].condition;
+            tempChildStatement = this.caseStatement[i].childStatement;
+            if (i == 0)
+                ifOperations.push(new If_1.default(this.level, 0, tempCondition, undefined, undefined, tempChildStatement));
+            else {
+                if (this.caseStatement[i].isDefault)
+                    ifOperations.push(new Else_1.default(this.level, 0, tempChildStatement));
+                else
+                    ifOperations.push(new Elif_1.default(this.level, 0, tempCondition, undefined, undefined, tempChildStatement));
+            }
+        }
+        ifStatement.updateIfOperations(ifOperations);
+        temp = ifStatement.generatePythonSourceCode();
+        temp = temp.flat(Infinity);
+        for (var j = 0; j < temp.length; j++)
+            sourceCodeContainer.push(temp[j]);
+        return sourceCodeContainer;
+    };
     return SwitchStatement;
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":36,"./Statement":14,"./helper/options/Option":24}],16:[function(require,module,exports){
+},{"../../utilities/ReturnClone":36,"./IfStatement":11,"./Statement":14,"./helper/ifs/Elif":21,"./helper/ifs/Else":22,"./helper/ifs/If":23,"./helper/options/Option":24}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2311,8 +2344,10 @@ var WhileStatement = /** @class */ (function (_super) {
         var temp;
         sourceCodeContainer.push(this.getIndentation() + 'while ' + this.firstCondition.generatePythonSourceCode() + ':\n');
         if (this.childStatement != undefined) {
-            if (this.childStatement.length == 0)
-                sourceCodeContainer.push('\n');
+            if (this.childStatement.length == 0) {
+                var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+                sourceCodeContainer.push(tempPrint);
+            }
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode();
@@ -2323,7 +2358,8 @@ var WhileStatement = /** @class */ (function (_super) {
             }
         }
         else {
-            sourceCodeContainer.push('\n');
+            var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+            sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
     };
@@ -2530,7 +2566,8 @@ var Case = /** @class */ (function (_super) {
         return new ReturnClone_1.default(caseStatement, true);
     };
     Case.prototype.turnOffOption = function () {
-        this.option.isSelectionActive = false;
+        if (this.option != undefined)
+            this.option.isSelectionActive = false;
         if (this.childStatement != undefined) {
             for (var i = 0; i < this.childStatement.length; i++)
                 this.childStatement[i].turnOffOption();
@@ -2853,6 +2890,7 @@ var Elif = /** @class */ (function (_super) {
         var _this = _super.call(this, level, statementId, firstCondition, logicalOperator, secondCondition, childStatement) || this;
         _this.statementId = _this.generateId(statementId);
         _this.init();
+        _this.updateChildLevel();
         return _this;
     }
     Elif.prototype.generateId = function (number) {
@@ -3039,8 +3077,10 @@ var Elif = /** @class */ (function (_super) {
         }
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
-            if (this.childStatement.length == 0)
-                sourceCodeContainer.push('\n');
+            if (this.childStatement.length == 0) {
+                var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+                sourceCodeContainer.push(tempPrint);
+            }
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode();
@@ -3051,7 +3091,8 @@ var Elif = /** @class */ (function (_super) {
             }
         }
         else {
-            sourceCodeContainer.push('\n');
+            var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+            sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
     };
@@ -3090,6 +3131,7 @@ var Else = /** @class */ (function (_super) {
         _this.color = '#2bea15';
         _this.option = undefined;
         _this.init();
+        _this.updateChildLevel();
         return _this;
     }
     Else.prototype.generateId = function (number) {
@@ -3274,8 +3316,10 @@ var Else = /** @class */ (function (_super) {
         sourceCode += 'else:\n';
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
-            if (this.childStatement.length == 0)
-                sourceCodeContainer.push('\n');
+            if (this.childStatement.length == 0) {
+                var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+                sourceCodeContainer.push(tempPrint);
+            }
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode();
@@ -3286,7 +3330,8 @@ var Else = /** @class */ (function (_super) {
             }
         }
         else {
-            sourceCodeContainer.push('\n');
+            var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+            sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
     };
@@ -3329,6 +3374,7 @@ var If = /** @class */ (function (_super) {
         _this.color = '#2bea15';
         _this.option = undefined;
         _this.init();
+        _this.updateChildLevel();
         return _this;
     }
     If.prototype.generateId = function (number) {
@@ -3574,8 +3620,10 @@ var If = /** @class */ (function (_super) {
         }
         sourceCodeContainer.push(sourceCode);
         if (this.childStatement != undefined) {
-            if (this.childStatement.length == 0)
-                sourceCodeContainer.push('\n');
+            if (this.childStatement.length == 0) {
+                var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+                sourceCodeContainer.push(tempPrint);
+            }
             else {
                 for (var i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode();
@@ -3586,7 +3634,8 @@ var If = /** @class */ (function (_super) {
             }
         }
         else {
-            sourceCodeContainer.push('\n');
+            var tempPrint = '' + this.getIndentation() + '\t' + "print('')" + '\n';
+            sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
     };
@@ -4771,6 +4820,7 @@ $(document).ready(function () {
     var ifToBeValidated = [];
     var isElsed = false;
     $(document).on('click', '.selection', function () {
+        ifCount = 1;
         if ($(this).data('value') == 'if-else') {
             initInput('Selection Properties');
             createIfSelection();

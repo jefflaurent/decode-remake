@@ -17,7 +17,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Elif_1 = __importDefault(require("./helper/ifs/Elif"));
+var Else_1 = __importDefault(require("./helper/ifs/Else"));
+var If_1 = __importDefault(require("./helper/ifs/If"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
+var IfStatement_1 = __importDefault(require("./IfStatement"));
 var Statement_1 = __importDefault(require("./Statement"));
 var SwitchStatement = /** @class */ (function (_super) {
     __extends(SwitchStatement, _super);
@@ -174,6 +178,32 @@ var SwitchStatement = /** @class */ (function (_super) {
                 sourceCodeContainer.push(temp[j]);
         }
         sourceCodeContainer.push(this.getIndentation() + '}\n');
+        return sourceCodeContainer;
+    };
+    SwitchStatement.prototype.generatePythonSourceCode = function () {
+        var sourceCodeContainer = [];
+        var ifStatement = new IfStatement_1.default(this.level, 0, undefined);
+        var ifOperations = [];
+        var tempCondition = undefined;
+        var tempChildStatement = undefined;
+        var temp;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            tempCondition = this.caseStatement[i].condition;
+            tempChildStatement = this.caseStatement[i].childStatement;
+            if (i == 0)
+                ifOperations.push(new If_1.default(this.level, 0, tempCondition, undefined, undefined, tempChildStatement));
+            else {
+                if (this.caseStatement[i].isDefault)
+                    ifOperations.push(new Else_1.default(this.level, 0, tempChildStatement));
+                else
+                    ifOperations.push(new Elif_1.default(this.level, 0, tempCondition, undefined, undefined, tempChildStatement));
+            }
+        }
+        ifStatement.updateIfOperations(ifOperations);
+        temp = ifStatement.generatePythonSourceCode();
+        temp = temp.flat(Infinity);
+        for (var j = 0; j < temp.length; j++)
+            sourceCodeContainer.push(temp[j]);
         return sourceCodeContainer;
     };
     return SwitchStatement;

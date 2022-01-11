@@ -18,20 +18,20 @@
                         <!-- Font size config and Download  -->
                         <div class="row p-2 mt-1">
                             <div class="col-12 col-sm-12 d-flex justify-content-end">
-                                <div class="col-9 col-sm-9 d-flex justify-content-evenly align-items-center">
-                                    <div class="col-3 col-sm-8"></div>
-                                    <div class="col-3 col-sm-1 d-flex justify-content-center">
+                                <div class="col-9 col-sm-9 col-xl-9 d-flex justify-content-evenly align-items-center">
+                                    <div class="col-3 col-sm-8 col-xl-9"></div>
+                                    <div class="col-3 col-sm-1 col-xl-1 d-flex justify-content-center">
                                         <i class="fas fa-minus change-font-size col-12 col-sm-12 d-flex justify-content-center" data-value="minus"></i>
                                     </div>
-                                    <div class="col-3 col-sm-2">
+                                    <div class="col-3 col-sm-2 col-xl-1">
                                         <input type="text" name="" id="font-size-input" class="form-control text-center col-sm-12 col-12" value="14" maxlength="2">
                                     </div>
-                                    <div class="col-3 col-sm-1 d-flex justify-content-center">
+                                    <div class="col-3 col-sm-1 col-xl-1 d-flex justify-content-center">
                                         <i class="fas fa-plus change-font-size col-12 col-sm-12 d-flex justify-content-center" data-value="plus"></i>
                                     </div>
                                 </div>
-                                <div class="col-0 col-sm-1"></div>
-                                <form action="/decode/download" class="d-flex justify-content-end align-items-center col-3 col-sm-2" method="post" style="background-color: yellow">
+                                <div class="col-0 col-sm-1 col-xl-1"></div>
+                                <form action="/decode/download" class="d-flex justify-content-end align-items-center col-3 col-sm-2 col-xl-2" method="post" style="background-color: yellow">
                                     {{ csrf_field() }}
                                     <button type="submit" class="btn btn-primary col-12 col-sm-12 d-flex justify-content-center align-items-center">Download</button>
                                 </form>

@@ -146,7 +146,8 @@ class Case extends Statement {
     }
 
     turnOffOption(): void {
-        this.option.isSelectionActive = false
+        if(this.option != undefined)
+            this.option.isSelectionActive = false
 
         if(this.childStatement != undefined) {
             for(let i = 0; i < this.childStatement.length; i++)

@@ -11,6 +11,7 @@ class Elif extends If {
         super(level, statementId, firstCondition, logicalOperator, secondCondition, childStatement)
         this.statementId = this.generateId(statementId)
         this.init()
+        this.updateChildLevel()
     }
 
     generateId(number: number): string  {
@@ -242,8 +243,10 @@ class Elif extends If {
         sourceCodeContainer.push(sourceCode)
 
         if(this.childStatement != undefined) {
-            if(this.childStatement.length == 0)
-                sourceCodeContainer.push('\n')
+            if(this.childStatement.length == 0) {
+                let tempPrint = '' + this.getIndentation() + '\t' + `print('')` + '\n'
+                sourceCodeContainer.push(tempPrint)
+            }
             else {
                 for(let i = 0; i < this.childStatement.length; i++) {
                     temp = this.childStatement[i].generatePythonSourceCode()
@@ -255,7 +258,8 @@ class Elif extends If {
             }
         }
         else {
-            sourceCodeContainer.push('\n')
+            let tempPrint = '' + this.getIndentation() + '\t' + `print('')` + '\n'
+            sourceCodeContainer.push(tempPrint)
         }
 
         return sourceCodeContainer
