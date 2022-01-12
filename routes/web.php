@@ -17,6 +17,8 @@ Route::get('/', function () {
 
 Route::get('/decode', 'DecodeController@home')->name('home');
 
+Route::post('/decode/create', 'DecodeController@create');
+
 Route::post('/decode/download', 'SourceCodeController@download');
 
 Route::get('/login', 'AuthController@showLogin')->name('login')->middleware('guest');

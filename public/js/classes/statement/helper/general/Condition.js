@@ -151,6 +151,36 @@ var Condition = /** @class */ (function () {
         }
         return sourceCode;
     };
+    Condition.prototype.parseAttributes = function () {
+        var firstVariable;
+        var secondVariable;
+        if (this.firstVariable.type == 'int')
+            firstVariable = Object.assign(new Integer_1.default(undefined, undefined), this.firstVariable);
+        else if (this.firstVariable.type == 'double')
+            firstVariable = Object.assign(new Double_1.default(undefined, undefined), this.firstVariable);
+        else if (this.firstVariable.type == 'long')
+            firstVariable = Object.assign(new Long_1.default(undefined, undefined), this.firstVariable);
+        else if (this.firstVariable.type == 'float')
+            firstVariable = Object.assign(new Float_1.default(undefined, undefined), this.firstVariable);
+        else if (this.firstVariable.type == 'char')
+            firstVariable = Object.assign(new Char_1.default(undefined, undefined), this.firstVariable);
+        else
+            firstVariable = Object.assign(new String_1.default(undefined, undefined), this.firstVariable);
+        if (this.secondVariable.type == 'int')
+            secondVariable = Object.assign(new Integer_1.default(undefined, undefined), this.secondVariable);
+        else if (this.secondVariable.type == 'double')
+            secondVariable = Object.assign(new Double_1.default(undefined, undefined), this.secondVariable);
+        else if (this.secondVariable.type == 'long')
+            secondVariable = Object.assign(new Long_1.default(undefined, undefined), this.secondVariable);
+        else if (this.secondVariable.type == 'float')
+            secondVariable = Object.assign(new Float_1.default(undefined, undefined), this.secondVariable);
+        else if (this.secondVariable.type == 'char')
+            secondVariable = Object.assign(new Char_1.default(undefined, undefined), this.secondVariable);
+        else
+            secondVariable = Object.assign(new String_1.default(undefined, undefined), this.secondVariable);
+        this.firstVariable = firstVariable;
+        this.secondVariable = secondVariable;
+    };
     return Condition;
 }());
 exports.default = Condition;

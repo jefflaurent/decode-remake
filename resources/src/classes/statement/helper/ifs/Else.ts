@@ -2,7 +2,15 @@ import ReturnClick from "../../../../utilities/ReturnClick"
 import ReturnClone from "../../../../utilities/ReturnClone"
 import Canvas from "../../../canvas/Canvas"
 import Variable from "../../../variable/Variable"
+import AssignmentStatement from "../../AssignmentStatement"
+import DeclareStatement from "../../DeclareStatement"
+import ForStatement from "../../ForStatement"
+import IfStatement from "../../IfStatement"
+import InputStatement from "../../InputStatement"
+import OutputStatement from "../../OutputStatement"
 import Statement from "../../Statement"
+import SwitchStatement from "../../SwitchStatement"
+import WhileStatement from "../../WhileStatement"
 import Option from "../options/Option"
 
 class Else extends Statement {
@@ -271,6 +279,65 @@ class Else extends Statement {
         }
 
         return sourceCodeContainer
+    }
+
+    toJSON() {
+        return {
+            statement: 'else',
+            level: this.level, 
+            statementId: this.statementId, 
+            childStatement: this.childStatement
+        }
+    }
+
+    parseChild() {
+        let newChildStatement: Statement[] = []
+        let tempChild: Statement = undefined
+        let object: any = undefined
+
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                object = this.childStatement[i]
+                if(object.statement == 'declare') {
+                    tempChild = Object.assign(new DeclareStatement(undefined, undefined, undefined), object);
+                    (tempChild as DeclareStatement).parseAttributes();
+                }
+                else if(object.statement == 'input') {
+                    tempChild = Object.assign(new InputStatement(undefined, undefined, undefined), object);
+                    (tempChild as InputStatement).parseAttributes();
+                }
+                else if(object.statement == 'output') {
+                    tempChild = Object.assign(new OutputStatement(undefined, undefined, undefined, undefined), object);
+                    (tempChild as OutputStatement).parseAttributes();
+                }
+                else if(object.statement == 'assignment') {
+                    tempChild = Object.assign(new AssignmentStatement(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+                    (tempChild as AssignmentStatement).parseAttributes();
+                }
+                else if(object.statement == 'ifstatement') {
+                    tempChild = Object.assign(new IfStatement(undefined, undefined, undefined), object);
+                    (tempChild as IfStatement).parseChild();
+                }
+                else if(object.statement == 'for') {
+                    tempChild = Object.assign(new ForStatement(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+                    (tempChild as ForStatement).parseChild();
+                    (tempChild as ForStatement).parseAttributes();
+                }
+                else if(object.statement == 'while') {
+                    tempChild = Object.assign(new WhileStatement(undefined, undefined, undefined, undefined, undefined), object);
+                    (tempChild as WhileStatement).parseChild();
+                    (tempChild as WhileStatement).parseAttributes();
+                }
+                else if(object.statement == 'switch') {
+                    tempChild = Object.assign(new SwitchStatement(undefined, undefined, undefined, undefined), object);
+                    (tempChild as SwitchStatement).parseChild();
+                    (tempChild as SwitchStatement).parseAttributes();
+                }
+                newChildStatement.push(tempChild)
+            }
+    
+            this.updateChildStatement(newChildStatement)
+        }
     }
 }
 

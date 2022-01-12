@@ -1,18 +1,28 @@
+import { timers } from "jquery";
 import ReturnClick from "../../utilities/ReturnClick";
 import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
+import Char from "../variable/Char";
 import Double from "../variable/Double";
 import Float from "../variable/Float";
 import Integer from "../variable/Integer";
 import Long from "../variable/Long";
+import String from "../variable/String";
 import Variable from "../variable/Variable";
+import AssignmentStatement from "./AssignmentStatement";
+import DeclareStatement from "./DeclareStatement";
 import Condition from "./helper/general/Condition";
 import Option from "./helper/options/Option";
+import IfStatement from "./IfStatement";
+import InputStatement from "./InputStatement";
+import OutputStatement from "./OutputStatement";
 import Statement from "./Statement";
+import SwitchStatement from "./SwitchStatement";
+import WhileStatement from "./WhileStatement";
 
 class ForStatement extends Statement {
     
-    variable: Integer | Float | Double | Long
+    variable: Variable
     childStatement: Statement[] | undefined
     variableIsNew: boolean
     isIncrement: boolean
@@ -20,7 +30,7 @@ class ForStatement extends Statement {
     condition: Condition
     option: Option[]
 
-    constructor(level: number, statementId: number, childStatement: Statement[] | undefined, variable: Integer | Float | Double | Long, 
+    constructor(level: number, statementId: number, childStatement: Statement[] | undefined, variable: Variable, 
         variableIsNew: boolean, isIncrement: boolean, addValueBy: number, condition: Condition) {
         super(level)
         this.statementId = this.generateId(statementId)
@@ -412,6 +422,90 @@ class ForStatement extends Statement {
         }
 
         return sourceCodeContainer
+    }
+
+    toJSON() {
+        return {
+            statement: 'for',
+            statementId: this.statementId,
+            level: this.level,
+            childStatement: this.childStatement,
+            variable: this.variable,
+            variableIsNew: this.variableIsNew,
+            isIncrement: this.isIncrement,
+            addValueBy: this.addValueBy,
+            condition: this.condition
+        }
+    }
+
+    parseChild() {
+        let newChildStatement: Statement[] = []
+        let tempChild: Statement = undefined
+        let object: any = undefined
+
+        if(this.childStatement != undefined) {
+            for(let i = 0; i < this.childStatement.length; i++) {
+                object = this.childStatement[i]
+                if(object.statement == 'declare') {
+                    tempChild = Object.assign(new DeclareStatement(undefined, undefined, undefined), object);
+                    (tempChild as DeclareStatement).parseAttributes();
+                }
+                else if(object.statement == 'input') {
+                    tempChild = Object.assign(new InputStatement(undefined, undefined, undefined), object);
+                    (tempChild as InputStatement).parseAttributes();
+                }
+                else if(object.statement == 'output') {
+                    tempChild = Object.assign(new OutputStatement(undefined, undefined, undefined, undefined), object);
+                    (tempChild as OutputStatement).parseAttributes();
+                }
+                else if(object.statement == 'assignment') {
+                    tempChild = Object.assign(new AssignmentStatement(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+                    (tempChild as AssignmentStatement).parseAttributes();
+                }
+                else if(object.statement == 'ifstatement') {
+                    tempChild = Object.assign(new IfStatement(undefined, undefined, undefined), object);
+                    (tempChild as IfStatement).parseChild();
+                }
+                else if(object.statement == 'for') {
+                    tempChild = Object.assign(new ForStatement(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+                    (tempChild as ForStatement).parseChild();
+                    (tempChild as ForStatement).parseAttributes();
+                }
+                else if(object.statement == 'while') {
+                    tempChild = Object.assign(new WhileStatement(undefined, undefined, undefined, undefined, undefined), object);
+                    (tempChild as WhileStatement).parseChild();
+                    (tempChild as WhileStatement).parseAttributes();
+                }
+                else if(object.statement == 'switch') {
+                    tempChild = Object.assign(new SwitchStatement(undefined, undefined, undefined, undefined), object);
+                    (tempChild as SwitchStatement).parseChild();
+                    (tempChild as SwitchStatement).parseAttributes();
+                }
+                newChildStatement.push(tempChild)
+            }
+    
+            this.updateChildStatement(newChildStatement)
+        }
+    }
+
+    parseAttributes() {
+        let variable: Variable
+        let condition: Condition
+
+        if((this.variable as any).type  == 'int') 
+            variable = Object.assign(new Integer(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'double') 
+            variable = Object.assign(new Double(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'long') 
+            variable = Object.assign(new Long(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'float') 
+            variable = Object.assign(new Float(undefined, undefined), this.variable)
+
+        condition = Object.assign(new Condition(undefined, undefined, undefined, undefined), this.condition)
+        condition.parseAttributes()
+
+        this.variable = variable
+        this.condition = condition
     }
 }
 

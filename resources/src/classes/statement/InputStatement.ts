@@ -162,6 +162,34 @@ class InputStatement extends Statement {
 
         return sourceCodeContainer
     }
+
+    toJSON() {
+        return {
+            statement: 'input',
+            statementId: this.statementId,
+            level: this.level,
+            variable: this.variable
+        }
+    }
+
+    parseAttributes() {
+        let variable: Variable
+
+        if((this.variable as any).type  == 'int') 
+            variable = Object.assign(new Integer(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'double') 
+            variable = Object.assign(new Double(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'long') 
+            variable = Object.assign(new Long(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'float') 
+            variable = Object.assign(new Float(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'char') 
+            variable = Object.assign(new Char(undefined, undefined), this.variable)
+        else 
+            variable = Object.assign(new String(undefined, undefined), this.variable)
+
+        this.variable = variable
+    }
 }
 
 export default InputStatement

@@ -2460,4 +2460,91 @@ $(document).ready(function () {
             $('#font-size-input').val(fontSize);
         }
     });
+    function parseJSON(object) {
+        var statement;
+        if (object.statement == 'declare') {
+            statement = Object.assign(new DeclareStatement_1.default(undefined, undefined, undefined), object);
+            statement.parseAttributes();
+        }
+        else if (object.statement == 'input') {
+            statement = Object.assign(new InputStatement_1.default(undefined, undefined, undefined), object);
+            statement.parseAttributes();
+        }
+        else if (object.statement == 'output') {
+            statement = Object.assign(new OutputStatement_1.default(undefined, undefined, undefined, undefined), object);
+            statement.parseAttributes();
+        }
+        else if (object.statement == 'assignment') {
+            statement = Object.assign(new AssignmentStatement_1.default(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+            statement.parseAttributes();
+        }
+        else if (object.statement == 'ifstatement') {
+            statement = Object.assign(new IfStatement_1.default(undefined, undefined, undefined), object);
+            statement.parseChild();
+        }
+        else if (object.statement == 'for') {
+            statement = Object.assign(new ForStatement_1.default(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+            statement.parseChild();
+            statement.parseAttributes();
+        }
+        else if (object.statement == 'while') {
+            statement = Object.assign(new WhileStatement_1.default(undefined, undefined, undefined, undefined, undefined), object);
+            statement.parseChild();
+            statement.parseAttributes();
+        }
+        else if (object.statement == 'switch') {
+            statement = Object.assign(new SwitchStatement_1.default(undefined, undefined, undefined, undefined), object);
+            statement.parseChild();
+            statement.parseAttributes();
+        }
+        console.log(statement);
+    }
+    // Manage project logic
+    $(document).on('click', '#create-project', function () {
+        console.log('before parse');
+        for (var i = 0; i < listStatement.length; i++) {
+            console.log(listStatement[i]);
+        }
+        console.log('--');
+        var temp = JSON.stringify(listStatement);
+        console.log(temp);
+        console.log('after parse');
+        var parsed = JSON.parse(temp);
+        console.log(parsed);
+        for (var i = 0; i < parsed.length; i++) {
+            parseJSON(parsed[i]);
+        }
+        // console.log(parsed[0].option);
+        // statementId: number, level: number, variable: Variable
+        // let variable = new Integer(parsed[0].variable.name, parsed[0].variable.value);
+        // let declare = new DeclareStatement(parsed[0].statementId, parsed[0].level, variable);
+        // handleAdd(declare)
+        // declare.writeToCanvas(blockCanvasInstance)
+        // $.ajax({
+        //     type: 'POST',
+        //     url: '/decode/save',
+        //     data: {
+        //         _token: $('input[name=_token]').val(),
+        //         user_id: $(this).data("value")
+        //     },
+        //     success: function(data) {
+        //         let user = data.user; 
+        //         let role = data.role;
+        //         let user_group_list = data.user_group_list;
+        //         $('#username-field').val(user.username);
+        //         $('#fullname-field').data("value", user.user_id).val(user.fullname);
+        //         $('#role-field').val(role);
+        //         $('#join-date-field').val(user.created_at);
+        //         $('#last-login-field').val(user.last_login);
+        //         $('#group-list-field').empty();
+        //         // for(group of user_group_list) {
+        //         //     let element = $('<option></option>').data('value', group.group_id).text(group.group_name);
+        //         //     $('#group-list-field').append(element);
+        //         // }
+        //         // clear position lists
+        //         $('#group-position-container').empty();
+        //         $('#user-position-container').empty();
+        //     }
+        // })
+    });
 });

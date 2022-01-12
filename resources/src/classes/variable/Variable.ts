@@ -24,5 +24,4 @@ export default class Variable {
     }
 
     validateValue(): Return { return new Return(true, '') }
-
 }

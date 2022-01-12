@@ -17,4 +17,12 @@ export default class Long extends Variable {
         else 
             return new Return(true, '')
     }
+
+    toJSON() {
+        return {
+            type: 'long',
+            name: this.name,
+            value: this.value
+        }
+    }
 }

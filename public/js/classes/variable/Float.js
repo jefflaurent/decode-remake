@@ -35,6 +35,13 @@ var Float = /** @class */ (function (_super) {
         else
             return new Return_1.default(true, '');
     };
+    Float.prototype.toJSON = function () {
+        return {
+            type: 'float',
+            name: this.name,
+            value: this.value
+        };
+    };
     return Float;
 }(Variable_1.default));
 exports.default = Float;

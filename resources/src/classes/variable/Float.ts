@@ -19,4 +19,12 @@ export default class Float extends Variable {
         else 
             return new Return(true, '')
     }
+
+    toJSON() {
+        return {
+            type: 'float',
+            name: this.name,
+            value: this.value
+        }
+    }
 }

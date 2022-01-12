@@ -33,6 +33,13 @@ var Long = /** @class */ (function (_super) {
         else
             return new Return_1.default(true, '');
     };
+    Long.prototype.toJSON = function () {
+        return {
+            type: 'long',
+            name: this.name,
+            value: this.value
+        };
+    };
     return Long;
 }(Variable_1.default));
 exports.default = Long;

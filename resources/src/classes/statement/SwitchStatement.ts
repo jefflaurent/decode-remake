@@ -1,6 +1,12 @@
 import ReturnClick from "../../utilities/ReturnClick";
 import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
+import Char from "../variable/Char";
+import Double from "../variable/Double";
+import Float from "../variable/Float";
+import Integer from "../variable/Integer";
+import Long from "../variable/Long";
+import String from "../variable/String";
 import Variable from "../variable/Variable";
 import Case from "./helper/case/Case";
 import Condition from "./helper/general/Condition";
@@ -249,6 +255,53 @@ class SwitchStatement extends Statement {
             sourceCodeContainer.push(temp[j])
 
         return sourceCodeContainer
+    }
+
+    toJSON() {
+        return {
+            statement: 'switch',
+            level: this.level, 
+            statementId: this.statementId, 
+            variable: this.variable, 
+            caseStatement: this.caseStatement
+        }
+    }
+
+    parseChild() {
+        let newCaseStatement: Statement[] = []
+        let tempCase: Statement = undefined
+        let object: any = undefined
+
+        for(let i = 0; i < this.caseStatement.length; i++) {
+            object = this.caseStatement[i]
+            
+            tempCase = Object.assign(new Case(undefined, undefined, undefined, undefined, undefined), object);
+            (tempCase as Case).parseChild();
+            (tempCase as Case).parseAttributes();
+
+            newCaseStatement.push(tempCase)
+        }
+
+        this.updateCaseStatement(newCaseStatement)
+    }
+
+    parseAttributes() {
+        let variable: Variable
+
+        if((this.variable as any).type  == 'int') 
+            variable = Object.assign(new Integer(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'double') 
+            variable = Object.assign(new Double(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'long') 
+            variable = Object.assign(new Long(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'float') 
+            variable = Object.assign(new Float(undefined, undefined), this.variable)
+        else if((this.variable as any).type  == 'char') 
+            variable = Object.assign(new Char(undefined, undefined), this.variable)
+        else 
+            variable = Object.assign(new String(undefined, undefined), this.variable)
+
+        this.variable = variable
     }
 }
 

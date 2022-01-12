@@ -19,4 +19,12 @@ export default class Double extends Variable {
         else 
             return new Return(true, '')
     }
+
+    toJSON() {
+        return {
+            type: 'double',
+            name: this.name,
+            value: this.value
+        }
+    }
 }

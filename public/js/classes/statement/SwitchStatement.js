@@ -17,6 +17,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Char_1 = __importDefault(require("../variable/Char"));
+var Double_1 = __importDefault(require("../variable/Double"));
+var Float_1 = __importDefault(require("../variable/Float"));
+var Integer_1 = __importDefault(require("../variable/Integer"));
+var Long_1 = __importDefault(require("../variable/Long"));
+var String_1 = __importDefault(require("../variable/String"));
+var Case_1 = __importDefault(require("./helper/case/Case"));
 var Elif_1 = __importDefault(require("./helper/ifs/Elif"));
 var Else_1 = __importDefault(require("./helper/ifs/Else"));
 var If_1 = __importDefault(require("./helper/ifs/If"));
@@ -205,6 +212,44 @@ var SwitchStatement = /** @class */ (function (_super) {
         for (var j = 0; j < temp.length; j++)
             sourceCodeContainer.push(temp[j]);
         return sourceCodeContainer;
+    };
+    SwitchStatement.prototype.toJSON = function () {
+        return {
+            statement: 'switch',
+            level: this.level,
+            statementId: this.statementId,
+            variable: this.variable,
+            caseStatement: this.caseStatement
+        };
+    };
+    SwitchStatement.prototype.parseChild = function () {
+        var newCaseStatement = [];
+        var tempCase = undefined;
+        var object = undefined;
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            object = this.caseStatement[i];
+            tempCase = Object.assign(new Case_1.default(undefined, undefined, undefined, undefined, undefined), object);
+            tempCase.parseChild();
+            tempCase.parseAttributes();
+            newCaseStatement.push(tempCase);
+        }
+        this.updateCaseStatement(newCaseStatement);
+    };
+    SwitchStatement.prototype.parseAttributes = function () {
+        var variable;
+        if (this.variable.type == 'int')
+            variable = Object.assign(new Integer_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'double')
+            variable = Object.assign(new Double_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'long')
+            variable = Object.assign(new Long_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'float')
+            variable = Object.assign(new Float_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'char')
+            variable = Object.assign(new Char_1.default(undefined, undefined), this.variable);
+        else
+            variable = Object.assign(new String_1.default(undefined, undefined), this.variable);
+        this.variable = variable;
     };
     return SwitchStatement;
 }(Statement_1.default));

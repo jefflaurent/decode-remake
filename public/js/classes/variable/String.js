@@ -26,6 +26,13 @@ var String = /** @class */ (function (_super) {
     String.prototype.validateValue = function () {
         return new Return_1.default(true, '');
     };
+    String.prototype.toJSON = function () {
+        return {
+            type: 'string',
+            name: this.name,
+            value: this.value
+        };
+    };
     return String;
 }(Variable_1.default));
 exports.default = String;

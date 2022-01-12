@@ -35,6 +35,13 @@ var Integer = /** @class */ (function (_super) {
         else
             return new Return_1.default(true, '');
     };
+    Integer.prototype.toJSON = function () {
+        return {
+            type: 'int',
+            name: this.name,
+            value: this.value
+        };
+    };
     return Integer;
 }(Variable_1.default));
 exports.default = Integer;

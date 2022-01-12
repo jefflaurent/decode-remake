@@ -29,6 +29,13 @@ var Char = /** @class */ (function (_super) {
         else
             return new Return_1.default(true, '');
     };
+    Char.prototype.toJSON = function () {
+        return {
+            type: 'char',
+            name: this.name,
+            value: this.value
+        };
+    };
     return Char;
 }(Variable_1.default));
 exports.default = Char;

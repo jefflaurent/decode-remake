@@ -2,6 +2,11 @@ import ReturnClick from "../../utilities/ReturnClick";
 import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
 import Char from "../variable/Char";
+import Double from "../variable/Double";
+import Float from "../variable/Float";
+import Integer from "../variable/Integer";
+import Long from "../variable/Long";
+import String from "../variable/String";
 import Variable from "../variable/Variable";
 import Arithmetic from "./helper/assignment/Arithmetic";
 import Option from "./helper/options/Option";
@@ -343,6 +348,90 @@ class AssignmentStatement extends Statement {
         }
 
         return sourceCodeContainer
+    }
+
+    toJSON() {
+        return {
+            statement: 'assignment',
+            statementId: this.statementId, 
+            level: this.level, 
+            type: this.type, 
+            targetVariable: this.targetVariable, 
+            listArithmetic: this.listArithmetic, 
+            listOperator: this.listOperator,
+            listIsCustom: this.listIsCustom, 
+            variable: this.variable, 
+            isCustomValue: this.isCustomValue,
+            start: this.start,
+            length: this.length
+        }
+    }
+
+    parseAttributes() {
+        let targetVariable: Variable
+
+        if((this.targetVariable as any).type  == 'int') 
+            targetVariable = Object.assign(new Integer(undefined, undefined), this.targetVariable)
+        else if((this.targetVariable as any).type  == 'double') 
+            targetVariable = Object.assign(new Double(undefined, undefined), this.targetVariable)
+        else if((this.targetVariable as any).type  == 'long') 
+            targetVariable = Object.assign(new Long(undefined, undefined), this.targetVariable)
+        else if((this.targetVariable as any).type  == 'float') 
+            targetVariable = Object.assign(new Float(undefined, undefined), this.targetVariable)
+        else if((this.targetVariable as any).type  == 'char') 
+            targetVariable = Object.assign(new Char(undefined, undefined), this.targetVariable)
+        else 
+            targetVariable = Object.assign(new String(undefined, undefined), this.targetVariable)
+
+        this.targetVariable = targetVariable
+
+        if(this.variable != undefined) {
+            let variable: Variable
+
+            if((this.variable as any).type  == 'int') 
+                variable = Object.assign(new Integer(undefined, undefined), this.variable)
+            else if((this.variable as any).type  == 'double') 
+                variable = Object.assign(new Double(undefined, undefined), this.variable)
+            else if((this.variable as any).type  == 'long') 
+                variable = Object.assign(new Long(undefined, undefined), this.variable)
+            else if((this.variable as any).type  == 'float') 
+                variable = Object.assign(new Float(undefined, undefined), this.variable)
+            else if((this.variable as any).type  == 'char') 
+                variable = Object.assign(new Char(undefined, undefined), this.variable)
+            else 
+                variable = Object.assign(new String(undefined, undefined), this.variable)
+    
+            this.variable = variable
+        }
+
+        if(this.listArithmetic != undefined) {
+            let tempListArithmetic: any[] = []
+            let temp: any
+
+            for(let i = 0; i < this.listArithmetic.length; i++) {
+                temp = this.listArithmetic[i]
+
+                if((temp as any).type  == 'int') 
+                    temp = Object.assign(new Integer(undefined, undefined), temp)
+                else if((temp as any).type  == 'double') 
+                    temp = Object.assign(new Double(undefined, undefined), temp)
+                else if((temp as any).type  == 'long') 
+                    temp = Object.assign(new Long(undefined, undefined), temp)
+                else if((temp as any).type  == 'float') 
+                    temp = Object.assign(new Float(undefined, undefined), temp)
+                else if((temp as any).type  == 'char') 
+                    temp = Object.assign(new Char(undefined, undefined), temp)
+                else if((temp as any).type  == 'string') 
+                    temp = Object.assign(new String(undefined, undefined), temp)
+                else {
+                    temp = Object.assign(new Arithmetic(undefined, undefined, undefined, undefined, undefined, undefined, undefined ), temp);
+                    (temp as Arithmetic).parseAttributes()
+                }
+                tempListArithmetic.push(temp)
+            }
+
+            this.listArithmetic = tempListArithmetic
+        }
     }
 }
 

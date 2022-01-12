@@ -17,8 +17,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Double_1 = __importDefault(require("../variable/Double"));
+var Float_1 = __importDefault(require("../variable/Float"));
+var Integer_1 = __importDefault(require("../variable/Integer"));
+var Long_1 = __importDefault(require("../variable/Long"));
+var AssignmentStatement_1 = __importDefault(require("./AssignmentStatement"));
+var DeclareStatement_1 = __importDefault(require("./DeclareStatement"));
+var Condition_1 = __importDefault(require("./helper/general/Condition"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
+var IfStatement_1 = __importDefault(require("./IfStatement"));
+var InputStatement_1 = __importDefault(require("./InputStatement"));
+var OutputStatement_1 = __importDefault(require("./OutputStatement"));
 var Statement_1 = __importDefault(require("./Statement"));
+var SwitchStatement_1 = __importDefault(require("./SwitchStatement"));
+var WhileStatement_1 = __importDefault(require("./WhileStatement"));
 var ForStatement = /** @class */ (function (_super) {
     __extends(ForStatement, _super);
     function ForStatement(level, statementId, childStatement, variable, variableIsNew, isIncrement, addValueBy, condition) {
@@ -348,6 +360,82 @@ var ForStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(tempPrint);
         }
         return sourceCodeContainer;
+    };
+    ForStatement.prototype.toJSON = function () {
+        return {
+            statement: 'for',
+            statementId: this.statementId,
+            level: this.level,
+            childStatement: this.childStatement,
+            variable: this.variable,
+            variableIsNew: this.variableIsNew,
+            isIncrement: this.isIncrement,
+            addValueBy: this.addValueBy,
+            condition: this.condition
+        };
+    };
+    ForStatement.prototype.parseChild = function () {
+        var newChildStatement = [];
+        var tempChild = undefined;
+        var object = undefined;
+        if (this.childStatement != undefined) {
+            for (var i = 0; i < this.childStatement.length; i++) {
+                object = this.childStatement[i];
+                if (object.statement == 'declare') {
+                    tempChild = Object.assign(new DeclareStatement_1.default(undefined, undefined, undefined), object);
+                    tempChild.parseAttributes();
+                }
+                else if (object.statement == 'input') {
+                    tempChild = Object.assign(new InputStatement_1.default(undefined, undefined, undefined), object);
+                    tempChild.parseAttributes();
+                }
+                else if (object.statement == 'output') {
+                    tempChild = Object.assign(new OutputStatement_1.default(undefined, undefined, undefined, undefined), object);
+                    tempChild.parseAttributes();
+                }
+                else if (object.statement == 'assignment') {
+                    tempChild = Object.assign(new AssignmentStatement_1.default(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+                    tempChild.parseAttributes();
+                }
+                else if (object.statement == 'ifstatement') {
+                    tempChild = Object.assign(new IfStatement_1.default(undefined, undefined, undefined), object);
+                    tempChild.parseChild();
+                }
+                else if (object.statement == 'for') {
+                    tempChild = Object.assign(new ForStatement(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined), object);
+                    tempChild.parseChild();
+                    tempChild.parseAttributes();
+                }
+                else if (object.statement == 'while') {
+                    tempChild = Object.assign(new WhileStatement_1.default(undefined, undefined, undefined, undefined, undefined), object);
+                    tempChild.parseChild();
+                    tempChild.parseAttributes();
+                }
+                else if (object.statement == 'switch') {
+                    tempChild = Object.assign(new SwitchStatement_1.default(undefined, undefined, undefined, undefined), object);
+                    tempChild.parseChild();
+                    tempChild.parseAttributes();
+                }
+                newChildStatement.push(tempChild);
+            }
+            this.updateChildStatement(newChildStatement);
+        }
+    };
+    ForStatement.prototype.parseAttributes = function () {
+        var variable;
+        var condition;
+        if (this.variable.type == 'int')
+            variable = Object.assign(new Integer_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'double')
+            variable = Object.assign(new Double_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'long')
+            variable = Object.assign(new Long_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'float')
+            variable = Object.assign(new Float_1.default(undefined, undefined), this.variable);
+        condition = Object.assign(new Condition_1.default(undefined, undefined, undefined, undefined), this.condition);
+        condition.parseAttributes();
+        this.variable = variable;
+        this.condition = condition;
     };
     return ForStatement;
 }(Statement_1.default));

@@ -212,6 +212,37 @@ var OutputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    OutputStatement.prototype.toJSON = function () {
+        return {
+            statement: 'output',
+            statementId: this.statementId,
+            level: this.level,
+            isNewLine: this.isNewLine,
+            type: this.type,
+            variable: this.variable,
+            text: this.text,
+            asciiCode: this.asciiCode,
+            escapeSequence: this.escapeSequence
+        };
+    };
+    OutputStatement.prototype.parseAttributes = function () {
+        var variable;
+        if (this.variable == undefined)
+            return;
+        if (this.variable.type == 'int')
+            variable = Object.assign(new Integer_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'double')
+            variable = Object.assign(new Double_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'long')
+            variable = Object.assign(new Long_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'float')
+            variable = Object.assign(new Float_1.default(undefined, undefined), this.variable);
+        else if (this.variable.type == 'char')
+            variable = Object.assign(new Char_1.default(undefined, undefined), this.variable);
+        else
+            variable = Object.assign(new String_1.default(undefined, undefined), this.variable);
+        this.variable = variable;
+    };
     return OutputStatement;
 }(Statement_1.default));
 exports.default = OutputStatement;

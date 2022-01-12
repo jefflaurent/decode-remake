@@ -18,7 +18,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
 var Char_1 = __importDefault(require("../variable/Char"));
+var Double_1 = __importDefault(require("../variable/Double"));
+var Float_1 = __importDefault(require("../variable/Float"));
+var Integer_1 = __importDefault(require("../variable/Integer"));
+var Long_1 = __importDefault(require("../variable/Long"));
+var String_1 = __importDefault(require("../variable/String"));
 var Variable_1 = __importDefault(require("../variable/Variable"));
+var Arithmetic_1 = __importDefault(require("./helper/assignment/Arithmetic"));
 var Option_1 = __importDefault(require("./helper/options/Option"));
 var Statement_1 = __importDefault(require("./Statement"));
 var AssignmentStatement = /** @class */ (function (_super) {
@@ -290,7 +296,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         else if (this.type == 'variable') {
             if (this.isCustomValue) {
-                if (this.variable instanceof Char_1.default || this.variable instanceof String)
+                if (this.variable instanceof Char_1.default || this.variable instanceof String_1.default)
                     sourceCodeContainer.push(prefix + "\"" + this.variable.value + "\"\n");
                 else
                     sourceCodeContainer.push(prefix + this.variable.value + '\n');
@@ -307,6 +313,79 @@ var AssignmentStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(prefix + this.variable.name + '[' + start + ':' + end + ']\n');
         }
         return sourceCodeContainer;
+    };
+    AssignmentStatement.prototype.toJSON = function () {
+        return {
+            statement: 'assignment',
+            statementId: this.statementId,
+            level: this.level,
+            type: this.type,
+            targetVariable: this.targetVariable,
+            listArithmetic: this.listArithmetic,
+            listOperator: this.listOperator,
+            listIsCustom: this.listIsCustom,
+            variable: this.variable,
+            isCustomValue: this.isCustomValue,
+            start: this.start,
+            length: this.length
+        };
+    };
+    AssignmentStatement.prototype.parseAttributes = function () {
+        var targetVariable;
+        if (this.targetVariable.type == 'int')
+            targetVariable = Object.assign(new Integer_1.default(undefined, undefined), this.targetVariable);
+        else if (this.targetVariable.type == 'double')
+            targetVariable = Object.assign(new Double_1.default(undefined, undefined), this.targetVariable);
+        else if (this.targetVariable.type == 'long')
+            targetVariable = Object.assign(new Long_1.default(undefined, undefined), this.targetVariable);
+        else if (this.targetVariable.type == 'float')
+            targetVariable = Object.assign(new Float_1.default(undefined, undefined), this.targetVariable);
+        else if (this.targetVariable.type == 'char')
+            targetVariable = Object.assign(new Char_1.default(undefined, undefined), this.targetVariable);
+        else
+            targetVariable = Object.assign(new String_1.default(undefined, undefined), this.targetVariable);
+        this.targetVariable = targetVariable;
+        if (this.variable != undefined) {
+            var variable = void 0;
+            if (this.variable.type == 'int')
+                variable = Object.assign(new Integer_1.default(undefined, undefined), this.variable);
+            else if (this.variable.type == 'double')
+                variable = Object.assign(new Double_1.default(undefined, undefined), this.variable);
+            else if (this.variable.type == 'long')
+                variable = Object.assign(new Long_1.default(undefined, undefined), this.variable);
+            else if (this.variable.type == 'float')
+                variable = Object.assign(new Float_1.default(undefined, undefined), this.variable);
+            else if (this.variable.type == 'char')
+                variable = Object.assign(new Char_1.default(undefined, undefined), this.variable);
+            else
+                variable = Object.assign(new String_1.default(undefined, undefined), this.variable);
+            this.variable = variable;
+        }
+        if (this.listArithmetic != undefined) {
+            var tempListArithmetic = [];
+            var temp = void 0;
+            for (var i = 0; i < this.listArithmetic.length; i++) {
+                temp = this.listArithmetic[i];
+                if (temp.type == 'int')
+                    temp = Object.assign(new Integer_1.default(undefined, undefined), temp);
+                else if (temp.type == 'double')
+                    temp = Object.assign(new Double_1.default(undefined, undefined), temp);
+                else if (temp.type == 'long')
+                    temp = Object.assign(new Long_1.default(undefined, undefined), temp);
+                else if (temp.type == 'float')
+                    temp = Object.assign(new Float_1.default(undefined, undefined), temp);
+                else if (temp.type == 'char')
+                    temp = Object.assign(new Char_1.default(undefined, undefined), temp);
+                else if (temp.type == 'string')
+                    temp = Object.assign(new String_1.default(undefined, undefined), temp);
+                else {
+                    temp = Object.assign(new Arithmetic_1.default(undefined, undefined, undefined, undefined, undefined, undefined, undefined), temp);
+                    temp.parseAttributes();
+                }
+                tempListArithmetic.push(temp);
+            }
+            this.listArithmetic = tempListArithmetic;
+        }
     };
     return AssignmentStatement;
 }(Statement_1.default));

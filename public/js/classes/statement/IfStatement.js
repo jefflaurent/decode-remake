@@ -17,6 +17,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone_1 = __importDefault(require("../../utilities/ReturnClone"));
+var Elif_1 = __importDefault(require("./helper/ifs/Elif"));
+var Else_1 = __importDefault(require("./helper/ifs/Else"));
 var If_1 = __importDefault(require("./helper/ifs/If"));
 var Statement_1 = __importDefault(require("./Statement"));
 var IfStatement = /** @class */ (function (_super) {
@@ -144,6 +146,38 @@ var IfStatement = /** @class */ (function (_super) {
         for (var i = 0; i < this.ifOperations.length; i++)
             sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode());
         return sourceCodeContainer;
+    };
+    IfStatement.prototype.toJSON = function () {
+        return {
+            statement: 'ifstatement',
+            level: this.level,
+            statementId: this.statementId,
+            ifOperations: this.ifOperations
+        };
+    };
+    IfStatement.prototype.parseChild = function () {
+        var newIfOperations = [];
+        var tempIf = undefined;
+        var object = undefined;
+        for (var i = 0; i < this.ifOperations.length; i++) {
+            object = this.ifOperations[i];
+            if (object.statement == 'if') {
+                tempIf = Object.assign(new If_1.default(undefined, undefined, undefined), object);
+                tempIf.parseChild();
+                tempIf.parseAttributes();
+            }
+            else if (object.statement == 'elif') {
+                tempIf = Object.assign(new Elif_1.default(undefined, undefined, undefined), object);
+                tempIf.parseChild();
+                tempIf.parseAttributes();
+            }
+            else if (object.statement == 'else') {
+                tempIf = Object.assign(new Else_1.default(undefined, undefined, undefined), object);
+                tempIf.parseChild();
+            }
+            newIfOperations.push(tempIf);
+        }
+        this.updateIfOperations(newIfOperations);
     };
     return IfStatement;
 }(Statement_1.default));

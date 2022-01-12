@@ -19,4 +19,12 @@ export default class Integer extends Variable {
         else 
             return new Return(true, '')
     }
+
+    toJSON() {
+        return {
+            type: 'int',
+            name: this.name,
+            value: this.value
+        }
+    }
 }

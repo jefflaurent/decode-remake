@@ -10,4 +10,12 @@ export default class String extends Variable {
     validateValue(): Return {
         return new Return(true, '')
     }
+
+    toJSON() {
+        return {
+            type: 'string',
+            name: this.name,
+            value: this.value
+        }
+    }
 }

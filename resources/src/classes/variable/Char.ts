@@ -13,4 +13,12 @@ export default class Char extends Variable {
         else
             return new Return(true, '')
     }
+
+    toJSON() {
+        return {
+            type: 'char',
+            name: this.name,
+            value: this.value
+        }
+    }
 }

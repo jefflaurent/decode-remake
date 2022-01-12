@@ -3,6 +3,7 @@ import ReturnClone from "../../utilities/ReturnClone"
 import Canvas from "../canvas/Canvas"
 import Variable from "../variable/Variable"
 import Condition from "./helper/general/Condition"
+import Elif from "./helper/ifs/Elif"
 import Else from "./helper/ifs/Else"
 import If from "./helper/ifs/If"
 import Statement from "./Statement"
@@ -169,6 +170,43 @@ class IfStatement extends Statement {
             sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode())
 
         return sourceCodeContainer
+    }
+
+    toJSON() {
+        return {
+            statement: 'ifstatement',
+            level: this.level,
+            statementId: this.statementId,
+            ifOperations: this.ifOperations
+        }
+    }
+
+    parseChild() {
+        let newIfOperations: Statement[] = []
+        let tempIf: Statement = undefined
+        let object: any = undefined
+
+        for(let i = 0; i < this.ifOperations.length; i++) {
+            object = this.ifOperations[i]
+            if(object.statement == 'if') {
+                tempIf = Object.assign(new If(undefined, undefined, undefined), object);
+                (tempIf as If).parseChild();
+                (tempIf as If).parseAttributes();
+            }
+            else if(object.statement == 'elif') {
+                tempIf = Object.assign(new Elif(undefined, undefined, undefined), object);
+                (tempIf as Elif).parseChild();
+                (tempIf as Elif).parseAttributes();
+            }
+            else if(object.statement == 'else') {
+                tempIf = Object.assign(new Else(undefined, undefined, undefined), object);
+                (tempIf as Else).parseChild();
+            }
+
+            newIfOperations.push(tempIf)
+        }
+
+        this.updateIfOperations(newIfOperations)
     }
 }
 

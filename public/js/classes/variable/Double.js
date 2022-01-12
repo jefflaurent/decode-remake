@@ -35,6 +35,13 @@ var Double = /** @class */ (function (_super) {
         else
             return new Return_1.default(true, '');
     };
+    Double.prototype.toJSON = function () {
+        return {
+            type: 'double',
+            name: this.name,
+            value: this.value
+        };
+    };
     return Double;
 }(Variable_1.default));
 exports.default = Double;

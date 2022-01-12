@@ -264,6 +264,18 @@ class Elif extends If {
 
         return sourceCodeContainer
     }
+
+    toJSON() {
+        return {
+            statement: 'elif',
+            level: this.level,
+            statementId: this.statementId,
+            firstCondition: this.firstCondition,
+            logicalOperator: this.logicalOperator,
+            secondCondition: this.secondCondition,
+            childStatement: this.childStatement
+        }
+    }
 }
 
 export default Elif

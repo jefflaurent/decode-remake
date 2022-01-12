@@ -1,8 +1,8 @@
 import ReturnClone from "../../utilities/ReturnClone"
-import ReturnFind from "../../utilities/ReturnFind"
 import Canvas from "../canvas/Canvas"
 import Variable from "../variable/Variable"
 import Option from "./helper/options/Option"
+
 
 class Statement {
     
@@ -57,7 +57,7 @@ class Statement {
         
         return indentation
     }
-
+    
     generateId(number: number) {}
     writeToCanvas(canvas: Canvas,  isClose?: boolean) {}
     updateChildStatement(childStatement: Statement[]): void {}

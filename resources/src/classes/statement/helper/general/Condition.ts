@@ -172,6 +172,40 @@ class Condition {
 
         return sourceCode
     }
+
+    parseAttributes() {
+        let firstVariable: Variable 
+        let secondVariable: Variable
+
+        if((this.firstVariable as any).type  == 'int') 
+            firstVariable = Object.assign(new Integer(undefined, undefined), this.firstVariable)
+        else if((this.firstVariable as any).type  == 'double') 
+            firstVariable = Object.assign(new Double(undefined, undefined), this.firstVariable)
+        else if((this.firstVariable as any).type  == 'long') 
+            firstVariable = Object.assign(new Long(undefined, undefined), this.firstVariable)
+        else if((this.firstVariable as any).type  == 'float') 
+            firstVariable = Object.assign(new Float(undefined, undefined), this.firstVariable)
+        else if((this.firstVariable as any).type  == 'char') 
+            firstVariable = Object.assign(new Char(undefined, undefined), this.firstVariable)
+        else 
+            firstVariable = Object.assign(new String(undefined, undefined), this.firstVariable)
+
+        if((this.secondVariable as any).type  == 'int') 
+            secondVariable = Object.assign(new Integer(undefined, undefined), this.secondVariable)
+        else if((this.secondVariable as any).type  == 'double') 
+            secondVariable = Object.assign(new Double(undefined, undefined), this.secondVariable)
+        else if((this.secondVariable as any).type  == 'long') 
+            secondVariable = Object.assign(new Long(undefined, undefined), this.secondVariable)
+        else if((this.secondVariable as any).type  == 'float') 
+            secondVariable = Object.assign(new Float(undefined, undefined), this.secondVariable)
+        else if((this.secondVariable as any).type  == 'char') 
+            secondVariable = Object.assign(new Char(undefined, undefined), this.secondVariable)
+        else 
+            secondVariable = Object.assign(new String(undefined, undefined), this.secondVariable)
+
+        this.firstVariable = firstVariable
+        this.secondVariable = secondVariable
+    }
 }
 
 export default Condition

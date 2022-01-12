@@ -230,6 +230,17 @@ var Elif = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    Elif.prototype.toJSON = function () {
+        return {
+            statement: 'elif',
+            level: this.level,
+            statementId: this.statementId,
+            firstCondition: this.firstCondition,
+            logicalOperator: this.logicalOperator,
+            secondCondition: this.secondCondition,
+            childStatement: this.childStatement
+        };
+    };
     return Elif;
 }(If_1.default));
 exports.default = Elif;
