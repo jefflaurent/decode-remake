@@ -8,6 +8,7 @@
         <div id="collapseProjects" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
             <div class="accordion-body">
                 <div class="container-fluid">
+                    <div id="pjMessageContainer"></div>
                     <!-- Projects -->
                     <div class="col-12">
                         <div class="col-12" style="color: black">
@@ -25,13 +26,24 @@
                         </div>
                     </div>
                     <div class="col-12 mt-4" style="color: black">
-                        <strong>Load Project</strong>
+                        <strong>My Projects</strong>
                     </div>
                     <div class="col-12 d-flex justify-content-between mt-2 overflow-auto border border-primary" style="width: 100%; max-height: 200px;">
-                        <div class="col-4 d-flex justify-content-start" style="min-height: 300px">
-                            @foreach( $projects as $project)
-                                $project->project_name
-                            @endforeach
+                        <div class="col-12 d-flex justify-content-start flex-column" style="min-height: 300px">
+                            <table class="table m-0 col-12 col-sm-12">
+                                <tbody class="col-12 col-sm-12">
+                                    @foreach($projects as $project)
+                                    <tr class="col-12 col-sm-12 d-flex">
+                                        <td class="col-8 col-sm-8 d-flex align-items-center">{{ $project->project_name }}</td>
+                                        <td class="col-4 col-sm-4 d-flex justify-content-evenly">
+                                            <button class="btn btn-success btn-sm rounded-1 col-3 col-sm-3" type="button" data-toggle="tooltip" data-placement="top" title="Load" id="load-project" data-value="{{ $project->project_id }}"><i class="fa fa-file-download"></i></button>
+                                            <button class="btn btn-primary btn-sm rounded-1 col-3 col-sm-3" type="button" data-toggle="tooltip" data-placement="top" title="Save" id="save-project" data-value="{{ $project->project_id }}"><i class="fa fa-save"></i></button>
+                                            <button class="btn btn-danger btn-sm rounded-1 col-3 col-sm-3" type="button" data-toggle="tooltip" data-placement="top" title="Delete" id="delete-project" data-value="{{ $project->project_id }}"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

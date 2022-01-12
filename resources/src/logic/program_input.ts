@@ -32,7 +32,6 @@ import Python from '../classes/languages/Python'
 import Cs from '../classes/languages/Cs'
 import Cpp from '../classes/languages/Cpp'
 import Language from '../classes/languages/Language'
-declare var bootstrap: any
 
 $(document).ready(function() {
 
@@ -155,21 +154,30 @@ $(document).ready(function() {
 
     function clearError() {
         $('#pcInputErrorContainer').empty()
+        $('#pjMessageContainer').empty()
 
-        for(let varName of declareVariableNameList)
-            $('.' + varName).removeClass('input-error')
+        if(declareVariableNameList != undefined) {
+            for(let varName of declareVariableNameList)
+                $('.' + varName).removeClass('input-error')
+        }
 
-        for(let varValue of declareVariableValueList)
-            $('.' + varValue).removeClass('input-error')
+        if(declareVariableValueList != undefined) {
+            for(let varValue of declareVariableValueList)
+                $('.' + varValue).removeClass('input-error')
+        }
 
-        for(let i = 0; i < caseToBeValidated.length; i++) 
-            $('.' + caseToBeValidated[i]).removeClass('input-error')
+        if(caseToBeValidated != undefined) {
+            for(let i = 0; i < caseToBeValidated.length; i++) 
+                $('.' + caseToBeValidated[i]).removeClass('input-error')
+        }
 
-        for(let i = 0; i < assignmentToBeValidated.length; i++) {
-            $('.first-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error')
-            $('.first-value-' + assignmentToBeValidated[i]).removeClass('input-error')
-            $('.second-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error')
-            $('.second-value-' + assignmentToBeValidated[i]).removeClass('input-error')
+        if(assignmentToBeValidated != undefined) {
+            for(let i = 0; i < assignmentToBeValidated.length; i++) {
+                $('.first-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error')
+                $('.first-value-' + assignmentToBeValidated[i]).removeClass('input-error')
+                $('.second-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error')
+                $('.second-value-' + assignmentToBeValidated[i]).removeClass('input-error')
+            }
         }
 
         $('#chosenVariable').removeClass('input-error')
@@ -184,14 +192,17 @@ $(document).ready(function() {
         $('.second-asg-string-value').find('select').removeClass('input-error')
         $('.begin-idx-string').removeClass('input-error')
         $('.length-idx-string').removeClass('input-error')
+        $('input[name=project_name').removeClass('input-error')
 
-        for(let i = 0; i < ifToBeValidated.length; i++) {
-            $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
-            $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
-            $('#first-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
-            $('#second-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
-            $('#second-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
-            $('#second-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+        if(ifToBeValidated != undefined) {
+            for(let i = 0; i < ifToBeValidated.length; i++) {
+                $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
+                $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+                $('#first-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+                $('#second-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error')
+                $('#second-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+                $('#second-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error')
+            }
         }
     }
 
@@ -2611,7 +2622,7 @@ $(document).ready(function() {
         option.draw(blockCanvasInstance)
         blockCanvasInstance.updateLastPosition()
 
-        for(let i = 0 ; i < listStatement.length; i++) {
+        for(let i = 0; i < listStatement.length; i++) {
             statement = listStatement[i]
             statement.writeToCanvas(blockCanvasInstance)
         }
@@ -3098,7 +3109,9 @@ $(document).ready(function() {
         }
     })
 
-    function parseJSON(object: any): void {
+
+    // Manage project logic
+    function parseJSON(object: any): Statement {
         let statement: Statement
         
         if(object.statement == 'declare') {
@@ -3137,64 +3150,118 @@ $(document).ready(function() {
             (statement as SwitchStatement).parseAttributes();
         }
 
-        console.log(statement)
+        return statement
     }
 
-    // Manage project logic
+    function loadVariable(object: any): void {
+        let variable: Variable
+
+        if(object.type == 'int') {
+            variable = Object.assign(new Integer(undefined, undefined), object)
+            listInteger.push(variable)
+        }
+        else if(object.type == 'double') {
+            variable = Object.assign(new Double(undefined, undefined), object)
+            listDouble.push(variable)
+        }
+        else if(object.type == 'long') {
+            variable = Object.assign(new Long(undefined, undefined), object)
+            listLong.push(variable)
+        }
+        else if(object.type == 'float') {
+            variable = Object.assign(new Float(undefined, undefined), object)
+            listFloat.push(variable)
+        }
+        else if(object.type == 'char') {
+            variable = Object.assign(new Char(undefined, undefined), object)
+            listChar.push(variable)
+        }
+        else {
+            variable = Object.assign(new String(undefined, undefined), object)
+            listString.push(variable)
+        }
+
+        statementCount++
+        allVariableNames[variable.name] = true
+    }
+
+    function clearVariableStatementData(): void {
+        allVariableNames = {}
+        listInteger = []
+        listFloat = []
+        listLong = []
+        listDouble = []
+        listChar = []
+        listString = []
+        statementCount = 0
+        listStatement= [] 
+    }
+    
     $(document).on('click', '#create-project', function() {
-        console.log('before parse')
-        for(let i = 0; i < listStatement.length; i++) {
-            console.log(listStatement[i])
+        clearError()
+        if($('input[name=project_name').val() as string == '') {
+            let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(`Project name can't be empty!`)
+            $('#pjMessageContainer').append(container)
+            $('input[name=project_name').addClass('input-error')
+
+            return
         }
-        console.log('--')
+        
+        let allVariables = getAllVariables()
+        if(allVariables == undefined || allVariables.length == 0) {
+            let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(`Project is still empty!`)
+            $('#pjMessageContainer').append(container)
 
-        let temp = JSON.stringify(listStatement)
-        console.log(temp)
-
-        console.log('after parse')
-        var parsed = JSON.parse(temp)
-        console.log(parsed);
-
-        for(let i = 0; i < parsed.length; i++) {
-            parseJSON(parsed[i])
+            return
         }
+        let jsonStatements = JSON.stringify(listStatement)
+        let jsonVariables = JSON.stringify(allVariables)
 
-        // console.log(parsed[0].option);
+        $.ajax({
+            type: 'POST',
+            url: '/decode/create',
+            data: {
+                _token: $('input[name=_token]').val(),
+                user_id: $('input[name=_user_id]').val(),
+                project_name: $('input[name=project_name').val(),
+                project_statements: jsonStatements,
+                project_variable: jsonVariables
+            },
+            success: function(data) {
+                let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text(`Project successfully created!`)
+                $('#pjMessageContainer').append(container)
+            }
+        })
+    })
 
-        // statementId: number, level: number, variable: Variable
-        // let variable = new Integer(parsed[0].variable.name, parsed[0].variable.value);
-        // let declare = new DeclareStatement(parsed[0].statementId, parsed[0].level, variable);
+    $(document).on('click', '#load-project', function() {
+        clearError()
+        let id = $(this).data('value')
 
-        // handleAdd(declare)
-        // declare.writeToCanvas(blockCanvasInstance)
-        // $.ajax({
-        //     type: 'POST',
-        //     url: '/decode/save',
-        //     data: {
-        //         _token: $('input[name=_token]').val(),
-        //         user_id: $(this).data("value")
-        //     },
-        //     success: function(data) {
-        //         let user = data.user; 
-        //         let role = data.role;
-        //         let user_group_list = data.user_group_list;
-    
-        //         $('#username-field').val(user.username);
-        //         $('#fullname-field').data("value", user.user_id).val(user.fullname);
-        //         $('#role-field').val(role);
-        //         $('#join-date-field').val(user.created_at);
-        //         $('#last-login-field').val(user.last_login);
-        //         $('#group-list-field').empty();
-    
-        //         // for(group of user_group_list) {
-        //         //     let element = $('<option></option>').data('value', group.group_id).text(group.group_name);
-        //         //     $('#group-list-field').append(element);
-        //         // }
-    
-        //         // clear position lists
-        //         $('#group-position-container').empty();
-        //         $('#user-position-container').empty();
-        //     }
-        // })
+        $.ajax({
+            type: 'POST',
+            url: '/decode/load',
+            data: {
+                _token: $('input[name=_token]').val(),
+                project_id: id
+            },
+            success: function(data) {
+                clearVariableStatementData()
+                let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text(`Project successfully loaded`)
+                $('#pjMessageContainer').append(container)
+                
+                let jsonProjectStatements = JSON.parse(data.project_statements)
+                let jsonProjectVariables = JSON.parse(data.project_variable)
+
+                for(let i = 0; i < jsonProjectVariables.length; i++)
+                    loadVariable(jsonProjectVariables[i])
+
+                for(let i = 0; i < jsonProjectStatements.length; i++) 
+                    listStatement.push(parseJSON(jsonProjectStatements[i]))
+                
+                restructureStatement()
+                drawCanvas()
+            }
+        })
     })
 })

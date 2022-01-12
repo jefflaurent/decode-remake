@@ -24,4 +24,10 @@ class DecodeController extends Controller
         $project->project_variable = $request->project_variable;
         $project->save();
     }
-}
+
+    public function load(Request $request) {
+        $project = Project::Where('project_id', '=', $request->project_id)->first();
+
+        return response()->json($project);
+    }
+} 

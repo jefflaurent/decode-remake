@@ -129,21 +129,30 @@ $(document).ready(function () {
     }
     function clearError() {
         $('#pcInputErrorContainer').empty();
-        for (var _i = 0, declareVariableNameList_1 = declareVariableNameList; _i < declareVariableNameList_1.length; _i++) {
-            var varName = declareVariableNameList_1[_i];
-            $('.' + varName).removeClass('input-error');
+        $('#pjMessageContainer').empty();
+        if (declareVariableNameList != undefined) {
+            for (var _i = 0, declareVariableNameList_1 = declareVariableNameList; _i < declareVariableNameList_1.length; _i++) {
+                var varName = declareVariableNameList_1[_i];
+                $('.' + varName).removeClass('input-error');
+            }
         }
-        for (var _a = 0, declareVariableValueList_1 = declareVariableValueList; _a < declareVariableValueList_1.length; _a++) {
-            var varValue = declareVariableValueList_1[_a];
-            $('.' + varValue).removeClass('input-error');
+        if (declareVariableValueList != undefined) {
+            for (var _a = 0, declareVariableValueList_1 = declareVariableValueList; _a < declareVariableValueList_1.length; _a++) {
+                var varValue = declareVariableValueList_1[_a];
+                $('.' + varValue).removeClass('input-error');
+            }
         }
-        for (var i = 0; i < caseToBeValidated.length; i++)
-            $('.' + caseToBeValidated[i]).removeClass('input-error');
-        for (var i = 0; i < assignmentToBeValidated.length; i++) {
-            $('.first-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error');
-            $('.first-value-' + assignmentToBeValidated[i]).removeClass('input-error');
-            $('.second-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error');
-            $('.second-value-' + assignmentToBeValidated[i]).removeClass('input-error');
+        if (caseToBeValidated != undefined) {
+            for (var i = 0; i < caseToBeValidated.length; i++)
+                $('.' + caseToBeValidated[i]).removeClass('input-error');
+        }
+        if (assignmentToBeValidated != undefined) {
+            for (var i = 0; i < assignmentToBeValidated.length; i++) {
+                $('.first-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error');
+                $('.first-value-' + assignmentToBeValidated[i]).removeClass('input-error');
+                $('.second-value-' + assignmentToBeValidated[i]).find('select').removeClass('input-error');
+                $('.second-value-' + assignmentToBeValidated[i]).removeClass('input-error');
+            }
         }
         $('#chosenVariable').removeClass('input-error');
         $('#chosenOutputVariable').removeClass('input-error');
@@ -157,13 +166,16 @@ $(document).ready(function () {
         $('.second-asg-string-value').find('select').removeClass('input-error');
         $('.begin-idx-string').removeClass('input-error');
         $('.length-idx-string').removeClass('input-error');
-        for (var i = 0; i < ifToBeValidated.length; i++) {
-            $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
-            $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
-            $('#first-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
-            $('#second-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
-            $('#second-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
-            $('#second-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
+        $('input[name=project_name').removeClass('input-error');
+        if (ifToBeValidated != undefined) {
+            for (var i = 0; i < ifToBeValidated.length; i++) {
+                $('#first-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
+                $('#first-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
+                $('#first-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
+                $('#second-if-select-first-variable-' + ifToBeValidated[i]).removeClass('input-error');
+                $('#second-if-input-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
+                $('#second-if-select-second-variable-' + ifToBeValidated[i]).removeClass('input-error');
+            }
         }
     }
     function initInput(title) {
@@ -2460,6 +2472,7 @@ $(document).ready(function () {
             $('#font-size-input').val(fontSize);
         }
     });
+    // Manage project logic
     function parseJSON(object) {
         var statement;
         if (object.statement == 'declare') {
@@ -2497,54 +2510,103 @@ $(document).ready(function () {
             statement.parseChild();
             statement.parseAttributes();
         }
-        console.log(statement);
+        return statement;
     }
-    // Manage project logic
+    function loadVariable(object) {
+        var variable;
+        if (object.type == 'int') {
+            variable = Object.assign(new Integer_1.default(undefined, undefined), object);
+            listInteger.push(variable);
+        }
+        else if (object.type == 'double') {
+            variable = Object.assign(new Double_1.default(undefined, undefined), object);
+            listDouble.push(variable);
+        }
+        else if (object.type == 'long') {
+            variable = Object.assign(new Long_1.default(undefined, undefined), object);
+            listLong.push(variable);
+        }
+        else if (object.type == 'float') {
+            variable = Object.assign(new Float_1.default(undefined, undefined), object);
+            listFloat.push(variable);
+        }
+        else if (object.type == 'char') {
+            variable = Object.assign(new Char_1.default(undefined, undefined), object);
+            listChar.push(variable);
+        }
+        else {
+            variable = Object.assign(new String_1.default(undefined, undefined), object);
+            listString.push(variable);
+        }
+        statementCount++;
+        allVariableNames[variable.name] = true;
+    }
+    function clearVariableStatementData() {
+        allVariableNames = {};
+        listInteger = [];
+        listFloat = [];
+        listLong = [];
+        listDouble = [];
+        listChar = [];
+        listString = [];
+        statementCount = 0;
+        listStatement = [];
+    }
     $(document).on('click', '#create-project', function () {
-        console.log('before parse');
-        for (var i = 0; i < listStatement.length; i++) {
-            console.log(listStatement[i]);
+        clearError();
+        if ($('input[name=project_name').val() == '') {
+            var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text("Project name can't be empty!");
+            $('#pjMessageContainer').append(container);
+            $('input[name=project_name').addClass('input-error');
+            return;
         }
-        console.log('--');
-        var temp = JSON.stringify(listStatement);
-        console.log(temp);
-        console.log('after parse');
-        var parsed = JSON.parse(temp);
-        console.log(parsed);
-        for (var i = 0; i < parsed.length; i++) {
-            parseJSON(parsed[i]);
+        var allVariables = getAllVariables();
+        if (allVariables == undefined || allVariables.length == 0) {
+            var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text("Project is still empty!");
+            $('#pjMessageContainer').append(container);
+            return;
         }
-        // console.log(parsed[0].option);
-        // statementId: number, level: number, variable: Variable
-        // let variable = new Integer(parsed[0].variable.name, parsed[0].variable.value);
-        // let declare = new DeclareStatement(parsed[0].statementId, parsed[0].level, variable);
-        // handleAdd(declare)
-        // declare.writeToCanvas(blockCanvasInstance)
-        // $.ajax({
-        //     type: 'POST',
-        //     url: '/decode/save',
-        //     data: {
-        //         _token: $('input[name=_token]').val(),
-        //         user_id: $(this).data("value")
-        //     },
-        //     success: function(data) {
-        //         let user = data.user; 
-        //         let role = data.role;
-        //         let user_group_list = data.user_group_list;
-        //         $('#username-field').val(user.username);
-        //         $('#fullname-field').data("value", user.user_id).val(user.fullname);
-        //         $('#role-field').val(role);
-        //         $('#join-date-field').val(user.created_at);
-        //         $('#last-login-field').val(user.last_login);
-        //         $('#group-list-field').empty();
-        //         // for(group of user_group_list) {
-        //         //     let element = $('<option></option>').data('value', group.group_id).text(group.group_name);
-        //         //     $('#group-list-field').append(element);
-        //         // }
-        //         // clear position lists
-        //         $('#group-position-container').empty();
-        //         $('#user-position-container').empty();
-        //     }
-        // })
+        var jsonStatements = JSON.stringify(listStatement);
+        var jsonVariables = JSON.stringify(allVariables);
+        $.ajax({
+            type: 'POST',
+            url: '/decode/create',
+            data: {
+                _token: $('input[name=_token]').val(),
+                user_id: $('input[name=_user_id]').val(),
+                project_name: $('input[name=project_name').val(),
+                project_statements: jsonStatements,
+                project_variable: jsonVariables
+            },
+            success: function (data) {
+                var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text("Project successfully created!");
+                $('#pjMessageContainer').append(container);
+            }
+        });
+    });
+    $(document).on('click', '#load-project', function () {
+        clearError();
+        var id = $(this).data('value');
+        $.ajax({
+            type: 'POST',
+            url: '/decode/load',
+            data: {
+                _token: $('input[name=_token]').val(),
+                project_id: id
+            },
+            success: function (data) {
+                clearVariableStatementData();
+                var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text("Project successfully loaded");
+                $('#pjMessageContainer').append(container);
+                var jsonProjectStatements = JSON.parse(data.project_statements);
+                var jsonProjectVariables = JSON.parse(data.project_variable);
+                for (var i = 0; i < jsonProjectVariables.length; i++)
+                    loadVariable(jsonProjectVariables[i]);
+                for (var i = 0; i < jsonProjectStatements.length; i++)
+                    listStatement.push(parseJSON(jsonProjectStatements[i]));
+                restructureStatement();
+                drawCanvas();
+            }
+        });
     });
 });
