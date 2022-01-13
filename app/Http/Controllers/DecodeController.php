@@ -30,4 +30,15 @@ class DecodeController extends Controller
 
         return response()->json($project);
     }
+
+    public function save(Request $request) {
+        Project::Where('project_id', $request->project_id)->update([
+            'project_statements' => $request->project_statements,
+            'project_variable' => $request->project_variables
+        ]);
+    }
+
+    public function delete(Request $request) {
+        Project::Where('project_id', $request->project_id)->delete();
+    }
 } 

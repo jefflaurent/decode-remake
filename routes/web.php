@@ -17,9 +17,13 @@ Route::get('/', function () {
 
 Route::get('/decode', 'DecodeController@home')->name('home');
 
-Route::post('/decode/create', 'DecodeController@create');
+Route::post('/decode/create', 'DecodeController@create')->middleware('auth');
 
-Route::post('/decode/load', 'DecodeController@load');
+Route::post('/decode/load', 'DecodeController@load')->middleware('auth');
+
+Route::post('/decode/save', 'DecodeController@save')->middleware('auth');
+
+Route::post('/decode/delete', 'DecodeController@delete');
 
 Route::post('/decode/download', 'SourceCodeController@download');
 
@@ -27,4 +31,4 @@ Route::get('/login', 'AuthController@showLogin')->name('login')->middleware('gue
 
 Route::post('/login', 'AuthController@login');
 
-Route::post('/logout', 'AuthController@logout');
+Route::post('/logout', 'AuthController@logout')->middleware('auth');

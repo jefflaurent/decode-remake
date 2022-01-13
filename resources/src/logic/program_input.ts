@@ -493,11 +493,11 @@ $(document).ready(function() {
     // Click template button
     $(document).on('click', '.generateTemplate', function() {
         initInput('Program Input')
+        clearVariableStatementData()
         clearSourceCode()
         blankTemplate()
-        if($(this).data('value') == 'blank')
-            blankTemplate()
-        else if($(this).data('value') == 'declare')
+
+        if($(this).data('value') == 'declare')
             declareVariableTemplate()
         else if($(this).data('value') == 'print')
             simplyPrintTemplate()
@@ -2911,6 +2911,10 @@ $(document).ready(function() {
     function nestedForTemplate() {
         let variable = new Integer('i', 0)
         let variable2 = new Integer('j', 0)
+        allVariableNames['i'] = true
+        allVariableNames['j'] = true
+        listInteger.push(variable)
+        listInteger.push(variable2)
 
         let declareStatement = new DeclareStatement(statementCount++, 1, variable)
         let declareStatement2 = new DeclareStatement(statementCount++, 1, variable2)
@@ -2990,6 +2994,10 @@ $(document).ready(function() {
 
         let i = new Integer('i', 0)
         let j = new Integer('j', 0)
+        allVariableNames['i'] = true
+        allVariableNames['j'] = true
+        listInteger.push(i)
+        listInteger.push(j)
 
         let declareStatement = new DeclareStatement(statementCount++, 1, variable)
         let declareI = new DeclareStatement(statementCount++, 1, i)
@@ -3208,7 +3216,7 @@ $(document).ready(function() {
         }
         
         let allVariables = getAllVariables()
-        if(allVariables == undefined || allVariables.length == 0) {
+        if((allVariables == undefined || allVariables.length == 0) && (listStatement == undefined || listStatement.length == 0))  {
             let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(`Project is still empty!`)
             $('#pjMessageContainer').append(container)
 
@@ -3230,6 +3238,7 @@ $(document).ready(function() {
             success: function(data) {
                 let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text(`Project successfully created!`)
                 $('#pjMessageContainer').append(container)
+                window.location.reload()
             }
         })
     })
@@ -3261,6 +3270,64 @@ $(document).ready(function() {
                 
                 restructureStatement()
                 drawCanvas()
+            }
+        })
+    })
+
+    $(document).on('click', '#save-project', function() {
+        clearError()
+        let project_id = $(this).data('value')
+
+        let allVariables = getAllVariables()
+        if((allVariables == undefined || allVariables.length == 0) && (listStatement == undefined || listStatement.length == 0)) {
+            let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(`Nothing to save`)
+            $('#pjMessageContainer').append(container)
+
+            return
+        }
+        let jsonStatements = JSON.stringify(listStatement)
+        let jsonVariables = JSON.stringify(allVariables)
+
+        $.ajax({
+            type: 'POST',
+            url: '/decode/save',
+            data: {
+                _token: $('input[name=_token]').val(),
+                project_id: project_id,
+                project_statements: jsonStatements,
+                project_variables: jsonVariables
+            },
+            success: function(data) {
+                let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text(`Project saved!`)
+                $('#pjMessageContainer').append(container)
+            }
+        })
+    })
+
+    $(document).on('click', '.delete-project', function() {
+        clearError()
+        $('.modal-body').text($(this).parent().parent().find('td').text() + ' will be deleted. Do you want to proceed?')
+        $('.confirm-delete-btn').data('value', $(this).data('value'))
+    })
+
+    $(document).on('click', '.confirm-delete-btn', function() {
+        let project_id = $(this).data('value')
+        $('.project-container-' + project_id).remove()
+        
+        $.ajax({
+            type: 'POST',
+            url: '/decode/delete',
+            data: {
+                _token: $('input[name=_token]').val(),
+                project_id: project_id,
+            },
+            success: function(data) {
+                let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text(`Project deleted`)
+                $('#pjMessageContainer').append(container)
+                initInput('Program Input')
+                clearVariableStatementData()
+                clearSourceCode()
+                blankTemplate()
             }
         })
     })

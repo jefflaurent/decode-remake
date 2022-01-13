@@ -5437,11 +5437,10 @@ $(document).ready(function () {
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
         initInput('Program Input');
+        clearVariableStatementData();
         clearSourceCode();
         blankTemplate();
-        if ($(this).data('value') == 'blank')
-            blankTemplate();
-        else if ($(this).data('value') == 'declare')
+        if ($(this).data('value') == 'declare')
             declareVariableTemplate();
         else if ($(this).data('value') == 'print')
             simplyPrintTemplate();
@@ -7324,6 +7323,10 @@ $(document).ready(function () {
     function nestedForTemplate() {
         var variable = new Integer_1.default('i', 0);
         var variable2 = new Integer_1.default('j', 0);
+        allVariableNames['i'] = true;
+        allVariableNames['j'] = true;
+        listInteger.push(variable);
+        listInteger.push(variable2);
         var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
         var declareStatement2 = new DeclareStatement_1.default(statementCount++, 1, variable2);
         var forStatement = new ForStatement_1.default(1, statementCount++, undefined, variable, true, true, 1, new Condition_1.default(variable, '<', new Integer_1.default('x', 2), true));
@@ -7387,6 +7390,10 @@ $(document).ready(function () {
         listInteger.push(variable);
         var i = new Integer_1.default('i', 0);
         var j = new Integer_1.default('j', 0);
+        allVariableNames['i'] = true;
+        allVariableNames['j'] = true;
+        listInteger.push(i);
+        listInteger.push(j);
         var declareStatement = new DeclareStatement_1.default(statementCount++, 1, variable);
         var declareI = new DeclareStatement_1.default(statementCount++, 1, i);
         var declareJ = new DeclareStatement_1.default(statementCount++, 1, j);
@@ -7571,7 +7578,7 @@ $(document).ready(function () {
             return;
         }
         var allVariables = getAllVariables();
-        if (allVariables == undefined || allVariables.length == 0) {
+        if ((allVariables == undefined || allVariables.length == 0) && (listStatement == undefined || listStatement.length == 0)) {
             var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text("Project is still empty!");
             $('#pjMessageContainer').append(container);
             return;
@@ -7591,6 +7598,7 @@ $(document).ready(function () {
             success: function (data) {
                 var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text("Project successfully created!");
                 $('#pjMessageContainer').append(container);
+                window.location.reload();
             }
         });
     });
@@ -7616,6 +7624,57 @@ $(document).ready(function () {
                     listStatement.push(parseJSON(jsonProjectStatements[i]));
                 restructureStatement();
                 drawCanvas();
+            }
+        });
+    });
+    $(document).on('click', '#save-project', function () {
+        clearError();
+        var project_id = $(this).data('value');
+        var allVariables = getAllVariables();
+        if ((allVariables == undefined || allVariables.length == 0) && (listStatement == undefined || listStatement.length == 0)) {
+            var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text("Nothing to save");
+            $('#pjMessageContainer').append(container);
+            return;
+        }
+        var jsonStatements = JSON.stringify(listStatement);
+        var jsonVariables = JSON.stringify(allVariables);
+        $.ajax({
+            type: 'POST',
+            url: '/decode/save',
+            data: {
+                _token: $('input[name=_token]').val(),
+                project_id: project_id,
+                project_statements: jsonStatements,
+                project_variables: jsonVariables
+            },
+            success: function (data) {
+                var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text("Project saved!");
+                $('#pjMessageContainer').append(container);
+            }
+        });
+    });
+    $(document).on('click', '.delete-project', function () {
+        clearError();
+        $('.modal-body').text($(this).parent().parent().find('td').text() + ' will be deleted. Do you want to proceed?');
+        $('.confirm-delete-btn').data('value', $(this).data('value'));
+    });
+    $(document).on('click', '.confirm-delete-btn', function () {
+        var project_id = $(this).data('value');
+        $('.project-container-' + project_id).remove();
+        $.ajax({
+            type: 'POST',
+            url: '/decode/delete',
+            data: {
+                _token: $('input[name=_token]').val(),
+                project_id: project_id,
+            },
+            success: function (data) {
+                var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text("Project deleted");
+                $('#pjMessageContainer').append(container);
+                initInput('Program Input');
+                clearVariableStatementData();
+                clearSourceCode();
+                blankTemplate();
             }
         });
     });

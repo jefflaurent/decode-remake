@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
-
+@include('components.modal')
 <div class="container pt-5 pb-5">
     <div class="row">
         <div class="col-lg-5">
