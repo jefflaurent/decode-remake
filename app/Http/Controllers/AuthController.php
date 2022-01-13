@@ -24,7 +24,7 @@ class AuthController extends Controller
             return redirect()->route('home');
         }
         else {
-            return redirect()->route('login')->with('errors', 'x');
+            return redirect()->route('login')->with('error', 'x');
         }
     }
 
