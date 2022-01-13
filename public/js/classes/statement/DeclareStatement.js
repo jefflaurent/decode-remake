@@ -192,6 +192,14 @@ var DeclareStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = " + this.variable.value + "\n");
         return sourceCodeContainer;
     };
+    DeclareStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof String_1.default || this.variable instanceof Char_1.default)
+            sourceCodeContainer.push(this.getIndentation() + 'INITIALIZE ' + this.variable.name + " = '" + this.variable.value + "'\n");
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'INITIALIZE ' + this.variable.name + " = " + this.variable.value + "\n");
+        return sourceCodeContainer;
+    };
     DeclareStatement.prototype.toJSON = function () {
         return {
             statement: 'declare',

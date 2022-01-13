@@ -30,6 +30,7 @@ var Java_1 = __importDefault(require("../classes/languages/Java"));
 var Python_1 = __importDefault(require("../classes/languages/Python"));
 var Cs_1 = __importDefault(require("../classes/languages/Cs"));
 var Cpp_1 = __importDefault(require("../classes/languages/Cpp"));
+var Pseudocode_1 = __importDefault(require("../classes/languages/Pseudocode"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -130,6 +131,7 @@ $(document).ready(function () {
     function clearError() {
         $('#pcInputErrorContainer').empty();
         $('#pjMessageContainer').empty();
+        $('#resultErrorContainer').empty();
         if (declareVariableNameList != undefined) {
             for (var _i = 0, declareVariableNameList_1 = declareVariableNameList; _i < declareVariableNameList_1.length; _i++) {
                 var varName = declareVariableNameList_1[_i];
@@ -427,6 +429,7 @@ $(document).ready(function () {
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
         initInput('Program Input');
+        clearError();
         clearVariableStatementData();
         clearSourceCode();
         blankTemplate();
@@ -2433,11 +2436,13 @@ $(document).ready(function () {
         handleAdd(ifStatement);
     }
     // Source Code Logic
+    var lastChosenLang = '';
     function clearSourceCode() {
         $('#source-code-container').val('');
     }
     $(document).on('click', '#btn-generate-source-code', function () {
         var language = $('.selected-programming-language').find('option').filter(':selected').val();
+        lastChosenLang = language;
         var lang;
         if (language == 'c') {
             lang = new C_1.default(listStatement);
@@ -2453,6 +2458,9 @@ $(document).ready(function () {
         }
         else if (language == 'python') {
             lang = new Python_1.default(listStatement);
+        }
+        else {
+            lang = new Pseudocode_1.default(listStatement);
         }
         $('#source-code-container').val('');
         $('#source-code-container').val(lang.generateSourceCode());
@@ -2665,6 +2673,40 @@ $(document).ready(function () {
                 clearVariableStatementData();
                 clearSourceCode();
                 blankTemplate();
+            }
+        });
+    });
+    var path = window.location.href;
+    // Download Source Code
+    $(document).on('click', '#download-source-code', function () {
+        clearError();
+        var source_code = $('#source-code-container').val();
+        if (source_code == '' || source_code == undefined || source_code.length == 0) {
+            createErrorMessage('Source code is empty!', 'resultErrorContainer');
+            return;
+        }
+        var flag = false;
+        for (var i = 0; i < source_code.length; i++) {
+            if (source_code[i] != ' ') {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            createErrorMessage('Source code is empty!', 'resultErrorContainer');
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/decode/download',
+            data: {
+                _token: $('input[name=_token]').val(),
+                source_code: source_code
+            },
+            success: function (data) {
+                var container = $('<div></div>').addClass('col-12 col-sm-12 alert alert-success').text("Source code downloaded!");
+                $('#resultErrorContainer').append(container);
+                window.location.href = path + '/download/client/' + lastChosenLang;
             }
         });
     });

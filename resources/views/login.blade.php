@@ -74,7 +74,7 @@
             <div class="form-group py-1" style="min-width: 250px; max-width: 250px">
                 <input type="password" name="password" class="form-control" placeholder="Password"/>
             </div>
-            @if($errors->any())
+            @if(session()->has('error'))
             <div class="alert alert-danger py-2 my-1 mb-2" style="min-width: 250px;">
                 Invalid Username / Password!
             </div>
@@ -84,6 +84,12 @@
             <div class="form-group d-flex justify-content-center">
                 <button type="submit" class="btn btn-primary d-flex justify-content-center" style="min-width: 250px">Login</button>
             </div>
+            @if(session()->has('error'))
+            @else
+            <div class="form-group d-flex justify-content-center mt-2">
+                <a href="/decode">Continue without login</a>
+            </div>
+            @endif
         </form>
     </div>
 

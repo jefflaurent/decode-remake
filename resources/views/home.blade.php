@@ -3,6 +3,7 @@
 @section('content')
 @include('components.modal')
 <div class="container pt-5 pb-5">
+    {{ csrf_field() }}
     <div class="row">
         <div class="col-lg-5">
             @include('components.program-control')

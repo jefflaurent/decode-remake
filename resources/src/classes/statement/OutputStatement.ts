@@ -241,6 +241,33 @@ class OutputStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generatePseudocode(): string[] {
+        let sourceCodeContainer: string[] = [] 
+
+        let text: string = '' + this.getIndentation() + 'PRINT '
+        if(this.type == 'variable') {
+            text += this.variable.name
+        }
+        else if(this.type == 'text') {
+            text += `"` + this.text + `"`
+        }
+        else if(this.type == 'ascii') {
+            text += "ASCII CODE " + this.asciiCode
+        }
+        else {
+            text += "ESCAPE SEQUENCE " + `"` + this.escapeSequence + `"`
+        }
+
+        if(this.isNewLine == true)
+            text += ' [ENTER]'
+
+        text += '\n'
+
+        sourceCodeContainer.push(text)
+
+        return sourceCodeContainer
+    }
+
     toJSON() {
         return {
             statement: 'output',

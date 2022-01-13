@@ -149,6 +149,13 @@ var InputStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = input()\n');
         return sourceCodeContainer;
     };
+    InputStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        sourceCode += 'INPUT ' + this.variable.name + '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     InputStatement.prototype.toJSON = function () {
         return {
             statement: 'input',

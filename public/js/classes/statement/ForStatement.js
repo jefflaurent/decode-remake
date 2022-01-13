@@ -361,6 +361,47 @@ var ForStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    ForStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        sourceCode += 'FOR ';
+        sourceCode += this.variable.name + ' = 0; ';
+        sourceCode += this.condition.generateBlockCodeText() + '; ';
+        if (this.isIncrement) {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '++ ';
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ' ';
+        }
+        else {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '-- ';
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ' ';
+        }
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        sourceCode = '' + this.getIndentation() + 'BEGIN\n';
+        sourceCodeContainer.push(sourceCode);
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     ForStatement.prototype.toJSON = function () {
         return {
             statement: 'for',

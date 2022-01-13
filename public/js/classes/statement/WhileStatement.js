@@ -303,6 +303,34 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    WhileStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'WHILE ' + this.firstCondition.generateBlockCodeText() + ' \n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'DO\n');
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        if (!this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'WHILE ' + this.firstCondition.generateBlockCodeText() + ' \n');
+        return sourceCodeContainer;
+    };
     WhileStatement.prototype.toJSON = function () {
         return {
             statement: 'while',

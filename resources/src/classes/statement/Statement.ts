@@ -70,6 +70,7 @@ class Statement {
     generateJavaSourceCode(): string[] { return [] }
     generatePythonSourceCode(): string[] { return [] }
     generateCsSourceCode(): string[] { return [] }
+    generatePseudocode(): string[] { return [] }
 }
 
 export default Statement

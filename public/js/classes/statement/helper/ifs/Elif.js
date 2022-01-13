@@ -230,6 +230,37 @@ var Elif = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    Elif.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            sourceCode += 'ELSE IF ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' '
+                + this.secondCondition.generateBlockCodeText() + '\n';
+        }
+        else {
+            sourceCode += 'ELSE IF ' + this.firstCondition.generateBlockCodeText() + '\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     Elif.prototype.toJSON = function () {
         return {
             statement: 'elif',

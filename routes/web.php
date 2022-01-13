@@ -25,7 +25,9 @@ Route::post('/decode/save', 'DecodeController@save')->middleware('auth');
 
 Route::post('/decode/delete', 'DecodeController@delete');
 
-Route::post('/decode/download', 'SourceCodeController@download');
+Route::post('/decode/download', 'DecodeController@download');
+
+Route::get('/decode/download/client/{language}', 'DecodeController@downloadToClient');
 
 Route::get('/login', 'AuthController@showLogin')->name('login')->middleware('guest');
 

@@ -85,7 +85,7 @@ var Canvas = /** @class */ (function () {
 }());
 exports.default = Canvas;
 
-},{"../statement/helper/general/Coordinate":20}],2:[function(require,module,exports){
+},{"../statement/helper/general/Coordinate":21}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -372,6 +372,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Language_1 = __importDefault(require("./Language"));
+var Pseudocode = /** @class */ (function (_super) {
+    __extends(Pseudocode, _super);
+    function Pseudocode(listStatement) {
+        return _super.call(this, listStatement) || this;
+    }
+    Pseudocode.prototype.generateSourceCode = function () {
+        this.generateStartingTemplate();
+        this.generateBody();
+        this.generateFinishTemplate();
+        return this.sourceCode;
+    };
+    Pseudocode.prototype.generateStartingTemplate = function () {
+        this.sourceCode = '';
+        this.sourceCode += 'BEGIN\n';
+    };
+    Pseudocode.prototype.generateBody = function () {
+        var temp = [];
+        for (var i = 0; i < this.listStatement.length; i++) {
+            temp = this.listStatement[i].generatePseudocode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++) {
+                this.sourceCode += this.getIndentation(1) + temp[j];
+            }
+        }
+    };
+    Pseudocode.prototype.generateFinishTemplate = function () {
+        this.sourceCode += 'END\n';
+    };
+    return Pseudocode;
+}(Language_1.default));
+exports.default = Pseudocode;
+
+},{"./Language":6}],8:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var Language_1 = __importDefault(require("./Language"));
 var Python = /** @class */ (function (_super) {
     __extends(Python, _super);
     function Python(listStatement) {
@@ -395,7 +447,7 @@ var Python = /** @class */ (function (_super) {
 }(Language_1.default));
 exports.default = Python;
 
-},{"./Language":6}],8:[function(require,module,exports){
+},{"./Language":6}],9:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -712,6 +764,13 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    AssignmentStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var code = '' + this.getIndentation();
+        code += this.generateBlockCodeText();
+        sourceCodeContainer.push(code);
+        return sourceCodeContainer;
+    };
     AssignmentStatement.prototype.toJSON = function () {
         return {
             statement: 'assignment',
@@ -789,7 +848,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = AssignmentStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"../variable/Variable":32,"./Statement":14,"./helper/assignment/Arithmetic":17,"./helper/options/Option":24}],9:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"../variable/Char":27,"../variable/Double":28,"../variable/Float":29,"../variable/Integer":30,"../variable/Long":31,"../variable/String":32,"../variable/Variable":33,"./Statement":15,"./helper/assignment/Arithmetic":18,"./helper/options/Option":25}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -984,6 +1043,14 @@ var DeclareStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + " = " + this.variable.value + "\n");
         return sourceCodeContainer;
     };
+    DeclareStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        if (this.variable instanceof String_1.default || this.variable instanceof Char_1.default)
+            sourceCodeContainer.push(this.getIndentation() + 'INITIALIZE ' + this.variable.name + " = '" + this.variable.value + "'\n");
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'INITIALIZE ' + this.variable.name + " = " + this.variable.value + "\n");
+        return sourceCodeContainer;
+    };
     DeclareStatement.prototype.toJSON = function () {
         return {
             statement: 'declare',
@@ -1012,7 +1079,7 @@ var DeclareStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = DeclareStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./Statement":14,"./helper/options/Option":24}],10:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"../variable/Char":27,"../variable/Double":28,"../variable/Float":29,"../variable/Integer":30,"../variable/Long":31,"../variable/String":32,"./Statement":15,"./helper/options/Option":25}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1376,6 +1443,47 @@ var ForStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    ForStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        sourceCode += 'FOR ';
+        sourceCode += this.variable.name + ' = 0; ';
+        sourceCode += this.condition.generateBlockCodeText() + '; ';
+        if (this.isIncrement) {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '++ ';
+            else
+                sourceCode += this.variable.name + ' += ' + this.addValueBy + ' ';
+        }
+        else {
+            if (this.addValueBy == 1)
+                sourceCode += this.variable.name + '-- ';
+            else
+                sourceCode += this.variable.name + ' -= ' + this.addValueBy + ' ';
+        }
+        sourceCode += '\n';
+        sourceCodeContainer.push(sourceCode);
+        sourceCode = '' + this.getIndentation() + 'BEGIN\n';
+        sourceCodeContainer.push(sourceCode);
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     ForStatement.prototype.toJSON = function () {
         return {
             statement: 'for',
@@ -1456,7 +1564,7 @@ var ForStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = ForStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"./AssignmentStatement":8,"./DeclareStatement":9,"./IfStatement":11,"./InputStatement":12,"./OutputStatement":13,"./Statement":14,"./SwitchStatement":15,"./WhileStatement":16,"./helper/general/Condition":19,"./helper/options/Option":24}],11:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"../variable/Double":28,"../variable/Float":29,"../variable/Integer":30,"../variable/Long":31,"./AssignmentStatement":9,"./DeclareStatement":10,"./IfStatement":12,"./InputStatement":13,"./OutputStatement":14,"./Statement":15,"./SwitchStatement":16,"./WhileStatement":17,"./helper/general/Condition":20,"./helper/options/Option":25}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1606,6 +1714,12 @@ var IfStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode());
         return sourceCodeContainer;
     };
+    IfStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generatePseudocode());
+        return sourceCodeContainer;
+    };
     IfStatement.prototype.toJSON = function () {
         return {
             statement: 'ifstatement',
@@ -1642,7 +1756,7 @@ var IfStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = IfStatement;
 
-},{"../../utilities/ReturnClone":36,"./Statement":14,"./helper/ifs/Elif":21,"./helper/ifs/Else":22,"./helper/ifs/If":23}],12:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"./Statement":15,"./helper/ifs/Elif":22,"./helper/ifs/Else":23,"./helper/ifs/If":24}],13:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1794,6 +1908,13 @@ var InputStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.getIndentation() + this.variable.name + ' = input()\n');
         return sourceCodeContainer;
     };
+    InputStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        sourceCode += 'INPUT ' + this.variable.name + '\n';
+        sourceCodeContainer.push(sourceCode);
+        return sourceCodeContainer;
+    };
     InputStatement.prototype.toJSON = function () {
         return {
             statement: 'input',
@@ -1822,7 +1943,7 @@ var InputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = InputStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./Statement":14,"./helper/options/Option":24}],13:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"../variable/Char":27,"../variable/Double":28,"../variable/Float":29,"../variable/Integer":30,"../variable/Long":31,"../variable/String":32,"./Statement":15,"./helper/options/Option":25}],14:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2037,6 +2158,27 @@ var OutputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    OutputStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var text = '' + this.getIndentation() + 'PRINT ';
+        if (this.type == 'variable') {
+            text += this.variable.name;
+        }
+        else if (this.type == 'text') {
+            text += "\"" + this.text + "\"";
+        }
+        else if (this.type == 'ascii') {
+            text += "ASCII CODE " + this.asciiCode;
+        }
+        else {
+            text += "ESCAPE SEQUENCE " + "\"" + this.escapeSequence + "\"";
+        }
+        if (this.isNewLine == true)
+            text += ' [ENTER]';
+        text += '\n';
+        sourceCodeContainer.push(text);
+        return sourceCodeContainer;
+    };
     OutputStatement.prototype.toJSON = function () {
         return {
             statement: 'output',
@@ -2072,7 +2214,7 @@ var OutputStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = OutputStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./Statement":14,"./helper/options/Option":24}],14:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"../variable/Char":27,"../variable/Double":28,"../variable/Float":29,"../variable/Integer":30,"../variable/Long":31,"../variable/String":32,"./Statement":15,"./helper/options/Option":25}],15:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2128,11 +2270,12 @@ var Statement = /** @class */ (function () {
     Statement.prototype.generateJavaSourceCode = function () { return []; };
     Statement.prototype.generatePythonSourceCode = function () { return []; };
     Statement.prototype.generateCsSourceCode = function () { return []; };
+    Statement.prototype.generatePseudocode = function () { return []; };
     return Statement;
 }());
 exports.default = Statement;
 
-},{"../../utilities/ReturnClone":36}],15:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37}],16:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2348,6 +2491,20 @@ var SwitchStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(temp[j]);
         return sourceCodeContainer;
     };
+    SwitchStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'SWITCH ' + this.variable.name + '\n');
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generatePseudocode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     SwitchStatement.prototype.toJSON = function () {
         return {
             statement: 'switch',
@@ -2390,7 +2547,7 @@ var SwitchStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = SwitchStatement;
 
-},{"../../utilities/ReturnClone":36,"../variable/Char":26,"../variable/Double":27,"../variable/Float":28,"../variable/Integer":29,"../variable/Long":30,"../variable/String":31,"./IfStatement":11,"./Statement":14,"./helper/case/Case":18,"./helper/ifs/Elif":21,"./helper/ifs/Else":22,"./helper/ifs/If":23,"./helper/options/Option":24}],16:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"../variable/Char":27,"../variable/Double":28,"../variable/Float":29,"../variable/Integer":30,"../variable/Long":31,"../variable/String":32,"./IfStatement":12,"./Statement":15,"./helper/case/Case":19,"./helper/ifs/Elif":22,"./helper/ifs/Else":23,"./helper/ifs/If":24,"./helper/options/Option":25}],17:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2696,6 +2853,34 @@ var WhileStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    WhileStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'WHILE ' + this.firstCondition.generateBlockCodeText() + ' \n');
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'DO\n');
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        if (!this.isWhile)
+            sourceCodeContainer.push(this.getIndentation() + 'WHILE ' + this.firstCondition.generateBlockCodeText() + ' \n');
+        return sourceCodeContainer;
+    };
     WhileStatement.prototype.toJSON = function () {
         return {
             statement: 'while',
@@ -2769,7 +2954,7 @@ var WhileStatement = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = WhileStatement;
 
-},{"../../utilities/ReturnClone":36,"./AssignmentStatement":8,"./DeclareStatement":9,"./ForStatement":10,"./IfStatement":11,"./InputStatement":12,"./OutputStatement":13,"./Statement":14,"./SwitchStatement":15,"./helper/general/Condition":19,"./helper/options/Option":24}],17:[function(require,module,exports){
+},{"../../utilities/ReturnClone":37,"./AssignmentStatement":9,"./DeclareStatement":10,"./ForStatement":11,"./IfStatement":12,"./InputStatement":13,"./OutputStatement":14,"./Statement":15,"./SwitchStatement":16,"./helper/general/Condition":20,"./helper/options/Option":25}],18:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -2899,7 +3084,7 @@ var Arithmetic = /** @class */ (function () {
 }());
 exports.default = Arithmetic;
 
-},{"../../../variable/Char":26,"../../../variable/Double":27,"../../../variable/Float":28,"../../../variable/Integer":29,"../../../variable/Long":30,"../../../variable/String":31}],18:[function(require,module,exports){
+},{"../../../variable/Char":27,"../../../variable/Double":28,"../../../variable/Float":29,"../../../variable/Integer":30,"../../../variable/Long":31,"../../../variable/String":32}],19:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3059,7 +3244,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -3088,7 +3273,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -3117,7 +3302,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -3146,7 +3331,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -3163,6 +3348,35 @@ var Case = /** @class */ (function (_super) {
             sourceCodeContainer.push('\n');
         }
         sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
+        return sourceCodeContainer;
+    };
+    Case.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                sourceCodeContainer.push(this.getIndentation() + "CASE '" + this.condition.secondVariable.value + "'\n");
+            else
+                sourceCodeContainer.push(this.getIndentation() + "CASE " + this.condition.secondVariable.value + "\n");
+        }
+        else
+            sourceCodeContainer.push(this.getIndentation() + "DEFAULT\n");
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '\tBREAK\n');
         return sourceCodeContainer;
     };
     Case.prototype.toJSON = function () {
@@ -3232,7 +3446,7 @@ var Case = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Case;
 
-},{"../../../../utilities/ReturnClone":36,"../../../variable/Char":26,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../Statement":14,"../../SwitchStatement":15,"../../WhileStatement":16,"../general/Condition":19,"../options/Option":24}],19:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":37,"../../../variable/Char":27,"../../AssignmentStatement":9,"../../DeclareStatement":10,"../../ForStatement":11,"../../IfStatement":12,"../../InputStatement":13,"../../OutputStatement":14,"../../Statement":15,"../../SwitchStatement":16,"../../WhileStatement":17,"../general/Condition":20,"../options/Option":25}],20:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -3420,7 +3634,7 @@ var Condition = /** @class */ (function () {
 }());
 exports.default = Condition;
 
-},{"../../../variable/Char":26,"../../../variable/Double":27,"../../../variable/Float":28,"../../../variable/Integer":29,"../../../variable/Long":30,"../../../variable/String":31}],20:[function(require,module,exports){
+},{"../../../variable/Char":27,"../../../variable/Double":28,"../../../variable/Float":29,"../../../variable/Integer":30,"../../../variable/Long":31,"../../../variable/String":32}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Coordinate = /** @class */ (function () {
@@ -3432,7 +3646,7 @@ var Coordinate = /** @class */ (function () {
 }());
 exports.default = Coordinate;
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3665,6 +3879,37 @@ var Elif = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    Elif.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            sourceCode += 'ELSE IF ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' '
+                + this.secondCondition.generateBlockCodeText() + '\n';
+        }
+        else {
+            sourceCode += 'ELSE IF ' + this.firstCondition.generateBlockCodeText() + '\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     Elif.prototype.toJSON = function () {
         return {
             statement: 'elif',
@@ -3680,7 +3925,7 @@ var Elif = /** @class */ (function (_super) {
 }(If_1.default));
 exports.default = Elif;
 
-},{"../../../../utilities/ReturnClone":36,"./If":23}],22:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":37,"./If":24}],23:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3923,6 +4168,29 @@ var Else = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    Else.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'ELSE\n');
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     Else.prototype.toJSON = function () {
         return {
             statement: 'else',
@@ -3982,7 +4250,7 @@ var Else = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = Else;
 
-},{"../../../../utilities/ReturnClone":36,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../Statement":14,"../../SwitchStatement":15,"../../WhileStatement":16,"../options/Option":24}],23:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":37,"../../AssignmentStatement":9,"../../DeclareStatement":10,"../../ForStatement":11,"../../IfStatement":12,"../../InputStatement":13,"../../OutputStatement":14,"../../Statement":15,"../../SwitchStatement":16,"../../WhileStatement":17,"../options/Option":25}],24:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4291,6 +4559,37 @@ var If = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    If.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var sourceCode = '' + this.getIndentation();
+        var temp;
+        if (this.logicalOperator != undefined && this.secondCondition != undefined) {
+            sourceCode += 'IF ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' '
+                + this.secondCondition.generateBlockCodeText() + '\n';
+        }
+        else {
+            sourceCode += 'IF ' + this.firstCondition.generateBlockCodeText() + '\n';
+        }
+        sourceCodeContainer.push(sourceCode);
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     If.prototype.toJSON = function () {
         return {
             statement: 'if',
@@ -4363,7 +4662,7 @@ var If = /** @class */ (function (_super) {
 }(Statement_1.default));
 exports.default = If;
 
-},{"../../../../utilities/ReturnClone":36,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../Statement":14,"../../SwitchStatement":15,"../../WhileStatement":16,"../general/Condition":19,"../options/Option":24}],24:[function(require,module,exports){
+},{"../../../../utilities/ReturnClone":37,"../../AssignmentStatement":9,"../../DeclareStatement":10,"../../ForStatement":11,"../../IfStatement":12,"../../InputStatement":13,"../../OutputStatement":14,"../../Statement":15,"../../SwitchStatement":16,"../../WhileStatement":17,"../general/Condition":20,"../options/Option":25}],25:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -4459,7 +4758,7 @@ var Option = /** @class */ (function () {
 }());
 exports.default = Option;
 
-},{"../../../../utilities/ReturnClick":35,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../SwitchStatement":15,"../../WhileStatement":16,"./OptionSelection":25}],25:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":36,"../../AssignmentStatement":9,"../../DeclareStatement":10,"../../ForStatement":11,"../../IfStatement":12,"../../InputStatement":13,"../../OutputStatement":14,"../../SwitchStatement":16,"../../WhileStatement":17,"./OptionSelection":26}],26:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -4701,7 +5000,7 @@ var OptionSelection = /** @class */ (function () {
 }());
 exports.default = OptionSelection;
 
-},{"../../../../utilities/ReturnClick":35,"../../../../utilities/ReturnPaste":37,"../../AssignmentStatement":8,"../../DeclareStatement":9,"../../ForStatement":10,"../../IfStatement":11,"../../InputStatement":12,"../../OutputStatement":13,"../../SwitchStatement":15,"../../WhileStatement":16,"../case/Case":18,"../ifs/Else":22,"../ifs/If":23}],26:[function(require,module,exports){
+},{"../../../../utilities/ReturnClick":36,"../../../../utilities/ReturnPaste":38,"../../AssignmentStatement":9,"../../DeclareStatement":10,"../../ForStatement":11,"../../IfStatement":12,"../../InputStatement":13,"../../OutputStatement":14,"../../SwitchStatement":16,"../../WhileStatement":17,"../case/Case":19,"../ifs/Else":23,"../ifs/If":24}],27:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4744,7 +5043,7 @@ var Char = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Char;
 
-},{"../../utilities/Return":34,"./Variable":32}],27:[function(require,module,exports){
+},{"../../utilities/Return":35,"./Variable":33}],28:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4793,7 +5092,7 @@ var Double = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Double;
 
-},{"../../utilities/Return":34,"./Variable":32}],28:[function(require,module,exports){
+},{"../../utilities/Return":35,"./Variable":33}],29:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4842,7 +5141,7 @@ var Float = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Float;
 
-},{"../../utilities/Return":34,"./Variable":32}],29:[function(require,module,exports){
+},{"../../utilities/Return":35,"./Variable":33}],30:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4891,7 +5190,7 @@ var Integer = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Integer;
 
-},{"../../utilities/Return":34,"./Variable":32}],30:[function(require,module,exports){
+},{"../../utilities/Return":35,"./Variable":33}],31:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4938,7 +5237,7 @@ var Long = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = Long;
 
-},{"../../utilities/Return":34,"./Variable":32}],31:[function(require,module,exports){
+},{"../../utilities/Return":35,"./Variable":33}],32:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -4978,7 +5277,7 @@ var String = /** @class */ (function (_super) {
 }(Variable_1.default));
 exports.default = String;
 
-},{"../../utilities/Return":34,"./Variable":32}],32:[function(require,module,exports){
+},{"../../utilities/Return":35,"./Variable":33}],33:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -5007,7 +5306,7 @@ var Variable = /** @class */ (function () {
 }());
 exports.default = Variable;
 
-},{"../../utilities/Return":34}],33:[function(require,module,exports){
+},{"../../utilities/Return":35}],34:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -5040,6 +5339,7 @@ var Java_1 = __importDefault(require("../classes/languages/Java"));
 var Python_1 = __importDefault(require("../classes/languages/Python"));
 var Cs_1 = __importDefault(require("../classes/languages/Cs"));
 var Cpp_1 = __importDefault(require("../classes/languages/Cpp"));
+var Pseudocode_1 = __importDefault(require("../classes/languages/Pseudocode"));
 $(document).ready(function () {
     // Before insert variable
     var declareVariableNameList;
@@ -5140,6 +5440,7 @@ $(document).ready(function () {
     function clearError() {
         $('#pcInputErrorContainer').empty();
         $('#pjMessageContainer').empty();
+        $('#resultErrorContainer').empty();
         if (declareVariableNameList != undefined) {
             for (var _i = 0, declareVariableNameList_1 = declareVariableNameList; _i < declareVariableNameList_1.length; _i++) {
                 var varName = declareVariableNameList_1[_i];
@@ -5437,6 +5738,7 @@ $(document).ready(function () {
     // Click template button
     $(document).on('click', '.generateTemplate', function () {
         initInput('Program Input');
+        clearError();
         clearVariableStatementData();
         clearSourceCode();
         blankTemplate();
@@ -7443,11 +7745,13 @@ $(document).ready(function () {
         handleAdd(ifStatement);
     }
     // Source Code Logic
+    var lastChosenLang = '';
     function clearSourceCode() {
         $('#source-code-container').val('');
     }
     $(document).on('click', '#btn-generate-source-code', function () {
         var language = $('.selected-programming-language').find('option').filter(':selected').val();
+        lastChosenLang = language;
         var lang;
         if (language == 'c') {
             lang = new C_1.default(listStatement);
@@ -7463,6 +7767,9 @@ $(document).ready(function () {
         }
         else if (language == 'python') {
             lang = new Python_1.default(listStatement);
+        }
+        else {
+            lang = new Pseudocode_1.default(listStatement);
         }
         $('#source-code-container').val('');
         $('#source-code-container').val(lang.generateSourceCode());
@@ -7678,9 +7985,43 @@ $(document).ready(function () {
             }
         });
     });
+    var path = window.location.href;
+    // Download Source Code
+    $(document).on('click', '#download-source-code', function () {
+        clearError();
+        var source_code = $('#source-code-container').val();
+        if (source_code == '' || source_code == undefined || source_code.length == 0) {
+            createErrorMessage('Source code is empty!', 'resultErrorContainer');
+            return;
+        }
+        var flag = false;
+        for (var i = 0; i < source_code.length; i++) {
+            if (source_code[i] != ' ') {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            createErrorMessage('Source code is empty!', 'resultErrorContainer');
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/decode/download',
+            data: {
+                _token: $('input[name=_token]').val(),
+                source_code: source_code
+            },
+            success: function (data) {
+                var container = $('<div></div>').addClass('col-12 col-sm-12 alert alert-success').text("Source code downloaded!");
+                $('#resultErrorContainer').append(container);
+                window.location.href = path + '/download/client/' + lastChosenLang;
+            }
+        });
+    });
 });
 
-},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/languages/Cpp":3,"../classes/languages/Cs":4,"../classes/languages/Java":5,"../classes/languages/Python":7,"../classes/statement/AssignmentStatement":8,"../classes/statement/DeclareStatement":9,"../classes/statement/ForStatement":10,"../classes/statement/IfStatement":11,"../classes/statement/InputStatement":12,"../classes/statement/OutputStatement":13,"../classes/statement/SwitchStatement":15,"../classes/statement/WhileStatement":16,"../classes/statement/helper/assignment/Arithmetic":17,"../classes/statement/helper/case/Case":18,"../classes/statement/helper/general/Condition":19,"../classes/statement/helper/ifs/Elif":21,"../classes/statement/helper/ifs/Else":22,"../classes/statement/helper/ifs/If":23,"../classes/statement/helper/options/Option":24,"../classes/variable/Char":26,"../classes/variable/Double":27,"../classes/variable/Float":28,"../classes/variable/Integer":29,"../classes/variable/Long":30,"../classes/variable/String":31}],34:[function(require,module,exports){
+},{"../classes/canvas/Canvas":1,"../classes/languages/C":2,"../classes/languages/Cpp":3,"../classes/languages/Cs":4,"../classes/languages/Java":5,"../classes/languages/Pseudocode":7,"../classes/languages/Python":8,"../classes/statement/AssignmentStatement":9,"../classes/statement/DeclareStatement":10,"../classes/statement/ForStatement":11,"../classes/statement/IfStatement":12,"../classes/statement/InputStatement":13,"../classes/statement/OutputStatement":14,"../classes/statement/SwitchStatement":16,"../classes/statement/WhileStatement":17,"../classes/statement/helper/assignment/Arithmetic":18,"../classes/statement/helper/case/Case":19,"../classes/statement/helper/general/Condition":20,"../classes/statement/helper/ifs/Elif":22,"../classes/statement/helper/ifs/Else":23,"../classes/statement/helper/ifs/If":24,"../classes/statement/helper/options/Option":25,"../classes/variable/Char":27,"../classes/variable/Double":28,"../classes/variable/Float":29,"../classes/variable/Integer":30,"../classes/variable/Long":31,"../classes/variable/String":32}],35:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Return = /** @class */ (function () {
@@ -7692,7 +8033,7 @@ var Return = /** @class */ (function () {
 }());
 exports.default = Return;
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClick = /** @class */ (function () {
@@ -7706,7 +8047,7 @@ var ReturnClick = /** @class */ (function () {
 }());
 exports.default = ReturnClick;
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnClone = /** @class */ (function () {
@@ -7719,7 +8060,7 @@ var ReturnClone = /** @class */ (function () {
 }());
 exports.default = ReturnClone;
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ReturnPaste = /** @class */ (function () {
@@ -7731,4 +8072,4 @@ var ReturnPaste = /** @class */ (function () {
 }());
 exports.default = ReturnPaste;
 
-},{}]},{},[33]);
+},{}]},{},[34]);

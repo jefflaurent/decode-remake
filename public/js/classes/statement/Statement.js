@@ -53,6 +53,7 @@ var Statement = /** @class */ (function () {
     Statement.prototype.generateJavaSourceCode = function () { return []; };
     Statement.prototype.generatePythonSourceCode = function () { return []; };
     Statement.prototype.generateCsSourceCode = function () { return []; };
+    Statement.prototype.generatePseudocode = function () { return []; };
     return Statement;
 }());
 exports.default = Statement;

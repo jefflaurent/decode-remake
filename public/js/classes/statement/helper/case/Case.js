@@ -157,7 +157,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -186,7 +186,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -215,7 +215,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -244,7 +244,7 @@ var Case = /** @class */ (function (_super) {
                 sourceCodeContainer.push(this.getIndentation() + "case " + this.condition.secondVariable.value + ":\n");
         }
         else
-            sourceCodeContainer.push(this.getIndentation() + "default:");
+            sourceCodeContainer.push(this.getIndentation() + "default:\n");
         if (this.childStatement != undefined) {
             if (this.childStatement.length == 0)
                 sourceCodeContainer.push('\n');
@@ -261,6 +261,35 @@ var Case = /** @class */ (function (_super) {
             sourceCodeContainer.push('\n');
         }
         sourceCodeContainer.push(this.getIndentation() + '\tbreak;\n');
+        return sourceCodeContainer;
+    };
+    Case.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        if (!this.isDefault) {
+            if (this.condition.secondVariable instanceof Char_1.default)
+                sourceCodeContainer.push(this.getIndentation() + "CASE '" + this.condition.secondVariable.value + "'\n");
+            else
+                sourceCodeContainer.push(this.getIndentation() + "CASE " + this.condition.secondVariable.value + "\n");
+        }
+        else
+            sourceCodeContainer.push(this.getIndentation() + "DEFAULT\n");
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + '\tBREAK\n');
         return sourceCodeContainer;
     };
     Case.prototype.toJSON = function () {

@@ -214,6 +214,16 @@ class DeclareStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generatePseudocode(): string[] {
+        let sourceCodeContainer: string[] = []
+        if(this.variable instanceof String || this.variable instanceof Char)
+            sourceCodeContainer.push(this.getIndentation() + 'INITIALIZE '+ this.variable.name + ` = '` + this.variable.value + `'\n`)
+        else
+            sourceCodeContainer.push(this.getIndentation() + 'INITIALIZE '+ this.variable.name + ` = ` + this.variable.value + `\n`)
+    
+        return sourceCodeContainer
+    }
+
     toJSON() {
         return {
             statement: 'declare',

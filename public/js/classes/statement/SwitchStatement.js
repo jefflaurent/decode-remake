@@ -213,6 +213,20 @@ var SwitchStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(temp[j]);
         return sourceCodeContainer;
     };
+    SwitchStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'SWITCH ' + this.variable.name + '\n');
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        for (var i = 0; i < this.caseStatement.length; i++) {
+            temp = this.caseStatement[i].generatePseudocode();
+            temp = temp.flat(Infinity);
+            for (var j = 0; j < temp.length; j++)
+                sourceCodeContainer.push(temp[j]);
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     SwitchStatement.prototype.toJSON = function () {
         return {
             statement: 'switch',

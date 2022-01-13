@@ -314,6 +314,13 @@ var AssignmentStatement = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    AssignmentStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var code = '' + this.getIndentation();
+        code += this.generateBlockCodeText();
+        sourceCodeContainer.push(code);
+        return sourceCodeContainer;
+    };
     AssignmentStatement.prototype.toJSON = function () {
         return {
             statement: 'assignment',

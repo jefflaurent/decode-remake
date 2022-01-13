@@ -60,6 +60,10 @@
             #accordionTemplates {
                 margin-top: 4% !important;
             }
+
+            #accordionProject {
+                margin-top: 4% !important;
+            }
         }
 
         #source-code-container {

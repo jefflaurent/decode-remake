@@ -163,6 +163,16 @@ class InputStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generatePseudocode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        
+        sourceCode += 'INPUT ' + this.variable.name + '\n'
+        sourceCodeContainer.push(sourceCode)
+
+        return sourceCodeContainer
+    }
+
     toJSON() {
         return {
             statement: 'input',

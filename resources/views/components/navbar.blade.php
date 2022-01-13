@@ -68,15 +68,6 @@
                                     <li class="nav-item">
                                         <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>WebIDE</strong></a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>Oopsy</strong></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>DaBest</strong></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>Strukdat</strong></a>
-                                    </li>
                                 </ul>
                             </div>
                             <div class="col-lg-4"></div>

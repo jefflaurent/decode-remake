@@ -350,6 +350,16 @@ class AssignmentStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generatePseudocode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let code = '' + this.getIndentation()
+        code += this.generateBlockCodeText()
+        
+        sourceCodeContainer.push(code)
+
+        return sourceCodeContainer
+    }
+
     toJSON() {
         return {
             statement: 'assignment',

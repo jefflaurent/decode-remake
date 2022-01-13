@@ -147,6 +147,12 @@ var IfStatement = /** @class */ (function (_super) {
             sourceCodeContainer.push(this.ifOperations[i].generatePythonSourceCode());
         return sourceCodeContainer;
     };
+    IfStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        for (var i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generatePseudocode());
+        return sourceCodeContainer;
+    };
     IfStatement.prototype.toJSON = function () {
         return {
             statement: 'ifstatement',

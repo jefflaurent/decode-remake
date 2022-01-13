@@ -9,12 +9,15 @@
             <div class="accordion-body">
                 <div class="container-fluid">
                     <div class="col-sm-12 col-12">
+                        <!-- Error Messages -->
+                        <div class="col-12 col-sm-12 p-2" id="resultErrorContainer"></div>
+
                         <!-- Source Code -->
                         <div class="col-sm-12 col-12 p-2">
                             <textarea class="col-sm-12 col-12"  id="source-code-container" rows="30" readonly>
                             </textarea>
                         </div>
-    
+
                         <!-- Font size config and Download  -->
                         <div class="row p-2 mt-1">
                             <div class="col-12 col-sm-12 d-flex justify-content-end">
@@ -31,10 +34,9 @@
                                     </div>
                                 </div>
                                 <div class="col-0 col-sm-1 col-xl-1"></div>
-                                <form action="/decode/download" class="d-flex justify-content-end align-items-center col-3 col-sm-2 col-xl-2" method="post" style="background-color: yellow">
-                                    {{ csrf_field() }}
-                                    <button type="submit" class="btn btn-primary col-12 col-sm-12 d-flex justify-content-center align-items-center">Download</button>
-                                </form>
+                                <div class="d-flex justify-content-end align-items-center col-3 col-sm-2 col-xl-2">
+                                    <button type="submit" class="btn btn-primary col-12 col-sm-12 d-flex justify-content-center align-items-center" id="download-source-code">Download</button>
+                                </div>
                             </div>
                         </div>
                     </div>

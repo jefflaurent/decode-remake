@@ -240,6 +240,29 @@ var Else = /** @class */ (function (_super) {
         }
         return sourceCodeContainer;
     };
+    Else.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var temp;
+        sourceCodeContainer.push(this.getIndentation() + 'ELSE\n');
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n');
+        if (this.childStatement != undefined) {
+            if (this.childStatement.length == 0)
+                sourceCodeContainer.push('\n');
+            else {
+                for (var i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode();
+                    temp = temp.flat(Infinity);
+                    for (var j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j]);
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n');
+        }
+        sourceCodeContainer.push(this.getIndentation() + 'END\n');
+        return sourceCodeContainer;
+    };
     Else.prototype.toJSON = function () {
         return {
             statement: 'else',

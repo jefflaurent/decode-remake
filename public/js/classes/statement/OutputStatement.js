@@ -212,6 +212,27 @@ var OutputStatement = /** @class */ (function (_super) {
         sourceCodeContainer.push(sourceCode);
         return sourceCodeContainer;
     };
+    OutputStatement.prototype.generatePseudocode = function () {
+        var sourceCodeContainer = [];
+        var text = '' + this.getIndentation() + 'PRINT ';
+        if (this.type == 'variable') {
+            text += this.variable.name;
+        }
+        else if (this.type == 'text') {
+            text += "\"" + this.text + "\"";
+        }
+        else if (this.type == 'ascii') {
+            text += "ASCII CODE " + this.asciiCode;
+        }
+        else {
+            text += "ESCAPE SEQUENCE " + "\"" + this.escapeSequence + "\"";
+        }
+        if (this.isNewLine == true)
+            text += ' [ENTER]';
+        text += '\n';
+        sourceCodeContainer.push(text);
+        return sourceCodeContainer;
+    };
     OutputStatement.prototype.toJSON = function () {
         return {
             statement: 'output',

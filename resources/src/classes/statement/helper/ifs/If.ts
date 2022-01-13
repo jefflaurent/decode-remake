@@ -362,6 +362,43 @@ class If extends Statement {
         return sourceCodeContainer
     }
 
+    generatePseudocode(): string[] {
+        let sourceCodeContainer: string[] = []
+        let sourceCode = '' + this.getIndentation()
+        let temp
+        
+        if(this.logicalOperator != undefined && this.secondCondition != undefined) {
+            sourceCode += 'IF ' + this.firstCondition.generateBlockCodeText() + ' ' + this.logicalOperator + ' '
+                + this.secondCondition.generateBlockCodeText() + '\n'
+        }
+        else {
+            sourceCode += 'IF ' + this.firstCondition.generateBlockCodeText() + '\n' 
+        }
+        sourceCodeContainer.push(sourceCode)
+        sourceCodeContainer.push(this.getIndentation() + 'BEGIN\n')
+
+        if(this.childStatement != undefined) {
+            if(this.childStatement.length == 0)
+                sourceCodeContainer.push('\n')
+            else {
+                for(let i = 0; i < this.childStatement.length; i++) {
+                    temp = this.childStatement[i].generatePseudocode()
+                    temp = temp.flat(Infinity)
+    
+                    for(let j = 0; j < temp.length; j++)
+                        sourceCodeContainer.push(temp[j])
+                }
+            }
+        }
+        else {
+            sourceCodeContainer.push('\n')
+        }
+
+        sourceCodeContainer.push(this.getIndentation() + 'END\n')
+
+        return sourceCodeContainer
+    }
+
     toJSON() {
         return {
             statement: 'if',

@@ -32,6 +32,7 @@ import Python from '../classes/languages/Python'
 import Cs from '../classes/languages/Cs'
 import Cpp from '../classes/languages/Cpp'
 import Language from '../classes/languages/Language'
+import Pseudocode from '../classes/languages/Pseudocode'
 
 $(document).ready(function() {
 
@@ -155,6 +156,7 @@ $(document).ready(function() {
     function clearError() {
         $('#pcInputErrorContainer').empty()
         $('#pjMessageContainer').empty()
+        $('#resultErrorContainer').empty()
 
         if(declareVariableNameList != undefined) {
             for(let varName of declareVariableNameList)
@@ -493,6 +495,7 @@ $(document).ready(function() {
     // Click template button
     $(document).on('click', '.generateTemplate', function() {
         initInput('Program Input')
+        clearError()
         clearVariableStatementData()
         clearSourceCode()
         blankTemplate()
@@ -3062,12 +3065,15 @@ $(document).ready(function() {
 
     // Source Code Logic
 
+    let lastChosenLang: string = ''
+
     function clearSourceCode(): void {
         $('#source-code-container').val('')
     }
 
     $(document).on('click', '#btn-generate-source-code', function() {
         let language = $('.selected-programming-language').find('option').filter(':selected').val() as string
+        lastChosenLang = language
         let lang: Language
 
         if(language == 'c') {
@@ -3084,6 +3090,9 @@ $(document).ready(function() {
         }
         else if(language == 'python') {
             lang = new Python(listStatement)
+        }
+        else {
+            lang = new Pseudocode(listStatement)
         }
         
         $('#source-code-container').val('')
@@ -3328,6 +3337,46 @@ $(document).ready(function() {
                 clearVariableStatementData()
                 clearSourceCode()
                 blankTemplate()
+            }
+        })
+    })
+
+    let path = window.location.href
+
+    // Download Source Code
+    $(document).on('click', '#download-source-code', function() {
+        clearError()
+        let source_code = $('#source-code-container').val() as string
+        if(source_code == '' || source_code == undefined || source_code.length == 0) {
+            createErrorMessage('Source code is empty!', 'resultErrorContainer')
+            return
+        }
+        
+        let flag = false
+        for(let i = 0; i < source_code.length; i++) {
+            if(source_code[i] != ' ') {
+                flag = true
+                break
+            }
+        }
+
+        if(!flag) {
+            createErrorMessage('Source code is empty!', 'resultErrorContainer')
+            return
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/decode/download',
+            data: {
+                _token: $('input[name=_token]').val(),
+                source_code: source_code
+            },
+            success: function(data) {
+                let container = $('<div></div>').addClass('col-12 col-sm-12 alert alert-success').text(`Source code downloaded!`)
+                $('#resultErrorContainer').append(container)
+
+                window.location.href = path + '/download/client/' + lastChosenLang
             }
         })
     })

@@ -172,6 +172,15 @@ class IfStatement extends Statement {
         return sourceCodeContainer
     }
 
+    generatePseudocode(): string[] {
+        let sourceCodeContainer: string[] = []
+        
+        for(let i = 0; i < this.ifOperations.length; i++)
+            sourceCodeContainer.push(this.ifOperations[i].generatePseudocode())
+
+        return sourceCodeContainer
+    }
+
     toJSON() {
         return {
             statement: 'ifstatement',
