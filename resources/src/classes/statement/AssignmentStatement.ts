@@ -353,7 +353,7 @@ class AssignmentStatement extends Statement {
     generatePseudocode(): string[] {
         let sourceCodeContainer: string[] = []
         let code = '' + this.getIndentation()
-        code += this.generateBlockCodeText()
+        code += 'SET ' + this.targetVariable.name + ' = ' + this.generateBlockCodeText() + '\n'
         
         sourceCodeContainer.push(code)
 

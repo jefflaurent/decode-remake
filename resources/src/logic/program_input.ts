@@ -688,6 +688,8 @@ $(document).ready(function() {
 
     $(document).on('click', '.selection', function() {
         ifCount = 1 
+        ifToBeValidated = []
+        isElsed = false
         if($(this).data('value') == 'if-else') {
             initInput('Selection Properties')
             createIfSelection()
@@ -3334,9 +3336,6 @@ $(document).ready(function() {
                 let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text(`Project deleted`)
                 $('#pjMessageContainer').append(container)
                 initInput('Program Input')
-                clearVariableStatementData()
-                clearSourceCode()
-                blankTemplate()
             }
         })
     })

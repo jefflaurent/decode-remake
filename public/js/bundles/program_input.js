@@ -767,7 +767,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
     AssignmentStatement.prototype.generatePseudocode = function () {
         var sourceCodeContainer = [];
         var code = '' + this.getIndentation();
-        code += this.generateBlockCodeText();
+        code += 'SET ' + this.targetVariable.name + ' = ' + this.generateBlockCodeText() + '\n';
         sourceCodeContainer.push(code);
         return sourceCodeContainer;
     };
@@ -5896,6 +5896,8 @@ $(document).ready(function () {
     var isElsed = false;
     $(document).on('click', '.selection', function () {
         ifCount = 1;
+        ifToBeValidated = [];
+        isElsed = false;
         if ($(this).data('value') == 'if-else') {
             initInput('Selection Properties');
             createIfSelection();
@@ -7373,6 +7375,10 @@ $(document).ready(function () {
         var aspect = cv.height / cv.width;
         var width = con.width();
         var height = con.height();
+        width = width * 2;
+        if (width < 1034) {
+            width = 1034;
+        }
         canvas.width = width;
         // canvas.height = Math.round(width * aspect);
         canvas.height = height * 10;
@@ -7979,9 +7985,6 @@ $(document).ready(function () {
                 var container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-success').text("Project deleted");
                 $('#pjMessageContainer').append(container);
                 initInput('Program Input');
-                clearVariableStatementData();
-                clearSourceCode();
-                blankTemplate();
             }
         });
     });

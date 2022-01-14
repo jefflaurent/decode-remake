@@ -317,7 +317,7 @@ var AssignmentStatement = /** @class */ (function (_super) {
     AssignmentStatement.prototype.generatePseudocode = function () {
         var sourceCodeContainer = [];
         var code = '' + this.getIndentation();
-        code += this.generateBlockCodeText();
+        code += 'SET ' + this.targetVariable.name + ' = ' + this.generateBlockCodeText() + '\n';
         sourceCodeContainer.push(code);
         return sourceCodeContainer;
     };
