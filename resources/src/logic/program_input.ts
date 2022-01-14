@@ -2614,6 +2614,11 @@ $(document).ready(function() {
         let aspect = cv.height / cv.width
         let width = con.width() as number
         let height = con.height()
+        width = width * 2
+
+        if(width < 1034) {
+            width = 1034
+        }
     
         canvas.width = width;
         // canvas.height = Math.round(width * aspect);
