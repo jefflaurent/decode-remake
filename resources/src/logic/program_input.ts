@@ -82,52 +82,54 @@ $(document).ready(function() {
     }
 
     function createDeclareDataVariable(isRequired: boolean, isNumber: boolean) {
-        let container = $('<div></div>').addClass('col-sm-12').addClass('col-12')
-        let hintContainer = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('mb-2').addClass('d-flex')
-        hintContainer.append(createHint('Variable Name', 5))
-        hintContainer.append(createWhiteSpace(1))
-        hintContainer.append(createHint('Initial Value', 5))
-        
-        let inputContainer = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('mb-4').addClass('d-flex').addClass('align-items-center')
         let variableClassName = 'var-name-' + variableIndex
         let inputClassName = 'input-val-' + variableIndex
-        let container1 = $('<div></div>').addClass('col-sm-5').addClass('col-5')
-        let container2 = $('<div></div>').addClass('col-sm-5').addClass('col-5')
-        let container3 = $('<div></div>').addClass('col-sm-1').addClass('col-1').addClass('d-flex').addClass('justify-content-center')
-        container1.append(createInputField('text').addClass(variableClassName))
-        if(isNumber)
-            container2.append(createInputField('number').addClass(inputClassName))
-        else
-            container2.append(createInputField('text').addClass(inputClassName))
-        container3.append(createCloseBtn().data('value', variableIndex++))
+        let hintContainer = $('<div>', {class: 'col-sm-12 col-12 mb-2 d-flex'}).append(
+            createHint('Variable Name', 5),
+            createWhiteSpace(1),
+            createHint('Initial Value', 5)
+        )
+
+        let valueField = isNumber ? createInputField('number').addClass(inputClassName) : createInputField('text').addClass(inputClassName)
+
+        let inputContainer = $('<div>', {class: 'col-sm-12 col-12 mb-4 d-flex align-items-center'}).append(
+            $('<div>', {class: 'col-sm-5 col-5'}).append(
+                createInputField('text').addClass(variableClassName)
+            ),
+            createWhiteSpace(1),
+            $('<div>', {class: 'col-sm-5 col-5'}).append(valueField)
+        )
+        
+        let container3 = $('<div>', {class: 'col-sm-1 col-1 d-flex justify-content-center'}).append(
+            createCloseBtn().data('value', variableIndex++)
+        )
 
         declareVariableNameList.push(variableClassName)
         declareVariableValueList.push(inputClassName)
 
-        inputContainer.append(container1)
-        inputContainer.append(createWhiteSpace(1))
-        inputContainer.append(container2)
         if(!isRequired)
             inputContainer.append(container3)
 
-        container.append(hintContainer)
-        container.append(inputContainer)
-
-        $('#pcInputContainer').append(container)
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'col-sm-12 col-12'}).append(
+                hintContainer,
+                inputContainer
+            )
+        )
     }
 
     function createSelect(listVariable: Variable[], length: number, isAllVariable?: boolean) {
+        let option
         let className = 'col-sm-' + length
         let className2 = 'col-' + length
-        let container = $('<div></div>').addClass(className).addClass(className2)
-        let select = $('<select></select>').addClass('form-select').addClass('col-sm-12').addClass('col-12')
-        let option
-
-        select.append($('<option></option>').val(null).text('Choose Variable'))
+        let container = $('<div>', {class: className + ' ' + className2})
+        let select = $('<select>', {class: 'form-select col-sm-12 col-12'}).append(
+            $('<option>').val(null).text('Choose Variable')
+        )
 
         for(let variable of listVariable) {
             if(!isAllVariable)
-                option = $('<option></option>').val(variable.name).text(variable.name)
+                option = $('<option>').val(variable.name).text(variable.name)
             else {
                 let dataType: string
                 if(variable instanceof Integer)
@@ -142,9 +144,8 @@ $(document).ready(function() {
                     dataType = 'Char'
                 else
                     dataType = 'String'
-                option = $('<option></option>').val(variable.name).text(variable.name + ' (' + dataType + ')')
+                option = $('<option>').val(variable.name).text(variable.name + ' (' + dataType + ')')
             }
-                
             select.append(option)
         }
 
@@ -220,7 +221,7 @@ $(document).ready(function() {
     }
 
     function createErrorMessage(message: string, targetClass: string) {
-        let container = $('<div></div>').addClass('col-12').addClass('col-sm-12').addClass('alert').addClass('alert-danger').text(message)
+        let container = $('<div>', {class: 'col-sm-12 col-12 alert alert-danger'}).text(message)
         targetClass = '#' + targetClass
         $(targetClass).append(container)
     }
@@ -334,13 +335,11 @@ $(document).ready(function() {
             isNumericValue = true
         }
 
-        let btn = createGreenButton('Variable').addClass('col-sm-3 col-3 addVariableDeclareBtn').data('value', isNumericValue)
-        let createBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                            addClass('col-2').attr('id', 'createVariableBtn').data('value', $(this).data('value')).text('Create')
-
-        $('#pcInputContainerLower').append(btn)
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-7').addClass('col-7'))
-        $('#pcInputContainerLower').append(createBtn)
+        $('#pcInputContainerLower').append(
+            createGreenButton('Variable').addClass('col-sm-3 col-3 addVariableDeclareBtn').data('value', isNumericValue),
+            $('<div>', {class: 'col-sm-7 col-7'}),
+            $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'createVariableBtn'}).data('value', $(this).data('value')).text('Create')
+        )
     })
 
     // Click create variable button
@@ -439,19 +438,17 @@ $(document).ready(function() {
             listVariable = listString
         }
 
-        let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
-        let select = createSelect(listVariable, 7).attr('id', 'chosenVariable')
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'd-flex align-items-center mb-3'}).append(
+                createHint('Variable Name', 5),
+                createSelect(listVariable, 7).attr('id', 'chosenVariable')
+            )
+        )
 
-        container.append(createHint('Variable Name', 5))
-        container.append(select)
-        container.addClass('mb-3')
-        $('#pcInputContainer').append(container)
-
-        let inputBtn = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('col-sm-2').
-                            addClass('col-2').attr('id', 'inputVariableBtn').data('value', $(this).data('value')).text('Select')
-
-        $('#pcInputContainerLower').append($('<div></div>').addClass('col-sm-10').addClass('col-10'))
-        $('#pcInputContainerLower').append(inputBtn)
+        $('#pcInputContainerLower').append(
+            $('<div>', {class: 'col-sm-10 col-10'}),
+            $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'inputVariableBtn'}).data('value', $(this).data('value')).text('Select')
+        )
     })
 
     // Click select input variable button
@@ -574,7 +571,6 @@ $(document).ready(function() {
                 inputBtn
             )
             $('#pcInputContainerLower').append(btmContainer)
-
         }
         else {
             initInput('Output Text')
@@ -583,103 +579,75 @@ $(document).ready(function() {
     })
 
     function createOutputTextSelection(): void {
-        let row = $('<div></div>').addClass('row')
-        let leftSide = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('mb-2')
-        let rightSide = $('<div></div>').addClass('col-sm-8').addClass('col-8')
-        let listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab').attr('role', 'tablist')
-        let listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-home-list').attr('data-bs-toggle', 'list').attr('href', '#list-home').text('Text')
-        let listGroupItem2 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-profile-list').attr('data-bs-toggle', 'list').attr('href', '#list-profile').text('ASCII Code')
-        let listGroupItem3 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').attr('id', 'list-messages-list').attr('data-bs-toggle', 'list').attr('href', '#list-messages').text('Escape Sequence')
+        let leftSide = $('<div>', {class: 'col-sm-4 col-4 mb-2'}).append(
+            $('<div>', {class: 'list-group', id: 'list-tab'}).attr('role', 'tablist').append(
+                $('<a>', {class: 'list-group-item list-group-item-action active', id: 'list-home-list'}).attr('data-bs-toggle', 'list').attr('href', '#list-home').text('Text'),
+                $('<a>', {class: 'list-group-item list-group-item-action', id: 'list-profile-list'}).attr('data-bs-toggle', 'list').attr('href', '#list-profile').text('ASCII Code'),
+                $('<a>', {class: 'list-group-item list-group-item-action', id: 'list-messages-list'}).attr('data-bs-toggle', 'list').attr('href', '#list-messages').text('Escape Sequence')
+            )
+        )
 
-        listGroup.append(listGroupItem1)
-        listGroup.append(listGroupItem2)
-        listGroup.append(listGroupItem3)
-        leftSide.append(listGroup)
-
-        let tabContent = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContent')
-        let tabPane1 = $('<div></div>').addClass('tab-pane fade show active').attr('id', 'list-home').attr('role', 'tabpanel')
-        let tabPane2 = $('<div></div>').addClass('tab-pane fade').attr('id', 'list-profile').attr('role', 'tabpanel')
-        let tabPane3 = $('<div></div>').addClass('tab-pane fade').attr('id', 'list-messages').attr('role', 'tabpanel')
-
-        let desc1 = $('<strong></strong>').text('Input Text')
-        let desc2 = $('<strong></strong>').text('ASCII Code')
-        let desc3 = $('<strong></strong>').text('Escape Sequence')
-
-        let inputText = $('<input>').attr('type', 'text').addClass('form-control').addClass('mt-2').attr('id', 'output-text-box')
-        let selectEscape = $('<select></select>').addClass('form-select').addClass('mt-2').attr('id', 'select-escape-seq')
-        selectEscape.append($('<option></option>').val('a').text('\\a'))
-        selectEscape.append($('<option></option>').val('b').text('\\b'))
-        selectEscape.append($('<option></option>').val('f').text('\\f'))
-        selectEscape.append($('<option></option>').val('n').text('\\n'))
-        selectEscape.append($('<option></option>').val('r').text('\\r'))
-        selectEscape.append($('<option></option>').val('t').text('\\t'))
-        selectEscape.append($('<option></option>').val('v').text('\\v'))
-        selectEscape.append($('<option></option>').val('bs').text(`\\\\`))
-        selectEscape.append($('<option></option>').val(`tick`).text(`\\'`))
-        selectEscape.append($('<option></option>').val(`dtick`).text(`\\"`))
-        selectEscape.append($('<option></option>').val(`qmark`).text(`\\?`))
-
-        let selectAscii = $('<select></select>').addClass('form-select').addClass('mt-2').attr('id', 'select-ascii-code')
+        let selectAscii = $('<select>', {class: 'form-select mt-2', id: 'select-ascii-code'})
         for(let i = 0; i <= 255; i++) 
             selectAscii.append($('<option></option>').val(i).text(i))
-        
-        let container1 = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('d-flex')
-        let container2 = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('d-flex')
-        let container3 = $('<div></div>').addClass('col-sm-12').addClass('col-12').addClass('d-flex')
 
-        let leftContainer1 = $('<div></div>').addClass('col-sm-8').addClass('col-8').addClass('d-flex').addClass('align-items-center')
-        let placeholder1 = $('<div></div>')
-        let cb1 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-text')
-        let lbl1 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-text').text('Add new line')
+        let selectEscape = $('<select>', {class: 'form-select mt-2', id: 'select-escape-seq'}).append(
+            $('<option>').val('a').text('\\a'), $('<option>').val('b').text('\\b'),
+            $('<option>').val('f').text('\\f'), $('<option>').val('n').text('\\n'),
+            $('<option>').val('r').text('\\r'), $('<option>').val('t').text('\\t'),
+            $('<option>').val('v').text('\\v'), $('<option>').val('bs').text(`\\\\`),
+            $('<option>').val(`tick`).text(`\\'`), $('<option>').val(`dtick`).text(`\\"`),
+            $('<option>').val(`qmark`).text(`\\?`)
+        )
 
-        let leftContainer2 = $('<div></div>').addClass('col-sm-8').addClass('col-8').addClass('d-flex').addClass('align-items-center')
-        let placeholder2 = $('<div></div>')
-        let cb2 = $('<input>').attr('type', 'checkbox').addClass('form-check-input').attr('id', 'new-line-ascii')
-        let lbl2 = $('<label></label>').addClass('form-check-label').addClass('ms-2').attr('for', 'new-line-ascii').text('Add new line')
+        let rightSide = $('<div>', {class: 'col-sm-8 col-8'}).append(
+            $('<div>', {class: 'tab-content', id: 'nav-tabContent'}).append(
+                $('<div>', {class: 'tab-pane fade show active', id:'list-home'}).attr('id', 'list-home').attr('role', 'tabpanel').append(
+                    $('<strong>').text('Input Text'),
+                    $('<input>', {type: 'text', class: 'form-control mt-2', id: 'output-text-box'}),
+                    $('<div>', {class: 'col-sm-12 col-12 d-flex'}).append(
+                        $('<div>', {class: 'col-sm-8 col-8 d-flex align-items-center'}).append(
+                            $('<div>').append(
+                                $('<input>', {type: 'checkbox', class: 'form-check-input', id: 'new-line-text'}),
+                                $('<label>', {class: 'form-check-label ms-2', for: 'new-line-text'}).text('Add new line')
+                            )
+                        ),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-end'}).append(
+                            $('<button>', {class: 'btn btn-primary mt-2', id: 'btn-submit-output'}).data('value', 'text').text('Create')
+                        )
+                    )
+                ),
+                $('<div>', {class: 'tab-pane fade', id: 'list-profile'}).attr('role', 'tabpanel').append(
+                    $('<strong>').text('ASCII Code'),
+                    selectAscii,
+                    $('<div>', {class: 'col-sm-12 col-12 d-flex'}).append(
+                        $('<div>', {class: 'col-sm-8 col-8 d-flex align-items-center'}).append(
+                            $('<div>').append(
+                                $('<input>', {type: 'checkbox', class: 'form-check-input', id: 'new-line-ascii'}),
+                                $('<label>', {class: 'form-check-label ms-2', for: 'new-line-ascii'}).text('Add new line')
+                            )
+                        ),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-end'}).append(
+                            $('<button>', {class: 'btn btn-primary mt-2', id: 'btn-submit-output'}).data('value', 'ascii').text('Create')
+                        )
+                    )
+                ),
+                $('<div>', {class: 'tab-pane fade', id: 'list-messages'}).attr('role', 'tabpanel').append(
+                    $('<strong>').text('Escape Sequence'),
+                    selectEscape,
+                    $('<div>', {class: 'col-sm-12 col-12 d-flex'}).append(
+                        $('<div>', {class: 'col-sm-8 col-8 d-flex align-items-center'}),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-end'}).append(
+                            $('<button>', {class: 'btn btn-primary mt-2', id: 'btn-submit-output'}).data('value', 'escape').text('Create')
+                        )
+                    )
+                )
+            )
+        )
 
-        let innerContainer1 = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('d-flex').addClass('justify-content-end')
-        let innerContainer2 = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('d-flex').addClass('justify-content-end')
-        let innerContainer3 = $('<div></div>').addClass('col-sm-4').addClass('col-4').addClass('d-flex').addClass('justify-content-end')
-
-        let btn1 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'text')
-        let btn2 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'ascii')
-        let btn3 = $('<button></button>').addClass('btn').addClass('btn-primary').addClass('mt-2').text('Create').attr('id', 'btn-submit-output').data('value', 'escape')
-
-        innerContainer1.append(btn1)
-        placeholder1.append(cb1)
-        placeholder1.append(lbl1)
-        leftContainer1.append(placeholder1)
-        container1.append(leftContainer1)
-        container1.append(innerContainer1)
-        tabPane1.append(desc1)
-        tabPane1.append(inputText)
-        tabPane1.append(container1)
-
-        innerContainer2.append(btn2)
-        placeholder2.append(cb2)
-        placeholder2.append(lbl2)
-        leftContainer2.append(placeholder2)
-        container2.append(leftContainer2)
-        container2.append(innerContainer2)
-        tabPane2.append(desc2)
-        tabPane2.append(selectAscii)
-        tabPane2.append(container2)
-
-        innerContainer3.append(btn3)
-        container3.append($('<div></div>').addClass('col-sm-8').addClass('col-8'))
-        container3.append(innerContainer3)
-        tabPane3.append(desc3)
-        tabPane3.append(selectEscape)
-        tabPane3.append(container3)
-
-        tabContent.append(tabPane1)
-        tabContent.append(tabPane2)
-        tabContent.append(tabPane3)
-        rightSide.append(tabContent)
-
-        row.append(leftSide)
-        row.append(rightSide)
-        $('#pcInputContainer').append(row)
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'row'}).append(leftSide, rightSide)
+        )
     }
 
     let ifCount: number = 1
@@ -701,12 +669,10 @@ $(document).ready(function() {
     })
 
     function createGreenButton(text: string) {
-        let container = $('<div></div>').addClass('btn d-flex align-items-center justify-content-center bg-success p-2 text-white bg-opacity-75 p-2 mt-2')
-        let icon = $('<i></i>').addClass('fas fa-plus me-2')
-        let word = $('<div></div>').text(text)
-
-        container.append(icon)
-        container.append(word)
+        let container = $('<div>', {class: 'btn d-flex align-items-center justify-content-center bg-success p-2 text-white bg-opacity-75 p-2 mt-2'}).append(
+            $('<i>', {class: 'fas fa-plus me-2'}),
+            $('<div>').text(text)
+        )
         
         return container
     }
@@ -1419,41 +1385,46 @@ $(document).ready(function() {
     $(document).on('click', '#outputVariableBtn', function() {
         clearError()
 
-        if($('#chosenOutputVariable').find('option').filter(':selected').val() == '') {
+        let variable = getSelectedOutputVariable()
+        if(variable == undefined) {
             createErrorMessage('Please select a variable', 'pcInputErrorContainer')
             $('#chosenOutputVariable').addClass('input-error')
         }
         else {
-            let variableName = $('#chosenOutputVariable').find('option').filter(':selected').val() as string
-            let text = $('#chosenOutputVariable').find('option').filter(':selected').text().split(' ')[1] as string
-            let variable: Variable | undefined = undefined
-            let statement: Statement
             let isNewLine: boolean = $('#new-line-variable').is(':checked')
-
-            if(text == '(Integer)') 
-                variable = getVariable(listInteger, variableName)
-            else if(text == '(Long)')
-                variable = getVariable(listLong, variableName)
-            else if(text == '(Float)') 
-                variable = getVariable(listFloat, variableName)
-            else if(text == '(Double)') 
-                variable = getVariable(listDouble, variableName)
-            else if(text == '(Char)') 
-                variable = getVariable(listChar, variableName)
-            else 
-                variable = getVariable(listString, variableName)
-            
-            if(variable != undefined) {
-                statement = new OutputStatement(statementCount++, 1, isNewLine, 'variable', variable)
-                handleAdd(statement)
-                restructureStatement()
-                turnOffOptions()
-                clearSourceCode()
-                initInput('Program Input')
-                drawCanvas()
-            }
+            let statement = new OutputStatement(statementCount++, 1, isNewLine, 'variable', variable)
+            handleAdd(statement)
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
         }
     })
+
+    function getSelectedOutputVariable(): Variable | undefined {
+        if($('#chosenOutputVariable').find('option').filter(':selected').val() == '')
+            return undefined
+        
+        let variableName = $('#chosenOutputVariable').find('option').filter(':selected').val() as string
+        let text = $('#chosenOutputVariable').find('option').filter(':selected').text().split(' ')[1] as string
+        let variable: Variable | undefined = undefined
+
+        if(text == '(Integer)') 
+            variable = getVariable(listInteger, variableName)
+        else if(text == '(Long)')
+            variable = getVariable(listLong, variableName)
+        else if(text == '(Float)') 
+            variable = getVariable(listFloat, variableName)
+        else if(text == '(Double)') 
+            variable = getVariable(listDouble, variableName)
+        else if(text == '(Char)') 
+            variable = getVariable(listChar, variableName)
+        else 
+            variable = getVariable(listString, variableName)
+
+        return variable        
+    }
 
     $(document).on('click', '#btn-submit-output', function() {
         let output
@@ -1481,7 +1452,6 @@ $(document).ready(function() {
     })
 
     // Repetition
-
     $(document).on('click', '.repetition', function() {
         let createBtn: any
         if($(this).data('value') == 'for') {
@@ -2586,7 +2556,7 @@ $(document).ready(function() {
     var canvas: any
     var option: Option | undefined = undefined
 
-    // Variables to handle canvas interaction (add, mov, pst)
+    // Variables to handle canvas interaction (add, mov, pst, edt)
     var clipboard: Statement | undefined = undefined
     var lastSelectedOption: string | undefined = undefined 
     var returnClick: ReturnClick | undefined = undefined
@@ -2698,6 +2668,11 @@ $(document).ready(function() {
                     clipboard = cloneStatement(returnClick.statement)
                     lastSelectedOption = returnClick.option.optionName
                 }
+                else if(returnClick.option.optionName == 'EDT') {
+                    clipboard = returnClick.option.parent
+                    lastSelectedOption = returnClick.option.optionName
+                    handleEdit()
+                }
                 else if(returnClick.option.optionName == 'DEL') {
                     clipboard = returnClick.statement
                     lastSelectedOption = returnClick.option.optionName
@@ -2775,6 +2750,368 @@ $(document).ready(function() {
         initInput('Program Input')
         drawCanvas()
     }
+
+    function handleEdit(): void {
+        if(clipboard instanceof DeclareStatement) {
+            initInput('Edit Declare Statement')
+            createEditDeclare()
+        }
+        else if(clipboard instanceof InputStatement) {
+            initInput('Edit Input Statement')
+            createEditInput()
+        }
+        else if(clipboard instanceof OutputStatement) {
+            initInput('Edit Output Statement')
+            createEditOutput()
+        }
+        else if(clipboard instanceof IfStatement) {
+            
+        } 
+        else if(clipboard instanceof SwitchStatement) {
+            
+        }
+        else if(clipboard instanceof ForStatement) {
+
+        }
+        else if(clipboard instanceof WhileStatement) {
+
+        }
+        else if(clipboard instanceof AssignmentStatement) {
+            
+        }
+    }
+
+    // Edit Declare Statement
+    function createEditDeclare(): void {
+        let targetVariable = (clipboard as DeclareStatement).variable;
+        let variableClassName = 'var-name-' + variableIndex
+        let inputClassName = 'input-val-' + variableIndex
+        let isNumber: boolean = false
+
+        if(targetVariable instanceof Char || targetVariable instanceof String)
+            isNumber = false
+        else
+            isNumber = true
+
+        let hintContainer = $('<div>', {class: 'col-sm-12 col-12 mb-2 d-flex'}).append(
+            createHint('Variable Name', 5),
+            createWhiteSpace(1),
+            createHint('Initial Value', 5)
+        )
+        
+        let valueField = isNumber ? createInputField('number').addClass(inputClassName).val(targetVariable.value) : createInputField('text').addClass(inputClassName).val(targetVariable.value)
+        let inputContainer = $('<div>', {class: 'col-sm-12 col-12 mb-4 d-flex align-items-center'}).append(
+            $('<div>', {class: 'col-sm-5 col-5'}).append(
+                createInputField('text').addClass(variableClassName).val(targetVariable.name).attr('disabled', 'true')
+            ),
+            createWhiteSpace(1),
+            $('<div>', {class: 'col-sm-5 col-5'}).append(valueField)
+        )
+        
+        declareVariableNameList.push(variableClassName)
+        declareVariableValueList.push(inputClassName)
+
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'col-sm-12 col-12'}).append(
+                hintContainer,
+                inputContainer
+            )
+        )
+
+        $('#pcInputContainerLower').append(
+            $('<div>', {class: 'col-sm-10 col-10'}),
+            $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'editDeclareVariableBtn'}).text('Update')
+        )
+    }
+
+    // Update Declare Statement 
+    $(document).on('click', '#editDeclareVariableBtn', function() {
+        clearError()
+        let targetVariable = (clipboard as DeclareStatement).variable;
+        let tempVariable : Variable
+        let val = $('.input-val-0').val() as string
+
+        if(targetVariable instanceof Integer) 
+            tempVariable = new Integer('tmp', val)
+        else if(targetVariable instanceof Long)
+            tempVariable = new Long('tmp', val)
+        else if(targetVariable instanceof Float)
+            tempVariable = new Float('tmp', val)
+        else if(targetVariable instanceof Double)
+            tempVariable = new Double('tmp', val)
+        else if(targetVariable instanceof String)
+            tempVariable = new String('tmp', val)
+        else if(targetVariable instanceof Char)
+            tempVariable = new Char('tmp', val)
+
+        let returnValue = tempVariable.validateValue()
+        if(!returnValue.bool) {
+            $('.input-val-0').addClass('input-error')
+            createErrorMessage(returnValue.message, 'pcInputErrorContainer')
+            return
+        }
+        
+        (clipboard as DeclareStatement).variable.value = $('.input-val-0').val() as string
+        finishAction()
+        restructureStatement()
+        turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
+        drawCanvas()
+    })
+
+    // Edit Input Statement
+    function createEditInput(): void {
+        let targetVariable = (clipboard as InputStatement).variable
+        let classType: string
+        let listVariable: Variable[]
+
+        if(targetVariable instanceof Integer) {
+            listVariable = listInteger
+            classType = 'int'
+        }
+        else if(targetVariable instanceof Long) {
+            listVariable = listLong
+            classType = 'long'
+        }
+        else if(targetVariable instanceof Float) {
+            listVariable = listFloat
+            classType = 'float'
+        }
+        else if(targetVariable instanceof Double) {
+            listVariable = listDouble
+            classType = 'double'
+        } 
+        else if(targetVariable instanceof Char) {
+            listVariable = listChar
+            classType = 'char'
+        }
+        else {
+            listVariable = listString
+            classType = 'string'
+        }
+
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'd-flex align-items-center mb-3'}).append(
+                createHint('Variable Name', 5),
+                createSelect(listVariable, 7).attr('id', 'chosenVariable')
+            )
+        )
+
+        $('#pcInputContainerLower').append(
+            $('<div>', {class: 'col-sm-10 col-10'}),
+            $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'editInputVariableBtn'}).data('value', classType).text('Update')
+        )
+    }
+
+    // Update Input Statement
+    $(document).on('click', '#editInputVariableBtn', function() {
+        clearError()
+
+        if($('#chosenVariable').find('option').filter(':selected').val() == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+            $('#chosenVariable').addClass('input-error')
+        }
+        else {
+            let variableName = $('#chosenVariable').find('option').filter(':selected').val() as string
+            let variable: Variable | undefined = undefined
+            let statement: Statement
+
+            if($('#editInputVariableBtn').data('value') == 'int') 
+                variable = getVariable(listInteger, variableName)
+            else if($('#editInputVariableBtn').data('value') == 'long')
+                variable = getVariable(listLong, variableName)
+            else if($('#editInputVariableBtn').data('value') == 'float') 
+                variable = getVariable(listFloat, variableName)
+            else if($('#editInputVariableBtn').data('value') == 'double') 
+                variable = getVariable(listDouble, variableName)
+            else if($('#editInputVariableBtn').data('value') == 'char') 
+                variable = getVariable(listChar, variableName)
+            else 
+                variable = getVariable(listString, variableName)
+            
+            if(variable != undefined) {
+                statement = new InputStatement(statementCount++, 1, variable)
+                // validate chosen variable has been declared
+                if(returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false))
+                    (clipboard as InputStatement).variable = variable
+                else
+                    createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+            }
+
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
+    })
+
+    // Edit Output Statement
+    function createEditOutput(): void {
+        let statement = (clipboard as OutputStatement)
+        
+        if(statement.type == 'variable')
+            createEditOutputVariable()
+        else
+            createEditOutputText()
+    }
+
+    function createEditOutputVariable(): void {
+        initInput('Edit Output Variable')
+        let listVariable: Variable[] = getAllVariables()
+
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'd-flex align-items-center mb-3'}).append(
+                createHint('Variable Name', 5),
+                createSelect(listVariable, 7, true).attr('id', 'chosenOutputVariable'),
+            )
+        )
+        
+        $('#pcInputContainerLower').append($('<div>', {class: 'col-sm-12 col-12 d-flex justify-content-evenly align-items-center'}).append(
+            $('<div>', {class: 'col-sm-5 col-5'}),
+            $('<div>', {class: 'col-sm-5 col-5 d-flex align-items-center'}).append(
+                $('<input>', {class: 'form-check-input col-sm-1 col-1 d-flex align-items-center', type: 'checkbox', id: 'new-line-variable'}),
+                $('<label>', {class: 'form-check-label col-sm-11 col-11 d-flex align-items-center ms-2', for: 'new-line-variable'}).text('Add new line')
+            ),
+            $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'editOutputVariableBtn'}).text('Update')
+        ))
+    }
+
+    function createEditOutputText(): void {
+        initInput('Edit Output Text')
+        let leftSide = $('<div>', {class: 'col-sm-4 col-4 mb-2'}).append(
+            $('<div>', {class: 'list-group', id: 'list-tab'}).attr('role', 'tablist').append(
+                $('<a>', {class: 'list-group-item list-group-item-action active', id: 'list-home-list'}).attr('data-bs-toggle', 'list').attr('href', '#list-home').text('Text'),
+                $('<a>', {class: 'list-group-item list-group-item-action', id: 'list-profile-list'}).attr('data-bs-toggle', 'list').attr('href', '#list-profile').text('ASCII Code'),
+                $('<a>', {class: 'list-group-item list-group-item-action', id: 'list-messages-list'}).attr('data-bs-toggle', 'list').attr('href', '#list-messages').text('Escape Sequence')
+            )
+        )
+
+        let selectAscii = $('<select>', {class: 'form-select mt-2', id: 'select-ascii-code'})
+        for(let i = 0; i <= 255; i++) 
+            selectAscii.append($('<option></option>').val(i).text(i))
+
+        let selectEscape = $('<select>', {class: 'form-select mt-2', id: 'select-escape-seq'}).append(
+            $('<option>').val('a').text('\\a'), $('<option>').val('b').text('\\b'),
+            $('<option>').val('f').text('\\f'), $('<option>').val('n').text('\\n'),
+            $('<option>').val('r').text('\\r'), $('<option>').val('t').text('\\t'),
+            $('<option>').val('v').text('\\v'), $('<option>').val('bs').text(`\\\\`),
+            $('<option>').val(`tick`).text(`\\'`), $('<option>').val(`dtick`).text(`\\"`),
+            $('<option>').val(`qmark`).text(`\\?`)
+        )
+
+        let rightSide = $('<div>', {class: 'col-sm-8 col-8'}).append(
+            $('<div>', {class: 'tab-content', id: 'nav-tabContent'}).append(
+                $('<div>', {class: 'tab-pane fade show active', id:'list-home'}).attr('id', 'list-home').attr('role', 'tabpanel').append(
+                    $('<strong>').text('Input Text'),
+                    $('<input>', {type: 'text', class: 'form-control mt-2', id: 'output-text-box'}),
+                    $('<div>', {class: 'col-sm-12 col-12 d-flex'}).append(
+                        $('<div>', {class: 'col-sm-8 col-8 d-flex align-items-center'}).append(
+                            $('<div>').append(
+                                $('<input>', {type: 'checkbox', class: 'form-check-input', id: 'new-line-text'}),
+                                $('<label>', {class: 'form-check-label ms-2', for: 'new-line-text'}).text('Add new line')
+                            )
+                        ),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-end'}).append(
+                            $('<button>', {class: 'btn btn-primary mt-2', id: 'btn-edit-output'}).data('value', 'text').text('Update')
+                        )
+                    )
+                ),
+                $('<div>', {class: 'tab-pane fade', id: 'list-profile'}).attr('role', 'tabpanel').append(
+                    $('<strong>').text('ASCII Code'),
+                    selectAscii,
+                    $('<div>', {class: 'col-sm-12 col-12 d-flex'}).append(
+                        $('<div>', {class: 'col-sm-8 col-8 d-flex align-items-center'}).append(
+                            $('<div>').append(
+                                $('<input>', {type: 'checkbox', class: 'form-check-input', id: 'new-line-ascii'}),
+                                $('<label>', {class: 'form-check-label ms-2', for: 'new-line-ascii'}).text('Add new line')
+                            )
+                        ),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-end'}).append(
+                            $('<button>', {class: 'btn btn-primary mt-2', id: 'btn-edit-output'}).data('value', 'ascii').text('Update')
+                        )
+                    )
+                ),
+                $('<div>', {class: 'tab-pane fade', id: 'list-messages'}).attr('role', 'tabpanel').append(
+                    $('<strong>').text('Escape Sequence'),
+                    selectEscape,
+                    $('<div>', {class: 'col-sm-12 col-12 d-flex'}).append(
+                        $('<div>', {class: 'col-sm-8 col-8 d-flex align-items-center'}),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-end'}).append(
+                            $('<button>', {class: 'btn btn-primary mt-2', id: 'btn-edit-output'}).data('value', 'escape').text('Update')
+                        )
+                    )
+                )
+            )
+        )
+
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'row'}).append(leftSide, rightSide)
+        )
+    }
+
+    // Update Output Variable
+    $(document).on('click', '#editOutputVariableBtn', function() {
+        clearError()
+        let variable = getSelectedOutputVariable()
+        if(variable == undefined) {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+            $('#chosenOutputVariable').addClass('input-error')
+        }
+        else {
+            let isNewLine: boolean = $('#new-line-variable').is(':checked')
+            let statement = new OutputStatement(statementCount++, 1, isNewLine, 'variable', variable)
+
+            if(returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                (clipboard as OutputStatement).variable = variable;
+                (clipboard as OutputStatement).isNewLine = isNewLine;
+            }
+            else {
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+            }
+            
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
+    })
+    
+    // Update Output Text
+    $(document).on('click', '#btn-edit-output', function() {
+        let output
+        if($(this).data('value') == 'text') {
+            let text = $('#output-text-box').val() as string
+            let newLine: boolean = $('#new-line-text').is(':checked')
+            output = new OutputStatement(statementCount++, 1, newLine, 'text', undefined, text)
+        }
+        else if($(this).data('value') == 'ascii') {
+            let num =  $('#select-ascii-code').find('option').filter(':selected').val() as number
+            let newLine: boolean = $('#new-line-ascii').is(':checked')
+            output = new OutputStatement(statementCount++, 1, newLine, 'ascii', undefined, undefined, num, undefined)
+        }
+        else {
+            let text = $('#select-escape-seq').find('option').filter(':selected').text()
+            output = new OutputStatement(statementCount++, 1, false, 'escapeseq', undefined, undefined, undefined, text)
+        }
+        
+        (clipboard as OutputStatement).isNewLine = output.isNewLine;
+        (clipboard as OutputStatement).type = output.type;
+        (clipboard as OutputStatement).text = output.text;
+        (clipboard as OutputStatement).asciiCode = output.asciiCode;
+        (clipboard as OutputStatement).escapeSequence = output.escapeSequence;
+
+        finishAction()
+        restructureStatement()
+        turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
+        drawCanvas()
+    })
 
     function handleDelete(): void {
         let returnPaste: ReturnPaste | undefined = undefined
@@ -3071,7 +3408,6 @@ $(document).ready(function() {
     }
 
     // Source Code Logic
-
     let lastChosenLang: string = ''
 
     function clearSourceCode(): void {
@@ -3132,7 +3468,6 @@ $(document).ready(function() {
             $('#font-size-input').val(fontSize)
         }
     })
-
 
     // Manage project logic
     function parseJSON(object: any): Statement {
@@ -3383,5 +3718,21 @@ $(document).ready(function() {
                 window.location.href = path + '/download/client/' + lastChosenLang
             }
         })
+    })
+
+    $(document).on('click', '.generateTemplate', function(event) {
+        event.preventDefault();
+
+        $('html, body').animate({
+            scrollTop: $('#block-code-canvas').offset().top
+        }, 300);
+    });
+
+    $(document).on('click', '#btn-generate-source-code', function(event) {
+        event.preventDefault();
+
+        $('html, body').animate({
+            scrollTop: $('#source-code-container').offset().top
+        }, 300);
     })
 })

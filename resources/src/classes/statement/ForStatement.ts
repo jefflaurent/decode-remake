@@ -1,13 +1,10 @@
-import { timers } from "jquery";
 import ReturnClick from "../../utilities/ReturnClick";
 import ReturnClone from "../../utilities/ReturnClone";
 import Canvas from "../canvas/Canvas";
-import Char from "../variable/Char";
 import Double from "../variable/Double";
 import Float from "../variable/Float";
 import Integer from "../variable/Integer";
 import Long from "../variable/Long";
-import String from "../variable/String";
 import Variable from "../variable/Variable";
 import AssignmentStatement from "./AssignmentStatement";
 import DeclareStatement from "./DeclareStatement";

@@ -2,7 +2,6 @@ import ReturnClick from "../../../../utilities/ReturnClick"
 import ReturnClone from "../../../../utilities/ReturnClone"
 import ReturnPaste from "../../../../utilities/ReturnPaste"
 import Canvas from "../../../canvas/Canvas"
-import Variable from "../../../variable/Variable"
 import AssignmentStatement from "../../AssignmentStatement"
 import DeclareStatement from "../../DeclareStatement"
 import ForStatement from "../../ForStatement"
@@ -13,7 +12,6 @@ import Statement from "../../Statement"
 import SwitchStatement from "../../SwitchStatement"
 import WhileStatement from "../../WhileStatement"
 import Case from "../case/Case"
-import Elif from "../ifs/Elif"
 import Else from "../ifs/Else"
 import If from "../ifs/If"
 
@@ -94,7 +92,7 @@ export default class OptionSelection {
                 if(targetStatement.level > 1) 
                     return false
             }
-            else if(targetStatement instanceof If || targetStatement instanceof Else ||targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
+            else if(targetStatement instanceof If || targetStatement instanceof Else || targetStatement instanceof Case || (targetStatement instanceof ForStatement && isInner) 
                 || (targetStatement instanceof WhileStatement && isInner)) {
                 return false
             }
@@ -115,7 +113,6 @@ export default class OptionSelection {
         mainListStatement = returnPaste.listStatement
 
         if(returnPaste.result) {
-            mainListStatement = returnPaste.listStatement
             let variableFound: boolean = false
             
             if(mainListStatement != undefined) {

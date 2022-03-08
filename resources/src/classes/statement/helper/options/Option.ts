@@ -6,7 +6,6 @@ import ForStatement from "../../ForStatement"
 import IfStatement from "../../IfStatement"
 import InputStatement from "../../InputStatement"
 import OutputStatement from "../../OutputStatement"
-import Statement from "../../Statement"
 import SwitchStatement from "../../SwitchStatement"
 import WhileStatement from "../../WhileStatement"
 import OptionSelection from "./OptionSelection"
@@ -63,7 +62,8 @@ class Option {
         temp.push(new OptionSelection(this.optionId, 'PST', '#e65010', this.coorX + 90, this.coorX, this.coorY, 40, 40, this.parent))
         temp.push(new OptionSelection(this.optionId, 'MOV', '#186e2b', this.coorX + 135, this.coorX, this.coorY, 40, 40, this.parent))
         temp.push(new OptionSelection(this.optionId, 'CPY', '#4b1363', this.coorX + 180, this.coorX, this.coorY, 40, 40, this.parent))
-        temp.push(new OptionSelection(this.optionId, 'DEL', '#ad0e0e', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'EDT', '#e6b800', this.coorX + 225, this.coorX, this.coorY, 40, 40, this.parent))
+        temp.push(new OptionSelection(this.optionId, 'DEL', '#ad0e0e', this.coorX + 270, this.coorX, this.coorY, 40, 40, this.parent))
         
         return temp
     }

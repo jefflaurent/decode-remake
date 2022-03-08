@@ -17,6 +17,10 @@ class DecodeController extends Controller
         return view('home');
     }
 
+    public function showTutorial() {
+        return view('tutorial');
+    }
+
     public function create(Request $request) {
         $project = new Project();
         $project->user_id = Auth::user()->user_id;

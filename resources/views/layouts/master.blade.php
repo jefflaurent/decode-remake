@@ -8,6 +8,10 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
         
+        html {
+            scroll-behavior: 'smooth';
+        }
+
         body {
             font-family: 'Roboto' !important;
         }

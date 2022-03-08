@@ -63,10 +63,10 @@
                             <div class="col-lg-7 d-flex align-items-center">
                                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-flex justify-content-between">
                                     <li class="nav-item">
-                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>Decode</strong></a>
+                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>Block Code</strong></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>WebIDE</strong></a>
+                                        <a class="nav-link link-secondary text-decoration-none" aria-current="page" href="#"><strong>Web Compiler</strong></a>
                                     </li>
                                 </ul>
                             </div>

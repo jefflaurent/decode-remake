@@ -15,6 +15,8 @@ Route::get('/', function () {
     return redirect()->route('home');
 });
 
+Route::get('/tutorial', 'DecodeController@showTutorial');
+
 Route::get('/decode', 'DecodeController@home')->name('home');
 
 Route::post('/decode/create', 'DecodeController@create')->middleware('auth');

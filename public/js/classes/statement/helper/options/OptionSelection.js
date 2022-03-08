@@ -89,7 +89,6 @@ var OptionSelection = /** @class */ (function () {
         parentStatement = pasteResult[1];
         mainListStatement = returnPaste.listStatement;
         if (returnPaste.result) {
-            mainListStatement = returnPaste.listStatement;
             var variableFound = false;
             if (mainListStatement != undefined) {
                 for (var i = 0; i < mainListStatement.length; i++) {
