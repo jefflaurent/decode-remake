@@ -5796,33 +5796,57 @@ $(document).ready(function () {
         if ($(this).data('value') == 'if-else') {
             initInput('Selection Properties');
             createIfSelection();
+            $('#pcInputContainerLower').append($('<div>', { class: 'd-flex justify-content-end p-2 col-sm-12 col-12' }).append($('<div>', { class: 'col-sm-10 col-10' }), $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: 'createIfStatementButton' }).text('Create')));
         }
         else {
-            initInput('Switch Properties');
-            createSwitchSelection();
+            createSwitchSelection('create');
         }
     });
     function createGreenButton(text) {
         var container = $('<div>', { class: 'btn d-flex align-items-center justify-content-center bg-success p-2 text-white bg-opacity-75 p-2 mt-2' }).append($('<i>', { class: 'fas fa-plus me-2' }), $('<div>').text(text));
         return container;
     }
-    function createSwitchSelection() {
+    function createSwitchSelection(type) {
+        if (type == 'create')
+            initInput('Switch Properties');
+        else
+            initInput('Edit Switch Statement');
+        $('.all-case-container').empty();
+        caseToBeValidated = [];
+        isDefaulted = false;
+        caseCount = 1;
         var listVariable = [];
         listVariable = getSelectedVariables('switch');
-        var container = $('<div></div>').addClass('d-flex').addClass('align-items-center');
-        var select = createSelect(listVariable, 7, true).attr('id', 'chosenSwitchVariable');
-        container.append(createHint('Variable', 5));
-        container.append(select);
-        container.addClass('mb-3');
-        var allCaseContainer = $('<div></div>').addClass('all-case-container');
-        $('#pcInputContainer').append(container);
-        $('#pcInputContainer').append(allCaseContainer);
-        createAdditionalSwitchButton();
+        $('#pcInputContainer').append($('<div>', { class: 'd-flex align-items-center mb-3' }).append(createHint('Variable', 5), createSelect(listVariable, 7, true).attr('id', 'chosenSwitchVariable')), $('<div>', { class: 'all-case-container' }));
+        if (type == 'update') {
+            var variable = clipboard.variable;
+            $('#chosenSwitchVariable').find('option[value="' + variable.name + '"]').prop('selected', true);
+            createUpdateCase();
+        }
+        createAdditionalSwitchButton(type);
+    }
+    function createUpdateCase() {
+        var len = clipboard.caseStatement.length;
+        var temp = undefined;
+        var variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val();
+        var variable = findVariable(variableName);
+        for (var i = 0; i < len; i++) {
+            temp = clipboard.caseStatement[i];
+            if (temp.isDefault)
+                isDefaulted = true;
+            createCaseStatementInput(true, temp.isDefault, variable);
+        }
     }
     var caseToBeValidated = [];
     var caseCount = 1;
     var isDefaulted = false;
     $(document).on('click', '#createSwitchCaseBtn', function () {
+        handleCreateSwitchButton('create');
+    });
+    $(document).on('click', '#updateSwitchCaseBtn', function () {
+        handleCreateSwitchButton('update');
+    });
+    function handleCreateSwitchButton(type) {
         clearError();
         var variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val();
         if (variableName == '') {
@@ -5830,13 +5854,42 @@ $(document).ready(function () {
         }
         else {
             var variable = findVariable(variableName);
-            createCaseStatement(variable);
+            var statement = createCaseStatement(variable);
+            if (statement != undefined) {
+                if (type == 'create')
+                    handleAdd(statement);
+                else {
+                    var oldCaseStatement = clipboard.caseStatement;
+                    var caseStatement = statement.caseStatement;
+                    var tempChildStatement = [];
+                    if (returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                        for (var i = 0; i < oldCaseStatement.length; i++) {
+                            tempChildStatement = [];
+                            if (oldCaseStatement[i].childStatement != undefined) {
+                                for (var j = 0; j < oldCaseStatement[i].childStatement.length; j++)
+                                    tempChildStatement.push(oldCaseStatement[i].childStatement[j]);
+                            }
+                            caseStatement[i].updateChildStatement(tempChildStatement);
+                        }
+                        clipboard.updateCaseStatement(caseStatement);
+                        clipboard.variable = statement.variable;
+                    }
+                    else {
+                        createErrorMessage('Could not use chosen variable!', 'bcErrorContainer');
+                    }
+                }
+                finishAction();
+                restructureStatement();
+                turnOffOptions();
+                clearSourceCode();
+                initInput('Program Input');
+                drawCanvas();
+            }
         }
-    });
+    }
     function createCaseStatement(variable) {
         var value = '';
         var tempVariable = undefined;
-        var proceed = true;
         var caseStatement = [];
         var result;
         var className = '';
@@ -5846,51 +5899,49 @@ $(document).ready(function () {
             if (value == undefined) {
                 $(className).addClass('input-error');
                 createErrorMessage('Field cannot be empty!', 'pcInputErrorContainer');
-                proceed = false;
-                break;
+                return undefined;
             }
             tempVariable = createVariableFromValue(value);
             if (tempVariable instanceof String_1.default) {
                 $(className).addClass('input-error');
                 createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer');
-                proceed = false;
-                break;
+                return undefined;
             }
             result = tempVariable.validateValue();
             if (!result.bool) {
                 $(className).addClass('input-error');
                 createErrorMessage(result.message, 'pcInputErrorContainer');
-                proceed = false;
-                break;
+                return undefined;
             }
             caseStatement.push(new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', tempVariable, true), undefined, false));
         }
-        if (proceed) {
-            if (isDefaulted) {
-                caseStatement.push(new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', variable, true), undefined, true));
-            }
-            var switchStatement = new SwitchStatement_1.default(1, statementCount++, variable, undefined);
-            switchStatement.updateCaseStatement(caseStatement);
-            handleAdd(switchStatement);
-            restructureStatement();
-            turnOffOptions();
-            clearSourceCode();
-            initInput('Program Input');
-            drawCanvas();
+        if (isDefaulted) {
+            caseStatement.push(new Case_1.default(1, statementCount++, new Condition_1.default(variable, '==', variable, true), undefined, true));
         }
+        var switchStatement = new SwitchStatement_1.default(1, statementCount++, variable, undefined);
+        switchStatement.updateCaseStatement(caseStatement);
+        return switchStatement;
     }
     $(document).on('change', '#chosenSwitchVariable', function () {
         clearError();
+        changeChosenVariableSwitch();
+    });
+    function changeChosenVariableSwitch() {
         $('.all-case-container').empty();
         caseToBeValidated = [];
         isDefaulted = false;
         caseCount = 1;
         var variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val();
         if (variableName != '') {
-            var variable = findVariable(variableName);
-            createCaseStatementInput(true, false, variable);
+            if (lastSelectedOption == 'EDT' && clipboard instanceof SwitchStatement_1.default) {
+                createUpdateCase();
+            }
+            else {
+                var variable = findVariable(variableName);
+                createCaseStatementInput(true, false, variable);
+            }
         }
-    });
+    }
     $(document).on('click', '.add-additional-case-btn', function () {
         clearError();
         if (!isDefaulted) {
@@ -5939,6 +5990,25 @@ $(document).ready(function () {
     function createCaseStatementInput(isRequired, isDefault, variable) {
         var className = 'additional-case-container-' + caseCount;
         var inputClassName = 'case-input-' + caseCount;
+        var startContainer = $('<div>', { class: 'col-sm-2 col-2 d-flex justify-content-end' });
+        var textField = $('<input>').attr('type', 'text').addClass('form-control ' + inputClassName);
+        var endContainer = $('<div>', { class: 'col-sm-1 col-1 d-flex justify-content-center' });
+        var buttonClose = $('<button>', { class: 'btn-close rmCase' }).data('value', caseCount++);
+        if (!isDefault) {
+            startContainer.append($('<strong>').text('Case:'));
+            caseToBeValidated.push(inputClassName);
+        }
+        else {
+            startContainer.append($('<strong>').text('Default:'));
+            textField.attr('disabled', 'true');
+        }
+        if (!isRequired)
+            endContainer.append(buttonClose);
+        $('.all-case-container').append($('<div>', { class: 'col-sm-12 col-12 mb-2 d-flex justify-content-center align-items-center ' + className }).append(startContainer, $('<div>', { class: 'col-sm-4 col-4 d-flex justify-content-center' }).text(variable.name), $('<div>', { class: 'col-sm-1 col-1 d-flex align-items-center' }).text('=='), $('<div>', { class: 'col-sm-3 col-3' }).append(textField), endContainer));
+    }
+    function oldCreateCaseStatementInput(isRequired, isDefault, variable) {
+        var className = 'additional-case-container-' + caseCount;
+        var inputClassName = 'case-input-' + caseCount;
         var container = $('<div></div>').addClass('col-sm-12 col-12 mb-2 d-flex justify-content-center align-items-center ' + className);
         var startContainer = $('<div></div>').addClass('col-sm-2 col-2 d-flex justify-content-end');
         var leftContainer = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-center').text(variable.name);
@@ -5965,88 +6035,60 @@ $(document).ready(function () {
         container.append(endContainer);
         $('.all-case-container').append(container);
     }
-    function createAdditionalSwitchButton() {
-        var addCaseBtn = createGreenButton('Case').addClass('col-sm-3 col-3 add-additional-case-btn');
-        var addDefault = createGreenButton('Default').addClass('col-sm-3 col-3 add-default-btn');
-        var inputBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2')
-            .attr('id', 'createSwitchCaseBtn').text('Create');
-        var upperContainer = $('<div></div>').addClass('col-sm-12 col-12');
-        upperContainer.append(addCaseBtn);
-        upperContainer.append($('<div></div>').addClass('col-sm-9 col-9'));
-        var lowerContainer = $('<div></div>').addClass('col-sm-12 col-12 d-flex justify-content-center');
-        lowerContainer.append(addDefault);
-        lowerContainer.append($('<div></div>').addClass('col-sm-7 col-7'));
-        lowerContainer.append(inputBtn);
-        var bothContainer = $('<div></div>').addClass('col-sm-12 col-12 d-flex flex-column');
-        bothContainer.append(upperContainer);
-        bothContainer.append(lowerContainer);
-        $('#pcInputContainerLower').append(bothContainer);
+    function createAdditionalSwitchButton(type) {
+        var btnId = type == 'create' ? 'createSwitchCaseBtn' : 'updateSwitchCaseBtn';
+        var text = type == 'create' ? 'Create' : 'Update';
+        $('#pcInputContainerLower').append($('<div>', { class: 'col-sm-12 col-12 d-flex flex-column' }).append($('<div>', { class: 'col-sm-12 col-12' }).append(createGreenButton('Case').addClass('col-sm-3 col-3 add-additional-case-btn'), $('<div>', { class: 'col-sm-9 col-9' })), $('<div>', { class: 'col-sm-12 col-12 d-flex justify-content-center' }).append(createGreenButton('Default').addClass('col-sm-3 col-3 add-default-btn'), $('<div>', { class: 'col-sm-7 col-7' }), $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).text(text))));
     }
     function createIfSelection() {
-        var row = $('<div></div>').addClass('row');
-        var leftSide = $('<div></div>').addClass('col-sm-4 col-4 mb-2');
-        var rightSide = $('<div></div>').addClass('col-sm-8 col-8 if-properties-container-' + ifCount);
-        var listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab-if').attr('role', 'tablist');
-        var listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-if-1').attr('data-bs-toggle', 'list').attr('href', '#list-1').text('If');
-        var addElseIfBtn = createGreenButton('Else If').addClass('additional-if').data('value', 'elif');
-        var addElseBtn = createGreenButton('Else').addClass('additional-if').data('value', 'else');
-        var tab = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContentIf');
-        var tabContent = createNewIfTab();
-        listGroup.append(listGroupItem1);
-        leftSide.append(listGroup);
-        leftSide.append(addElseIfBtn);
-        leftSide.append(addElseBtn);
-        tabContent.append(createIfPropertiesInput(true));
-        tab.append(tabContent);
-        rightSide.append(tab);
-        var createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'createIfStatementButton').text('Create');
-        var container = $('<div></div>').addClass('d-flex justify-content-end p-2 col-sm-12 col-12');
-        container.append($('<div></div>').addClass('col-sm-10 col-10'));
-        container.append(createBtn);
-        row.append(leftSide);
-        row.append(rightSide);
-        $('#pcInputContainer').append(row);
-        $('#pcInputContainerLower').append(container);
+        var leftSide = $('<div>', { class: 'col-sm-4 col-4 mb-2' }).append($('<div>', { class: 'list-group', id: 'list-tab-if' }).attr('role', 'tablist').append($('<a>', { class: 'list-group-item list-group-item-action active', id: 'list-if-1' }).attr('data-bs-toggle', 'list').attr('href', '#list-1').text('If')), createGreenButton('Else If').addClass('additional-if').data('value', 'elif'), createGreenButton('Else').addClass('additional-if').data('value', 'else'));
+        var rightSide = $('<div>', { class: 'col-sm-8 col-8 if-properties-container-' + ifCount }).append($('<div>', { class: 'tab-content', id: 'nav-tabContentIf' }).append(createNewIfTab().append(createIfPropertiesInput(true))));
+        $('#pcInputContainer').append($('<div>', { class: 'row' }).append(leftSide, rightSide));
         ifToBeValidated.push(ifCount);
         ifCount++;
     }
     function createNewIfTab() {
         var id = 'list-' + ifCount;
-        var tabPane = $('<div></div>').addClass('tab-pane fade show').attr('id', id).attr('role', 'tabpanel');
+        var tabPane = $('<div>', { class: 'tab-pane fade show', id: id }).attr('role', 'tabpanel');
         if (ifCount == 1)
             tabPane.addClass('active');
         return tabPane;
     }
     $(document).on('click', '.additional-if', function () {
         clearError();
-        if ($(this).data('value') == 'elif') {
-            if (!isElsed) {
-                ifToBeValidated.push(ifCount);
-                $('#list-tab-if').append(createNewTab('Else If').data('value', 'elif'));
-                var ifInputProperties = createIfPropertiesInput(true);
-                var tabContent = createNewIfTab();
-                tabContent.append(ifInputProperties);
-                $('#nav-tabContentIf').append(tabContent);
-                ifCount++;
-            }
-            else
-                createErrorMessage('Could not add else if after else!', 'pcInputErrorContainer');
-        }
-        else {
-            if (!isElsed) {
-                $('#list-tab-if').append(createNewTab('Else').data('value', 'else'));
-                isElsed = true;
-            }
-            else
-                createErrorMessage('Could not add else after else!', 'pcInputErrorContainer');
-        }
+        if ($(this).data('value') == 'elif')
+            createAdditionalElif(true);
+        else
+            createElse(true);
     });
-    function createNewTab(text) {
+    function createAdditionalElif(isDeletable) {
+        if (!isElsed) {
+            ifToBeValidated.push(ifCount);
+            $('#list-tab-if').append(createNewTab('Else If', isDeletable).data('value', 'elif'));
+            var ifInputProperties = createIfPropertiesInput(true);
+            var tabContent = createNewIfTab();
+            tabContent.append(ifInputProperties);
+            $('#nav-tabContentIf').append(tabContent);
+            ifCount++;
+        }
+        else
+            createErrorMessage('Could not add else if after else!', 'pcInputErrorContainer');
+    }
+    function createElse(isDeletable) {
+        if (!isElsed) {
+            $('#list-tab-if').append(createNewTab('Else', isDeletable).data('value', 'else'));
+            isElsed = true;
+        }
+        else
+            createErrorMessage('Could not add else after else!', 'pcInputErrorContainer');
+    }
+    function createNewTab(text, isDeletable) {
         var a = $('<a></a>').addClass('list-group-item list-group-item-action d-flex justify-content-between align-items-center').attr('data-bs-toggle', 'list').attr('id', 'list-if-' + ifCount).attr('href', '#list-' + ifCount);
         var word = $('<div></div>').text(text);
-        var i = $('<i></i>').addClass('fas fa-trash delete-if-stmnt').css('color', 'red').data('value', ifCount);
+        var i = $('<i>', { class: 'fas fa-trash delete-if-stmnt' }).css('color', 'red').data('value', ifCount);
         a.append(word);
-        a.append(i);
+        if (isDeletable)
+            a.append(i);
         return a;
     }
     $(document).on('click', '.delete-if-stmnt', function () {
@@ -6464,131 +6506,57 @@ $(document).ready(function () {
     });
     // Repetition
     $(document).on('click', '.repetition', function () {
+        createRepetitionInput('create', $(this).data('value'));
+    });
+    function createRepetitionInput(type, clicked) {
         var createBtn;
-        if ($(this).data('value') == 'for') {
-            initInput('For Loop Properties');
+        var btnId;
+        var text;
+        if (type == 'create') {
+            btnId = 'create-loop-button';
+            text = 'Create';
+        }
+        else {
+            btnId = 'update-loop-button';
+            text = 'Update';
+        }
+        if (clicked == 'for') {
+            if (type == 'create')
+                initInput('For Loop Properties');
+            else
+                initInput('Edit For Statement');
             createForLoopCondition();
             createForLoopVariableUpdate();
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'for').text('Create');
+            createBtn = $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).data('value', 'for').text(text);
         }
-        else if ($(this).data('value') == 'do-while') {
-            initInput('Do-While Loop Properties');
+        else if (clicked == 'do-while') {
+            if (type == 'create')
+                initInput('Do-While Loop Properties');
+            else
+                initInput('Edit Do-While Statement');
             createForLoopCondition();
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'do-while').text('Create');
+            createBtn = $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).data('value', 'do-while').text(text);
         }
-        else if ($(this).data('value') == 'while') {
-            initInput('While Loop Properties');
+        else if (clicked == 'while') {
+            if (type == 'create')
+                initInput('While Loop Properties');
+            else
+                initInput('Edit While Statement');
             createForLoopCondition();
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'while').text('Create');
+            createBtn = $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).data('value', 'while').text(text);
         }
-        var container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12');
-        container.append(createBtn);
-        $('#pcInputContainerLower').append(container);
-    });
+        $('#pcInputContainerLower').append($('<div>', { class: 'd-flex justify-content-end col-sm-12 col-12' }).append(createBtn));
+    }
     function createForLoopCondition() {
         var listVariable = [];
         listVariable = getSelectedVariables('repetition');
-        var loopConditionContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3');
-        var loopTitle = $('<div></div>').append($('<strong></strong>').text('Loop Condition')).addClass('mb-3');
-        var container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
-        var variableTitle = $('<div></div>').append($('<strong></strong>').text('Variable')).addClass('col-sm-5 col-5');
-        var variableSelect = createSelect(listVariable, 7, true).attr('id', 'chosen-for-loop-variable');
-        var container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
-        var operatorTitle = $('<div></div>').append($('<strong></strong>').text('Operator')).addClass('col-sm-5 col-5');
-        var operators = createOperatorRadioRepetition('op-for');
-        var container3 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
-        var valueTypeTitle = $('<div></div>').append($('<strong></strong>').text('Value Type')).addClass('col-sm-5 col-5');
-        var valueTypeContainer = $('<div></div>').addClass('col-sm-7 col-7');
-        var valueTypeSelect = $('<select></select>').addClass('form-select choose-for-loop-value-type');
-        valueTypeSelect.append($('<option></option>').val('variable').text('Variable'));
-        valueTypeSelect.append($('<option></option>').val('custom').text('Custom Value'));
-        var container4 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3');
-        var valueTitle = $('<div></div>').append($('<strong></strong>').text('Value')).addClass('col-sm-5 col-5');
-        var valueContainer = $('<div></div>').addClass('col-sm-7 col-7 value-container-for-loop');
-        var valueSelect = createSelect(listVariable, 12, true).attr('id', 'chosen-for-loop-value');
-        container1.append(variableTitle);
-        container1.append(variableSelect);
-        container2.append(operatorTitle);
-        container2.append(operators);
-        container3.append(valueTypeTitle);
-        valueTypeContainer.append(valueTypeSelect);
-        container3.append(valueTypeContainer);
-        container4.append(valueTitle);
-        valueContainer.append(valueSelect);
-        container4.append(valueContainer);
-        loopConditionContainer.append(loopTitle);
-        loopConditionContainer.append(container1);
-        loopConditionContainer.append(container2);
-        loopConditionContainer.append(container3);
-        loopConditionContainer.append(container4);
-        $('#pcInputContainer').append(loopConditionContainer);
+        $('#pcInputContainer').append($('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Loop Condition')), $('<div>', { class: 'col-sm-12 col-12 d-flex mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Variable')), createSelect(listVariable, 7, true).attr('id', 'chosen-for-loop-variable')), $('<div>', { class: 'col-sm-12 col-12 d-flex mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Operator')), createOperatorRadioRepetition('op-for')), $('<div>', { class: 'col-sm-12 col-12 d-flex mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value Type')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<select>', { class: 'form-select choose-for-loop-value-type' }).append($('<option>').val('variable').text('Variable'), $('<option>>').val('custom').text('Custom Value')))), $('<div>', { class: 'col-sm-12 col-12 d-flex mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Value')), $('<div>', { class: 'col-sm-7 col-7 value-container-for-loop' }).append(createSelect(listVariable, 12, true).attr('id', 'chosen-for-loop-value')))));
     }
     function createForLoopVariableUpdate() {
-        var loopVariableUpdateContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3');
-        var variableUpdate = $('<div></div>').append($('<strong></strong>').text('Variable Update')).addClass('mb-3');
-        var container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex align-items-center mb-3');
-        var updateType = $('<div></div>').append($('<strong></strong>').text('Update Type')).addClass('col-sm-5 col-5');
-        var innerContainer = $('<div></div>').addClass('col-sm-7 col-7 d-flex justify-content-center align-items-center');
-        var radioContainer1 = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-evenly align-items-center');
-        var radio1 = $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop').attr('checked', 'true');
-        var radioDesc1 = $('<div></div>').text('Increment');
-        var radioContainer2 = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-evenly align-items-center');
-        var radio2 = $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop');
-        var radioDesc2 = $('<div></div>').text('Decrement');
-        radioContainer1.append(radio1);
-        radioContainer1.append(radioDesc1);
-        radioContainer2.append(radio2);
-        radioContainer2.append(radioDesc2);
-        innerContainer.append(radioContainer1);
-        innerContainer.append($('<div></div>').addClass('col-sm-1 col-1'));
-        innerContainer.append(radioContainer2);
-        innerContainer.append($('<div></div>').addClass('col-sm-3 col-3'));
-        container1.append(updateType);
-        container1.append(innerContainer);
-        var container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex align-items-center mb-3');
-        var updateValue = $('<div></div>').append($('<strong></strong>').text('Update Value')).addClass('col-sm-5 col-5');
-        var valueContainer = $('<div></div>').addClass('col-sm-7 col-7');
-        var valueInput = $('<input></input>').addClass('form-control').attr('id', 'update-value-for-loop').attr('type', 'number').attr('min', 1);
-        valueContainer.append(valueInput);
-        container2.append(updateValue);
-        container2.append(valueContainer);
-        loopVariableUpdateContainer.append(variableUpdate);
-        loopVariableUpdateContainer.append(container1);
-        loopVariableUpdateContainer.append(container2);
-        $('#pcInputContainer').append(loopVariableUpdateContainer);
+        $('#pcInputContainer').append($('<div>', { class: 'p-2 border border-1 rounded bg-light mb-3' }).append($('<div>', { class: 'mb-3' }).append($('<strong>').text('Variable Update')), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Update Type')), $('<div>', { class: 'col-sm-7 col-7 d-flex justify-content-center align-items-center' }).append($('<div>', { class: 'col-sm-4 col-4 d-flex justify-content-evenly align-items-center' }).append($('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop').attr('checked', 'true'), $('<div>').text('Increment')), $('<div>', { class: 'col-sm-1 col-1' }), $('<div>', { class: 'col-sm-4 col-4 d-flex justify-content-evenly align-items-center' }).append($('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop'), $('<div>').text('Decrement')), $('<div>', { class: 'col-sm-3 col-3' }))), $('<div>', { class: 'col-sm-12 col-12 d-flex align-items-center mb-3' }).append($('<div>', { class: 'col-sm-5 col-5' }).append($('<strong>').text('Update Value')), $('<div>', { class: 'col-sm-7 col-7' }).append($('<input>', { class: 'form-control', type: 'number' }).attr('id', 'update-value-for-loop').attr('min', 1)))));
     }
     function createOperatorRadioRepetition(baseClassName) {
-        var container = $('<div></div>').addClass('col-sm-7 d-flex justify-content-center align-items-center');
-        var radioContainer1 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly');
-        var radioContainer2 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly');
-        var radioContainer3 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly');
-        var radioContainer4 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly');
-        var radioContainer5 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly');
-        var radioContainer6 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly');
-        var word1 = $('<div></div>').text('==');
-        var word2 = $('<div></div>').text('!=');
-        var word3 = $('<div></div>').text('<');
-        var word4 = $('<div></div>').text('>');
-        var word5 = $('<div></div>').text('<=');
-        var word6 = $('<div></div>').text('>=');
-        radioContainer1.append($('<input>').attr('type', 'radio').attr('name', baseClassName).attr('checked', 'true'));
-        radioContainer1.append(word1);
-        radioContainer2.append($('<input>').attr('type', 'radio').attr('name', baseClassName));
-        radioContainer2.append(word2);
-        radioContainer3.append($('<input>').attr('type', 'radio').attr('name', baseClassName));
-        radioContainer3.append(word3);
-        radioContainer4.append($('<input>').attr('type', 'radio').attr('name', baseClassName));
-        radioContainer4.append(word4);
-        radioContainer5.append($('<input>').attr('type', 'radio').attr('name', baseClassName));
-        radioContainer5.append(word5);
-        radioContainer6.append($('<input>').attr('type', 'radio').attr('name', baseClassName));
-        radioContainer6.append(word6);
-        container.append(radioContainer1);
-        container.append(radioContainer2);
-        container.append(radioContainer3);
-        container.append(radioContainer4);
-        container.append(radioContainer5);
-        container.append(radioContainer6);
+        var container = $('<div>', { class: 'col-sm-7 d-flex justify-content-center align-items-center' }).append($('<div>', { class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly' }).append($('<input>', { type: 'radio', name: baseClassName }).attr('checked', 'true'), $('<div>').text('==')), $('<div>', { class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly' }).append($('<input>', { type: 'radio', name: baseClassName }), $('<div>').text('!=')), $('<div>', { class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly' }).append($('<input>', { type: 'radio', name: baseClassName }), $('<div>').text('<')), $('<div>', { class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly' }).append($('<input>', { type: 'radio', name: baseClassName }), $('<div>').text('>')), $('<div>', { class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly' }).append($('<input>', { type: 'radio', name: baseClassName }), $('<div>').text('<=')), $('<div>', { class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly' }).append($('<input>', { type: 'radio', name: baseClassName }), $('<div>').text('>=')));
         return container;
     }
     $(document).on('change', '.choose-for-loop-value-type', function () {
@@ -6716,37 +6684,74 @@ $(document).ready(function () {
     var assignmentCount = 1;
     var assignmentStructure = {};
     $(document).on('click', '.assignment', function () {
+        createAssignmentInput('create', $(this).data('value'));
+    });
+    function createAssignmentInput(type, clicked) {
         assignmentCount = 1;
         assignmentToBeValidated = [];
         var createBtn;
-        var container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12');
-        if ($(this).data('value') == 'arithmetic') {
-            initInput('Arithmetic Assignment');
+        var btnId;
+        var text;
+        if (type == 'create')
+            text = 'Create';
+        else
+            text = 'Update';
+        if (clicked == 'arithmetic') {
+            if (type == 'create') {
+                initInput('Arithmetic Assignment');
+                btnId = 'create-asg-arithmetic-button';
+            }
+            else {
+                initInput('Edit Arithmetic Assignment');
+                btnId = 'update-asg-arithmetic-button';
+            }
             createArithmeticAssignmentHeader();
             createArithmeticAssignmentInput();
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create');
+            createBtn = $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).text(text);
         }
-        else if ($(this).data('value') == 'string') {
-            initInput('String Assignment');
+        else if (clicked == 'string') {
+            if (type == 'create') {
+                initInput('String Assignment');
+                btnId = 'create-asg-string-button';
+            }
+            else {
+                initInput('Edit String Assignment');
+                btnId = 'update-asg-string-button';
+            }
             createActionTypeChoice();
             createGetStringLengthInput();
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-string-button').text('Create');
+            createBtn = $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).text(text);
         }
-        else if ($(this).data('value') == 'variable') {
-            initInput('Variable Assignment');
+        else if (clicked == 'variable') {
+            if (type == 'create') {
+                initInput('Variable Assignment');
+                btnId = 'create-asg-variable-button';
+            }
+            else {
+                initInput('Edit Variable Assignment');
+                btnId = 'update-asg-variable-button';
+            }
             createVariableAssignmentInput();
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-variable-button').text('Create');
+            createBtn = $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: btnId }).text(text);
         }
-        container.append(createBtn);
-        $('#pcInputContainerLower').append(container);
-    });
+        $('#pcInputContainerLower').append($('<div>', { class: 'd-flex justify-content-end col-sm-12 col-12' }).append(createBtn));
+    }
     // String Assignment
     $(document).on('click', '#create-asg-string-button', function () {
         clearError();
+        var statement = undefined;
         if ($('.choose-action-type').find('option').filter(':selected').val() == 'length')
-            createStringAssignmentLength();
+            statement = createStringAssignmentLength();
         else
-            createStringAssignmentSub();
+            statement = createStringAssignmentSub();
+        if (statement != undefined) {
+            handleAdd(statement);
+            restructureStatement();
+            turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
+            drawCanvas();
+        }
     });
     function createStringAssignmentLength() {
         var firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val();
@@ -6756,22 +6761,17 @@ $(document).ready(function () {
         if (firstValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
             $('.first-asg-string-value').find('select').addClass('input-error');
-            return;
+            return undefined;
         }
         if (secondValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
             $('.second-asg-string-value').find('select').addClass('input-error');
-            return;
+            return undefined;
         }
         firstVariable = findVariable(firstValue);
         secondVariable = findVariable(secondValue);
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'length', firstVariable, undefined, undefined, undefined, secondVariable, undefined, undefined, undefined);
-        handleAdd(statement);
-        restructureStatement();
-        turnOffOptions();
-        clearSourceCode();
-        initInput('Program Input');
-        drawCanvas();
+        return statement;
     }
     function createStringAssignmentSub() {
         var firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val();
@@ -6783,12 +6783,12 @@ $(document).ready(function () {
         if (firstValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
             $('.first-asg-string-value').find('select').addClass('input-error');
-            return;
+            return undefined;
         }
         if (secondValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
             $('.second-asg-string-value').find('select').addClass('input-error');
-            return;
+            return undefined;
         }
         firstVariable = findVariable(firstValue);
         secondVariable = findVariable(secondValue);
@@ -6796,41 +6796,36 @@ $(document).ready(function () {
         if (start == '') {
             createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
             $('.begin-idx-string').addClass('input-error');
-            return;
+            return undefined;
         }
         else if (parseInt(start) < 1) {
             createErrorMessage('Start position must be greater than 0', 'pcInputErrorContainer');
             $('.begin-idx-string').addClass('input-error');
-            return;
+            return undefined;
         }
         else if (parseInt(start) > secondVariable.value.length) {
             createErrorMessage('Start position must be less than String length', 'pcInputErrorContainer');
             $('.begin-idx-string').addClass('input-error');
-            return;
+            return undefined;
         }
         length = $('.length-idx-string').val();
         if (length == '') {
             createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
             $('.length-idx-string').addClass('input-error');
-            return;
+            return undefined;
         }
         else if (parseInt(length) < 1) {
             createErrorMessage('Length must be greater than 0', 'pcInputErrorContainer');
             $('.length-idx-string').addClass('input-error');
-            return;
+            return undefined;
         }
         else if (parseInt(start) + (parseInt(length) - 1) > secondVariable.value.length) {
             createErrorMessage('String overflow', 'pcInputErrorContainer');
             $('.length-idx-string').addClass('input-error');
-            return;
+            return undefined;
         }
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'sub', firstVariable, undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length));
-        handleAdd(statement);
-        restructureStatement();
-        turnOffOptions();
-        clearSourceCode();
-        initInput('Program Input');
-        drawCanvas();
+        return statement;
     }
     $(document).on('change', '.choose-action-type', function () {
         $('.action-select-container').remove();
@@ -6967,7 +6962,13 @@ $(document).ready(function () {
             if (!temp)
                 return;
         }
-        createArithmeticStatement();
+        var assignmentStatement = createArithmeticStatement();
+        handleAdd(assignmentStatement);
+        restructureStatement();
+        turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
+        drawCanvas();
     });
     function validateArithmeticAssignmentInput(idx) {
         var firstValueType = $('.first-select-value-type-' + idx).find('option').filter(':selected').val();
@@ -7087,12 +7088,7 @@ $(document).ready(function () {
         }
         listOperator.push(operators[checkedIdx]);
         var assignmentStatement = new AssignmentStatement_1.default(statementCount++, 1, 'arithmetic', targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined);
-        handleAdd(assignmentStatement);
-        restructureStatement();
-        turnOffOptions();
-        clearSourceCode();
-        initInput('Program Input');
-        drawCanvas();
+        return assignmentStatement;
     }
     function createArithmeticAssignment(idx) {
         var firstValueType = $('.first-select-value-type-' + idx).find('option').filter(':selected').val();
@@ -7187,6 +7183,17 @@ $(document).ready(function () {
     });
     $(document).on('click', '#create-asg-variable-button', function () {
         clearError();
+        var statement = createVariableAssignment();
+        if (statement != undefined) {
+            handleAdd(statement);
+            restructureStatement();
+            turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
+            drawCanvas();
+        }
+    });
+    function createVariableAssignment() {
         var firstVariableName = $('#chosen-asg-variable').find('option').filter(':selected').val();
         var firstVariable;
         var secondVariable;
@@ -7195,7 +7202,7 @@ $(document).ready(function () {
         if (firstVariableName == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
             $('#chosen-asg-variable').addClass('input-error');
-            return;
+            return undefined;
         }
         firstVariable = findVariable(firstVariableName);
         if ($('.choose-asg-value-type').find('option').filter(':selected').val() == 'custom') {
@@ -7204,14 +7211,14 @@ $(document).ready(function () {
             if (value == '') {
                 createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer');
                 $('#chosen-asg-value').addClass('input-error');
-                return;
+                return undefined;
             }
             secondVariable = createVariableFromValue(value);
             result = secondVariable.validateValue();
             if (!result.bool) {
                 $('#chosen-asg-value').addClass('input-error');
                 createErrorMessage(result.message, 'pcInputErrorContainer');
-                return;
+                return undefined;
             }
         }
         else {
@@ -7220,7 +7227,7 @@ $(document).ready(function () {
             if (value == '') {
                 createErrorMessage('Please choose a variable', 'pcInputErrorContainer');
                 $('#chosen-asg-value').addClass('input-error');
-                return;
+                return undefined;
             }
             secondVariable = findVariable(value);
         }
@@ -7229,17 +7236,12 @@ $(document).ready(function () {
             else {
                 $('#chosen-asg-value').addClass('input-error');
                 createErrorMessage('Could not assign other data type with String data type', 'pcInputErrorContainer');
-                return;
+                return undefined;
             }
         }
         var statement = new AssignmentStatement_1.default(statementCount++, 1, 'variable', firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined);
-        handleAdd(statement);
-        restructureStatement();
-        turnOffOptions();
-        clearSourceCode();
-        initInput('Program Input');
-        drawCanvas();
-    });
+        return statement;
+    }
     // Canvas logic
     initializeCanvas();
     var blockCanvasInstance; // instance of Class Canvas
@@ -7274,7 +7276,6 @@ $(document).ready(function () {
             width = 1034;
         }
         canvas.width = width;
-        // canvas.height = Math.round(width * aspect);
         canvas.height = height * 10;
     }
     function drawCanvas() {
@@ -7342,6 +7343,9 @@ $(document).ready(function () {
                     lastSelectedOption = returnClick.option.optionName;
                 }
                 else if (returnClick.option.optionName == 'EDT') {
+                    $('html, body').animate({
+                        scrollTop: $('#accordionProgramInput').offset().top
+                    }, 300);
                     clipboard = returnClick.option.parent;
                     lastSelectedOption = returnClick.option.optionName;
                     handleEdit();
@@ -7423,18 +7427,35 @@ $(document).ready(function () {
             createEditInput();
         }
         else if (clipboard instanceof OutputStatement_1.default) {
-            initInput('Edit Output Statement');
             createEditOutput();
         }
         else if (clipboard instanceof IfStatement_1.default) {
+            initInput('Edit If Statement');
+            createEditIfElse();
         }
         else if (clipboard instanceof SwitchStatement_1.default) {
+            initInput('Edit Switch Statement');
+            createSwitchSelection('update');
         }
         else if (clipboard instanceof ForStatement_1.default) {
+            createRepetitionInput('update', 'for');
         }
         else if (clipboard instanceof WhileStatement_1.default) {
+            if (clipboard.isWhile)
+                createRepetitionInput('update', 'while');
+            else
+                createRepetitionInput('update', 'do-while');
         }
         else if (clipboard instanceof AssignmentStatement_1.default) {
+            if (clipboard.type == 'variable') {
+                createAssignmentInput('update', 'variable');
+            }
+            else if (clipboard.type == 'arithmetic') {
+                createAssignmentInput('update', 'arithmetic');
+            }
+            else {
+                createAssignmentInput('update', 'string');
+            }
         }
     }
     // Edit Declare Statement
@@ -7636,6 +7657,197 @@ $(document).ready(function () {
         clearSourceCode();
         initInput('Program Input');
         drawCanvas();
+    });
+    // Edit If-Else
+    function createEditIfElse() {
+        ifCount = 1;
+        ifToBeValidated = [];
+        isElsed = false;
+        initInput('Edit Selection Properties');
+        var ifOperations = clipboard.ifOperations;
+        createIfSelection();
+        $('#pcInputContainerLower').append($('<div>', { class: 'd-flex justify-content-end p-2 col-sm-12 col-12' }).append($('<div>', { class: 'col-sm-10 col-10' }), $('<button>', { class: 'btn btn-primary col-sm-2 col-2', id: 'updateIfStatementButton' }).text('Update')));
+        for (var i = 1; i < ifOperations.length; i++) {
+            if (ifOperations[i] instanceof Elif_1.default)
+                createAdditionalElif(false);
+            else
+                createElse(false);
+        }
+    }
+    // Update If-Else
+    $(document).on('click', '#updateIfStatementButton', function () {
+        clearError();
+        var ifStatements = [];
+        var tempStatement = undefined;
+        var proceed = true;
+        for (var i = 0; i < ifToBeValidated.length; i++) {
+            tempStatement = handleIfStatementValidation(ifToBeValidated[i]);
+            if (tempStatement != undefined) {
+                ifStatements.push(tempStatement);
+                tempStatement = undefined;
+            }
+            else {
+                proceed = false;
+                break;
+            }
+        }
+        if (proceed == true) {
+            var ifStatement = new IfStatement_1.default(1, statementCount++, undefined);
+            var oldIfOperations = clipboard.ifOperations;
+            var tempChildStatement = [];
+            if (isElsed)
+                ifStatements.push(new Else_1.default(1, statementCount));
+            ifStatement.updateIfOperations(ifStatements);
+            if (returnClick.option.validateMainListStatement(listStatement, ifStatement, clipboard, false)) {
+                for (var i = 0; i < oldIfOperations.length; i++) {
+                    tempChildStatement = [];
+                    if (oldIfOperations[i] instanceof If_1.default) {
+                        if (oldIfOperations[i].childStatement != undefined) {
+                            for (var j = 0; j < oldIfOperations[i].childStatement.length; j++)
+                                tempChildStatement.push(oldIfOperations[i].childStatement[j]);
+                        }
+                    }
+                    else {
+                        if (oldIfOperations[i].childStatement != undefined) {
+                            for (var j = 0; j < oldIfOperations[i].childStatement.length; j++)
+                                tempChildStatement.push(oldIfOperations[i].childStatement[j]);
+                        }
+                    }
+                    ifStatements[i].updateChildStatement(tempChildStatement);
+                }
+                clipboard.updateIfOperations(ifStatements);
+            }
+            else
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer');
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
+            drawCanvas();
+        }
+    });
+    // Edit Switch Statement
+    // Update Repetition Statement
+    $(document).on('click', '#update-loop-button', function () {
+        clearError();
+        var statement = createRepetitionStatement($(this).data('value'));
+        if (statement == undefined)
+            return;
+        // validate chosen variable has been declared
+        if (returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+            if ($(this).data('value') == 'for') {
+                clipboard.variable = statement.variable;
+                clipboard.isIncrement = statement.isIncrement;
+                clipboard.addValueBy = statement.addValueBy;
+                clipboard.condition = statement.condition;
+            }
+            else {
+                clipboard.firstCondition = statement.firstCondition;
+                clipboard.logicalOperator = statement.logicalOperator;
+                clipboard.secondCondition = statement.secondCondition;
+            }
+        }
+        else
+            createErrorMessage('Could not use chosen variable!', 'bcErrorContainer');
+        finishAction();
+        restructureStatement();
+        turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
+        drawCanvas();
+    });
+    $(document).on('click', '#update-asg-arithmetic-button', function () {
+        clearError();
+        var temp = true;
+        var value;
+        value = $('.selected-target-variable-asg').find('option').filter(':selected').val();
+        if (value == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer');
+            $('.selected-target-variable-asg').addClass('input-error');
+            return;
+        }
+        for (var i = 0; i < assignmentToBeValidated.length; i++) {
+            temp = validateArithmeticAssignmentInput(assignmentToBeValidated[i]);
+            if (!temp)
+                return;
+        }
+        var assignmentStatement = createArithmeticStatement();
+        if (returnClick.option.validateMainListStatement(listStatement, assignmentStatement, clipboard, false)) {
+            clipboard.targetVariable = assignmentStatement.targetVariable;
+            clipboard.type = assignmentStatement.type;
+            clipboard.listArithmetic = assignmentStatement.listArithmetic;
+            clipboard.listOperator = assignmentStatement.listOperator;
+            clipboard.listIsCustom = assignmentStatement.listIsCustom;
+            clipboard.variable = assignmentStatement.variable;
+            clipboard.isCustomValue = assignmentStatement.isCustomValue;
+            clipboard.start = assignmentStatement.start;
+            clipboard.length = assignmentStatement.length;
+        }
+        else
+            createErrorMessage('Could not use chosen variable!', 'bcErrorContainer');
+        finishAction();
+        restructureStatement();
+        turnOffOptions();
+        clearSourceCode();
+        initInput('Program Input');
+        drawCanvas();
+    });
+    $(document).on('click', '#update-asg-string-button', function () {
+        clearError();
+        var statement = undefined;
+        if ($('.choose-action-type').find('option').filter(':selected').val() == 'length')
+            statement = createStringAssignmentLength();
+        else
+            statement = createStringAssignmentSub();
+        if (statement != undefined) {
+            if (returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                clipboard.targetVariable = statement.targetVariable;
+                clipboard.type = statement.type;
+                clipboard.listArithmetic = statement.listArithmetic;
+                clipboard.listOperator = statement.listOperator;
+                clipboard.listIsCustom = statement.listIsCustom;
+                clipboard.variable = statement.variable;
+                clipboard.isCustomValue = statement.isCustomValue;
+                clipboard.start = statement.start;
+                clipboard.length = statement.length;
+            }
+            else {
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer');
+            }
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
+            drawCanvas();
+        }
+    });
+    $(document).on('click', '#update-asg-variable-button', function () {
+        clearError();
+        var statement = createVariableAssignment();
+        if (statement != undefined) {
+            if (returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                clipboard.targetVariable = statement.targetVariable;
+                clipboard.type = statement.type;
+                clipboard.listArithmetic = statement.listArithmetic;
+                clipboard.listOperator = statement.listOperator;
+                clipboard.listIsCustom = statement.listIsCustom;
+                clipboard.variable = statement.variable;
+                clipboard.isCustomValue = statement.isCustomValue;
+                clipboard.start = statement.start;
+                clipboard.length = statement.length;
+            }
+            else {
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer');
+            }
+            finishAction();
+            restructureStatement();
+            turnOffOptions();
+            clearSourceCode();
+            initInput('Program Input');
+            drawCanvas();
+        }
     });
     function handleDelete() {
         var returnPaste = undefined;
@@ -7905,10 +8117,16 @@ $(document).ready(function () {
     });
     var fontSize = 14;
     $(document).on('click', '.change-font-size', function () {
-        if ($(this).data('value') == 'plus')
+        if ($(this).data('value') == 'plus') {
+            if (fontSize == 40)
+                return;
             $('#source-code-container').css('font-size', ++fontSize + 'px');
-        else
+        }
+        else {
+            if (fontSize == 1)
+                return;
             $('#source-code-container').css('font-size', --fontSize + 'px');
+        }
         $('#font-size-input').val(fontSize);
     });
     $(document).on('change', '#font-size-input', function () {

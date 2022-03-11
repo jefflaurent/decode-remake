@@ -661,10 +661,13 @@ $(document).ready(function() {
         if($(this).data('value') == 'if-else') {
             initInput('Selection Properties')
             createIfSelection()
+            $('#pcInputContainerLower').append($('<div>', {class: 'd-flex justify-content-end p-2 col-sm-12 col-12'}).append(
+                $('<div>', {class: 'col-sm-10 col-10'}),
+                $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'createIfStatementButton'}).text('Create')
+            ))
         }
         else {
-            initInput('Switch Properties')
-            createSwitchSelection()
+            createSwitchSelection('create')
         }
     })
 
@@ -677,22 +680,50 @@ $(document).ready(function() {
         return container
     }
 
-    function createSwitchSelection() {
+    function createSwitchSelection(type: string) {
+        if(type == 'create')
+            initInput('Switch Properties')
+        else
+            initInput('Edit Switch Statement')
+
+        $('.all-case-container').empty()
+        caseToBeValidated = []
+        isDefaulted = false
+        caseCount = 1
+
         let listVariable: Variable[] = []
         listVariable = getSelectedVariables('switch')
 
-        let container = $('<div></div>').addClass('d-flex').addClass('align-items-center')
-        let select = createSelect(listVariable, 7, true).attr('id', 'chosenSwitchVariable')
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'd-flex align-items-center mb-3'}).append(
+                createHint('Variable', 5),
+                createSelect(listVariable, 7, true).attr('id', 'chosenSwitchVariable')
+            ),
+            $('<div>', {class: 'all-case-container'})
+        )
 
-        container.append(createHint('Variable', 5))
-        container.append(select)
-        container.addClass('mb-3')
+        if(type == 'update') {
+            let variable = (clipboard as SwitchStatement).variable;
+            $('#chosenSwitchVariable').find('option[value="' + variable.name + '"]').prop('selected', true)
+            createUpdateCase()
+        }
 
-        let allCaseContainer = $('<div></div>').addClass('all-case-container')
-        $('#pcInputContainer').append(container)
-        $('#pcInputContainer').append(allCaseContainer)
+        createAdditionalSwitchButton(type)
+    }
 
-        createAdditionalSwitchButton()
+    function createUpdateCase(): void {
+        let len = (clipboard as SwitchStatement).caseStatement.length;
+        let temp: Statement | undefined = undefined
+        let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
+        let variable = findVariable(variableName)
+
+        for(let i = 0; i < len; i++) {
+            temp = (clipboard as SwitchStatement).caseStatement[i]
+            if((temp as Case).isDefault)
+                isDefaulted = true
+            
+            createCaseStatementInput(true, (temp as Case).isDefault, variable)
+        }
     }
 
     let caseToBeValidated: string[] = []
@@ -700,6 +731,14 @@ $(document).ready(function() {
     let isDefaulted: boolean = false
 
     $(document).on('click', '#createSwitchCaseBtn', function() {
+        handleCreateSwitchButton('create')
+    })
+
+    $(document).on('click', '#updateSwitchCaseBtn', function() {
+        handleCreateSwitchButton('update')
+    })
+
+    function handleCreateSwitchButton(type: string) {
         clearError()
         let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
         if(variableName == '') {
@@ -707,14 +746,47 @@ $(document).ready(function() {
         }
         else {
             let variable = findVariable(variableName)
-            createCaseStatement(variable)
-        }
-    })
+            let statement = createCaseStatement(variable)
 
-    function createCaseStatement(variable: Variable) {
+            if(statement != undefined) {
+                if(type == 'create')
+                    handleAdd(statement)
+                else {
+                    let oldCaseStatement = (clipboard as SwitchStatement).caseStatement;
+                    let caseStatement = (statement as SwitchStatement).caseStatement;
+                    let tempChildStatement: Statement[] = []
+
+                    if(returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                        for(let i = 0; i < oldCaseStatement.length; i++) {
+                            tempChildStatement = []
+        
+                            if((oldCaseStatement[i] as Case).childStatement != undefined) {
+                                for(let j = 0; j < (oldCaseStatement[i] as Case).childStatement.length; j++)
+                                    tempChildStatement.push((oldCaseStatement[i] as Case).childStatement[j])
+                            }
+                            caseStatement[i].updateChildStatement(tempChildStatement)
+                        }
+                        (clipboard as SwitchStatement).updateCaseStatement(caseStatement);   
+                        (clipboard as SwitchStatement).variable = (statement as SwitchStatement).variable;
+                    }
+                    else {
+                        createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+                    }
+                }
+                
+                finishAction()
+                restructureStatement()
+                turnOffOptions()
+                clearSourceCode()
+                initInput('Program Input')
+                drawCanvas()
+            }
+        }
+    }
+
+    function createCaseStatement(variable: Variable): Statement | undefined {
         let value: string = ''
         let tempVariable: Variable | undefined = undefined
-        let proceed: boolean = true
         let caseStatement: Statement[] = []
         let result: Return
         let className: string = ''
@@ -725,8 +797,7 @@ $(document).ready(function() {
             if(value == undefined) {
                 $(className).addClass('input-error')
                 createErrorMessage('Field cannot be empty!', 'pcInputErrorContainer')
-                proceed = false
-                break
+                return undefined
             }
 
             tempVariable = createVariableFromValue(value)
@@ -734,38 +805,35 @@ $(document).ready(function() {
             if(tempVariable instanceof String) {
                 $(className).addClass('input-error')
                 createErrorMessage('Could not compare with String data type', 'pcInputErrorContainer')
-                proceed = false
-                break
+                return undefined
             }
 
             result = tempVariable.validateValue()
             if(!result.bool) {
                 $(className).addClass('input-error')
                 createErrorMessage(result.message, 'pcInputErrorContainer')
-                proceed = false
-                break
+                return undefined
             }
 
             caseStatement.push(new Case(1, statementCount++, new Condition(variable, '==', tempVariable, true), undefined, false))
         }
 
-        if(proceed) {
-            if(isDefaulted) {
-                caseStatement.push(new Case(1, statementCount++, new Condition(variable, '==', variable, true), undefined, true))
-            }
-            let switchStatement = new SwitchStatement(1, statementCount++, variable, undefined)
-            switchStatement.updateCaseStatement(caseStatement)
-            handleAdd(switchStatement)
-            restructureStatement()
-            turnOffOptions()
-            clearSourceCode()
-            initInput('Program Input')
-            drawCanvas()
+        if(isDefaulted) {
+            caseStatement.push(new Case(1, statementCount++, new Condition(variable, '==', variable, true), undefined, true))
         }
+
+        let switchStatement = new SwitchStatement(1, statementCount++, variable, undefined)
+        switchStatement.updateCaseStatement(caseStatement)
+
+        return switchStatement
     }
 
     $(document).on('change', '#chosenSwitchVariable', function() {
         clearError()
+        changeChosenVariableSwitch()
+    })
+
+    function changeChosenVariableSwitch(): void {
         $('.all-case-container').empty()
         caseToBeValidated = []
         isDefaulted = false
@@ -773,10 +841,16 @@ $(document).ready(function() {
 
         let variableName = $('#chosenSwitchVariable').find('option').filter(':selected').val() as string
         if(variableName != '') {
-            let variable = findVariable(variableName)
-            createCaseStatementInput(true, false, variable)
-        }
-    })
+
+            if(lastSelectedOption == 'EDT' && clipboard instanceof SwitchStatement) {
+                createUpdateCase()
+            }
+            else {
+                let variable = findVariable(variableName)
+                createCaseStatementInput(true, false, variable)
+            }
+        }         
+    }
 
     $(document).on('click', '.add-additional-case-btn', function() {
         clearError()
@@ -829,6 +903,36 @@ $(document).ready(function() {
     function createCaseStatementInput(isRequired: boolean, isDefault: boolean, variable: Variable) {
         let className = 'additional-case-container-' + caseCount
         let inputClassName = 'case-input-' + caseCount
+        let startContainer = $('<div>', {class: 'col-sm-2 col-2 d-flex justify-content-end'})
+        let textField = $('<input>').attr('type', 'text').addClass('form-control ' + inputClassName)
+        let endContainer = $('<div>', {class: 'col-sm-1 col-1 d-flex justify-content-center'})
+        let buttonClose = $('<button>', {class: 'btn-close rmCase'}).data('value', caseCount++)
+
+        if(!isDefault) {
+            startContainer.append($('<strong>').text('Case:'))
+            caseToBeValidated.push(inputClassName)
+        }
+        else {
+            startContainer.append($('<strong>').text('Default:'))
+            textField.attr('disabled', 'true')
+        }
+        if(!isRequired)
+            endContainer.append(buttonClose)
+
+        $('.all-case-container').append(
+            $('<div>', {class: 'col-sm-12 col-12 mb-2 d-flex justify-content-center align-items-center ' + className}).append(
+                startContainer,
+                $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-center'}).text(variable.name),
+                $('<div>', {class: 'col-sm-1 col-1 d-flex align-items-center'}).text('=='),
+                $('<div>', {class: 'col-sm-3 col-3'}).append(textField),
+                endContainer
+            )
+        )
+    }
+
+    function oldCreateCaseStatementInput(isRequired: boolean, isDefault: boolean, variable: Variable) {
+        let className = 'additional-case-container-' + caseCount
+        let inputClassName = 'case-input-' + caseCount
         let container = $('<div></div>').addClass('col-sm-12 col-12 mb-2 d-flex justify-content-center align-items-center ' + className)
         let startContainer = $('<div></div>').addClass('col-sm-2 col-2 d-flex justify-content-end')
         let leftContainer = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-center').text(variable.name)
@@ -859,57 +963,44 @@ $(document).ready(function() {
         $('.all-case-container').append(container)
     }
 
-    function createAdditionalSwitchButton() {
-        let addCaseBtn = createGreenButton('Case').addClass('col-sm-3 col-3 add-additional-case-btn')
-        let addDefault = createGreenButton('Default').addClass('col-sm-3 col-3 add-default-btn')
-        let inputBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2')
-                            .attr('id', 'createSwitchCaseBtn').text('Create')
+    function createAdditionalSwitchButton(type: string) {        
+        let btnId: string = type == 'create' ? 'createSwitchCaseBtn' : 'updateSwitchCaseBtn'
+        let text: string = type == 'create' ? 'Create' : 'Update'
         
-        let upperContainer = $('<div></div>').addClass('col-sm-12 col-12')
-        upperContainer.append(addCaseBtn)
-        upperContainer.append($('<div></div>').addClass('col-sm-9 col-9'))
-
-        let lowerContainer = $('<div></div>').addClass('col-sm-12 col-12 d-flex justify-content-center')
-        lowerContainer.append(addDefault)
-        lowerContainer.append($('<div></div>').addClass('col-sm-7 col-7'))
-        lowerContainer.append(inputBtn)
-
-        let bothContainer = $('<div></div>').addClass('col-sm-12 col-12 d-flex flex-column')
-        bothContainer.append(upperContainer)
-        bothContainer.append(lowerContainer)
-
-        $('#pcInputContainerLower').append(bothContainer)
+        $('#pcInputContainerLower').append(
+            $('<div>', {class: 'col-sm-12 col-12 d-flex flex-column'}).append(
+                $('<div>', {class: 'col-sm-12 col-12'}).append(
+                    createGreenButton('Case').addClass('col-sm-3 col-3 add-additional-case-btn'),
+                    $('<div>', {class: 'col-sm-9 col-9'})
+                ),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex justify-content-center'}).append(
+                    createGreenButton('Default').addClass('col-sm-3 col-3 add-default-btn'),
+                    $('<div>', {class: 'col-sm-7 col-7'}),
+                    $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).text(text)
+                )
+            )
+        )
     }
 
     function createIfSelection() {
-        let row = $('<div></div>').addClass('row')
-        let leftSide = $('<div></div>').addClass('col-sm-4 col-4 mb-2')
-        let rightSide = $('<div></div>').addClass('col-sm-8 col-8 if-properties-container-' + ifCount)
-        let listGroup = $('<div></div>').addClass('list-group').attr('id', 'list-tab-if').attr('role', 'tablist')
-        let listGroupItem1 = $('<a></a>').addClass('list-group-item').addClass('list-group-item-action').addClass('active').attr('id', 'list-if-1').attr('data-bs-toggle', 'list').attr('href', '#list-1').text('If')
-        let addElseIfBtn = createGreenButton('Else If').addClass('additional-if').data('value', 'elif')
-        let addElseBtn = createGreenButton('Else').addClass('additional-if').data('value', 'else')
-        let tab = $('<div></div>').addClass('tab-content').attr('id', 'nav-tabContentIf')
-        let tabContent = createNewIfTab()
+        let leftSide = $('<div>', {class: 'col-sm-4 col-4 mb-2'}).append(
+            $('<div>', {class: 'list-group', id: 'list-tab-if'}).attr('role', 'tablist').append(
+                $('<a>', {class: 'list-group-item list-group-item-action active', id: 'list-if-1'}).attr('data-bs-toggle', 'list').attr('href', '#list-1').text('If')
+            ),
+            createGreenButton('Else If').addClass('additional-if').data('value', 'elif'),
+            createGreenButton('Else').addClass('additional-if').data('value', 'else')
+        )
+        let rightSide = $('<div>', {class: 'col-sm-8 col-8 if-properties-container-' + ifCount}).append(
+            $('<div>', {class: 'tab-content', id: 'nav-tabContentIf'}).append(
+                createNewIfTab().append(
+                    createIfPropertiesInput(true)
+                )
+            )
+        )
 
-        listGroup.append(listGroupItem1)
-        leftSide.append(listGroup)
-        leftSide.append(addElseIfBtn)
-        leftSide.append(addElseBtn)
-
-        tabContent.append(createIfPropertiesInput(true))
-        tab.append(tabContent)
-        rightSide.append(tab)
-
-        let createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'createIfStatementButton').text('Create')
-        let container = $('<div></div>').addClass('d-flex justify-content-end p-2 col-sm-12 col-12')
-        container.append($('<div></div>').addClass('col-sm-10 col-10'))
-        container.append(createBtn)
-
-        row.append(leftSide)
-        row.append(rightSide)
-        $('#pcInputContainer').append(row)
-        $('#pcInputContainerLower').append(container)
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'row'}).append(leftSide, rightSide)
+        )
 
         ifToBeValidated.push(ifCount)
         ifCount++
@@ -917,7 +1008,7 @@ $(document).ready(function() {
 
     function createNewIfTab() {
         let id = 'list-' + ifCount
-        let tabPane = $('<div></div>').addClass('tab-pane fade show').attr('id', id).attr('role', 'tabpanel') 
+        let tabPane = $('<div>', {class: 'tab-pane fade show', id: id}).attr('role', 'tabpanel') 
         if(ifCount == 1)
             tabPane.addClass('active')
 
@@ -926,35 +1017,43 @@ $(document).ready(function() {
 
     $(document).on('click', '.additional-if', function() {
         clearError()
-        if($(this).data('value') == 'elif') {
-            if(!isElsed) {
-                ifToBeValidated.push(ifCount)
-                $('#list-tab-if').append(createNewTab('Else If').data('value', 'elif'))
-                let ifInputProperties = createIfPropertiesInput(true)
-                let tabContent = createNewIfTab()
-                tabContent.append(ifInputProperties)
-                $('#nav-tabContentIf').append(tabContent)
-                ifCount++
-            }
-            else
-                createErrorMessage('Could not add else if after else!', 'pcInputErrorContainer')
-        }
-        else {
-            if(!isElsed) {
-                $('#list-tab-if').append(createNewTab('Else').data('value', 'else'))
-                isElsed = true
-            }
-            else 
-                createErrorMessage('Could not add else after else!', 'pcInputErrorContainer')
-        }
+        if($(this).data('value') == 'elif')
+            createAdditionalElif(true)
+        else
+            createElse(true)
     })
 
-    function createNewTab(text: string) {
+    function createAdditionalElif(isDeletable: boolean): void {
+        if(!isElsed) {
+            ifToBeValidated.push(ifCount)
+            $('#list-tab-if').append(createNewTab('Else If', isDeletable).data('value', 'elif'))
+            let ifInputProperties = createIfPropertiesInput(true)
+            let tabContent = createNewIfTab()
+            tabContent.append(ifInputProperties)
+            $('#nav-tabContentIf').append(tabContent)
+            ifCount++
+        }
+        else
+            createErrorMessage('Could not add else if after else!', 'pcInputErrorContainer')
+    }
+    
+    function createElse(isDeletable: boolean): void {
+        if(!isElsed) {
+            $('#list-tab-if').append(createNewTab('Else', isDeletable).data('value', 'else'))
+            isElsed = true
+        }
+        else 
+            createErrorMessage('Could not add else after else!', 'pcInputErrorContainer')
+    }
+
+    function createNewTab(text: string, isDeletable: boolean) {
         let a = $('<a></a>').addClass('list-group-item list-group-item-action d-flex justify-content-between align-items-center').attr('data-bs-toggle', 'list').attr('id', 'list-if-' + ifCount).attr('href', '#list-' + ifCount)
         let word = $('<div></div>').text(text)
-        let i = $('<i></i>').addClass('fas fa-trash delete-if-stmnt').css('color', 'red').data('value', ifCount)
+        let i = $('<i>', {class: 'fas fa-trash delete-if-stmnt'}).css('color', 'red').data('value', ifCount)
         a.append(word)
-        a.append(i)
+        
+        if(isDeletable) 
+            a.append(i)
 
         return a
     }
@@ -1453,159 +1552,147 @@ $(document).ready(function() {
 
     // Repetition
     $(document).on('click', '.repetition', function() {
+        createRepetitionInput('create', $(this).data('value'))
+    })
+
+    function createRepetitionInput(type: string, clicked: any): void {
         let createBtn: any
-        if($(this).data('value') == 'for') {
-            initInput('For Loop Properties')
-            createForLoopCondition()
-            createForLoopVariableUpdate()
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'for').text('Create')
+        let btnId: string
+        let text: string
+
+        if(type == 'create') {
+            btnId = 'create-loop-button'
+            text = 'Create'
         }
-        else if($(this).data('value') == 'do-while') {
-            initInput('Do-While Loop Properties')
-            createForLoopCondition()
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'do-while').text('Create')
-        }
-        else if($(this).data('value') == 'while') {
-            initInput('While Loop Properties')
-            createForLoopCondition()
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-loop-button').data('value', 'while').text('Create')
+        else {
+            btnId = 'update-loop-button'
+            text = 'Update'
         }
 
-        let container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12')
-        container.append(createBtn)
-        $('#pcInputContainerLower').append(container)
-    })
+        if(clicked == 'for') {
+            if(type == 'create')
+                initInput('For Loop Properties')
+            else
+                initInput('Edit For Statement')
+            
+            createForLoopCondition()
+            createForLoopVariableUpdate()
+            createBtn = $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).data('value', 'for').text(text)
+        }
+        else if(clicked== 'do-while') {
+            if(type == 'create')
+                initInput('Do-While Loop Properties')
+            else 
+                initInput('Edit Do-While Statement')
+            
+            createForLoopCondition()
+            createBtn = $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).data('value', 'do-while').text(text)
+        }
+        else if(clicked == 'while') {
+            if(type == 'create')
+                initInput('While Loop Properties')
+            else 
+                initInput('Edit While Statement')
+            
+            createForLoopCondition()
+            createBtn = $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).data('value', 'while').text(text)
+        }
+
+        $('#pcInputContainerLower').append(
+            $('<div>', {class: 'd-flex justify-content-end col-sm-12 col-12'}).append(createBtn)
+        )
+    }
 
     function createForLoopCondition() {
         let listVariable: Variable[] = []
-        
         listVariable = getSelectedVariables('repetition')
-        
-        let loopConditionContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3')
-        let loopTitle = $('<div></div>').append($('<strong></strong>').text('Loop Condition')).addClass('mb-3')
-        
-        let container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
-        let variableTitle = $('<div></div>').append($('<strong></strong>').text('Variable')).addClass('col-sm-5 col-5')
-        let variableSelect = createSelect(listVariable, 7, true).attr('id', 'chosen-for-loop-variable')
-        
-        let container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
-        let operatorTitle = $('<div></div>').append($('<strong></strong>').text('Operator')).addClass('col-sm-5 col-5')
-        let operators = createOperatorRadioRepetition('op-for')
 
-        let container3 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
-        let valueTypeTitle = $('<div></div>').append($('<strong></strong>').text('Value Type')).addClass('col-sm-5 col-5')
-        let valueTypeContainer = $('<div></div>').addClass('col-sm-7 col-7')
-        let valueTypeSelect = $('<select></select>').addClass('form-select choose-for-loop-value-type')
-        valueTypeSelect.append($('<option></option>').val('variable').text('Variable'))
-        valueTypeSelect.append($('<option></option>').val('custom').text('Custom Value'))
-
-        let container4 = $('<div></div>').addClass('col-sm-12 col-12 d-flex mb-3')
-        let valueTitle = $('<div></div>').append($('<strong></strong>').text('Value')).addClass('col-sm-5 col-5')
-        let valueContainer = $('<div></div>').addClass('col-sm-7 col-7 value-container-for-loop')
-        let valueSelect = createSelect(listVariable, 12, true).attr('id', 'chosen-for-loop-value')
-
-        container1.append(variableTitle)
-        container1.append(variableSelect)
-
-        container2.append(operatorTitle)
-        container2.append(operators)
-
-        container3.append(valueTypeTitle)
-        valueTypeContainer.append(valueTypeSelect)
-        container3.append(valueTypeContainer)
-
-        container4.append(valueTitle)
-        valueContainer.append(valueSelect)
-        container4.append(valueContainer)
-
-        loopConditionContainer.append(loopTitle)
-        loopConditionContainer.append(container1)
-        loopConditionContainer.append(container2)
-        loopConditionContainer.append(container3)
-        loopConditionContainer.append(container4)
-
-        $('#pcInputContainer').append(loopConditionContainer)
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'p-2 border border-1 rounded bg-light mb-3'}).append(
+                $('<div>', {class: 'mb-3'}).append($('<strong>').text('Loop Condition')),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex mb-3'}).append(
+                    $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Variable')),
+                    createSelect(listVariable, 7, true).attr('id', 'chosen-for-loop-variable')
+                ),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex mb-3'}).append(
+                    $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Operator')),
+                    createOperatorRadioRepetition('op-for')
+                ),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex mb-3'}).append(
+                    $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Value Type')),
+                    $('<div>', {class: 'col-sm-7 col-7'}).append(
+                        $('<select>', {class: 'form-select choose-for-loop-value-type'}).append(
+                            $('<option>').val('variable').text('Variable'),
+                            $('<option>>').val('custom').text('Custom Value')
+                        )
+                    )
+                ),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex mb-3'}).append(
+                    $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Value')),
+                    $('<div>', {class: 'col-sm-7 col-7 value-container-for-loop'}).append(
+                        createSelect(listVariable, 12, true).attr('id', 'chosen-for-loop-value')
+                    )
+                )
+            )
+        )
     }
 
     function createForLoopVariableUpdate() {
-        let loopVariableUpdateContainer = $('<div></div>').addClass('p-2 border border-1 rounded bg-light mb-3')
-        let variableUpdate = $('<div></div>').append($('<strong></strong>').text('Variable Update')).addClass('mb-3')
-
-        let container1 = $('<div></div>').addClass('col-sm-12 col-12 d-flex align-items-center mb-3')
-        let updateType = $('<div></div>').append($('<strong></strong>').text('Update Type')).addClass('col-sm-5 col-5')
-        let innerContainer = $('<div></div>').addClass('col-sm-7 col-7 d-flex justify-content-center align-items-center')
-        let radioContainer1 = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-evenly align-items-center')
-        let radio1 = $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop').attr('checked', 'true')
-        let radioDesc1 = $('<div></div>').text('Increment')
-
-        let radioContainer2 = $('<div></div>').addClass('col-sm-4 col-4 d-flex justify-content-evenly align-items-center')
-        let radio2 = $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop')
-        let radioDesc2 = $('<div></div>').text('Decrement')
-
-        radioContainer1.append(radio1)
-        radioContainer1.append(radioDesc1)
-
-        radioContainer2.append(radio2)
-        radioContainer2.append(radioDesc2)
-
-        innerContainer.append(radioContainer1)
-        innerContainer.append($('<div></div>').addClass('col-sm-1 col-1'))
-        innerContainer.append(radioContainer2)
-        innerContainer.append($('<div></div>').addClass('col-sm-3 col-3'))
-
-        container1.append(updateType)
-        container1.append(innerContainer)
-
-        let container2 = $('<div></div>').addClass('col-sm-12 col-12 d-flex align-items-center mb-3')
-        let updateValue = $('<div></div>').append($('<strong></strong>').text('Update Value')).addClass('col-sm-5 col-5')
-        let valueContainer =  $('<div></div>').addClass('col-sm-7 col-7')
-        let valueInput = $('<input></input>').addClass('form-control').attr('id', 'update-value-for-loop').attr('type', 'number').attr('min', 1)
-
-        valueContainer.append(valueInput)
-        container2.append(updateValue)
-        container2.append(valueContainer)
-
-        loopVariableUpdateContainer.append(variableUpdate)
-        loopVariableUpdateContainer.append(container1)
-        loopVariableUpdateContainer.append(container2)
-
-        $('#pcInputContainer').append(loopVariableUpdateContainer)
+        $('#pcInputContainer').append(
+            $('<div>', {class: 'p-2 border border-1 rounded bg-light mb-3'}).append(
+                $('<div>', {class: 'mb-3'}).append($('<strong>').text('Variable Update')),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex align-items-center mb-3'}).append(
+                    $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Update Type')),
+                    $('<div>', {class: 'col-sm-7 col-7 d-flex justify-content-center align-items-center'}).append(
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-evenly align-items-center'}).append(
+                            $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop').attr('checked', 'true'),
+                            $('<div>').text('Increment')
+                        ),
+                        $('<div>', {class: 'col-sm-1 col-1'}),
+                        $('<div>', {class: 'col-sm-4 col-4 d-flex justify-content-evenly align-items-center'}).append(
+                            $('<input>').attr('type', 'radio').attr('name', 'update-type-for-loop'),
+                            $('<div>').text('Decrement')
+                        ),
+                        $('<div>', {class: 'col-sm-3 col-3'})
+                    )
+                ),
+                $('<div>', {class: 'col-sm-12 col-12 d-flex align-items-center mb-3'}).append(
+                    $('<div>', {class: 'col-sm-5 col-5'}).append($('<strong>').text('Update Value')),
+                    $('<div>', {class: 'col-sm-7 col-7'}).append(
+                        $('<input>', {class: 'form-control', type: 'number'}).attr('id', 'update-value-for-loop').attr('min', 1)
+                    )
+                )
+            )
+        )
     }
 
     function createOperatorRadioRepetition(baseClassName: string) {
-        let container = $('<div></div>').addClass('col-sm-7 d-flex justify-content-center align-items-center')
-        let radioContainer1 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
-        let radioContainer2 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
-        let radioContainer3 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
-        let radioContainer4 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
-        let radioContainer5 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
-        let radioContainer6 = $('<div></div>').addClass('col-2 col-sm-2 d-flex align-items-center justify-content-evenly')
-        let word1 = $('<div></div>').text('==')
-        let word2 = $('<div></div>').text('!=')
-        let word3 = $('<div></div>').text('<')
-        let word4 = $('<div></div>').text('>')
-        let word5 = $('<div></div>').text('<=')
-        let word6 = $('<div></div>').text('>=')
-
-        radioContainer1.append($('<input>').attr('type', 'radio').attr('name', baseClassName).attr('checked', 'true'))
-        radioContainer1.append(word1)
-        radioContainer2.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
-        radioContainer2.append(word2)
-        radioContainer3.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
-        radioContainer3.append(word3)
-        radioContainer4.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
-        radioContainer4.append(word4)
-        radioContainer5.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
-        radioContainer5.append(word5)
-        radioContainer6.append($('<input>').attr('type', 'radio').attr('name', baseClassName))
-        radioContainer6.append(word6)
-
-        container.append(radioContainer1)
-        container.append(radioContainer2)
-        container.append(radioContainer3)
-        container.append(radioContainer4)
-        container.append(radioContainer5)
-        container.append(radioContainer6)
+        let container = $('<div>', {class: 'col-sm-7 d-flex justify-content-center align-items-center'}).append(
+            $('<div>', {class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly'}).append(
+                $('<input>', {type: 'radio', name: baseClassName}).attr('checked', 'true'),
+                $('<div>').text('==')
+            ),
+            $('<div>', {class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly'}).append(
+                $('<input>', {type: 'radio', name: baseClassName}),
+                $('<div>').text('!=')
+            ),
+            $('<div>', {class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly'}).append(
+                $('<input>', {type: 'radio', name: baseClassName}),
+                $('<div>').text('<')
+            ),
+            $('<div>', {class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly'}).append(
+                $('<input>', {type: 'radio', name: baseClassName}),
+                $('<div>').text('>')
+            ),
+            $('<div>', {class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly'}).append(
+                $('<input>', {type: 'radio', name: baseClassName}),
+                $('<div>').text('<=')
+            ),
+            $('<div>', {class: 'col-2 col-sm-2 d-flex align-items-center justify-content-evenly'}).append(
+                $('<input>', {type: 'radio', name: baseClassName}),
+                $('<div>').text('>=')
+            ),
+        )
 
         return container
     }
@@ -1752,51 +1839,97 @@ $(document).ready(function() {
     }
 
     // Arithmetic Assignment
-
     let assignmentToBeValidated: number[] = []
     let assignmentCount = 1
     let assignmentStructure: {[index: string]: any} = {}
 
     $(document).on('click', '.assignment', function() {
+        createAssignmentInput('create', $(this).data('value'))
+    })
+
+    function createAssignmentInput(type: string, clicked: string): void {
         assignmentCount = 1
         assignmentToBeValidated = []
         let createBtn: any
-        let container = $('<div></div>').addClass('d-flex justify-content-end col-sm-12 col-12')
+        let btnId: string
+        let text: string
 
-        if($(this).data('value') == 'arithmetic') {
-            initInput('Arithmetic Assignment')
+        if(type == 'create')
+            text = 'Create'
+        else
+            text = 'Update'
+
+        if(clicked == 'arithmetic') {
+            if(type == 'create') {
+                initInput('Arithmetic Assignment')
+                btnId = 'create-asg-arithmetic-button'
+            }
+            else {
+                initInput('Edit Arithmetic Assignment')
+                btnId = 'update-asg-arithmetic-button'
+            }
+            
             createArithmeticAssignmentHeader()
             createArithmeticAssignmentInput()
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-arithmetic-button').text('Create')
+            createBtn = $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).text(text)
         }
-        else if($(this).data('value') == 'string') {
-            initInput('String Assignment')
+        else if(clicked == 'string') {
+            if(type == 'create') {
+                initInput('String Assignment')
+                btnId = 'create-asg-string-button'
+            }
+            else {
+                initInput('Edit String Assignment')
+                btnId = 'update-asg-string-button'
+            }
+
             createActionTypeChoice()
             createGetStringLengthInput()
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-string-button').text('Create')
+            createBtn = $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).text(text)
         }
-        else if($(this).data('value') == 'variable') {
-            initInput('Variable Assignment')
+        else if(clicked == 'variable') {
+            if(type == 'create') {
+                initInput('Variable Assignment')
+                btnId = 'create-asg-variable-button'
+            }
+            else {
+                initInput('Edit Variable Assignment')
+                btnId = 'update-asg-variable-button'
+            }
+
             createVariableAssignmentInput()
-            createBtn = $('<button></button>').addClass('btn btn-primary col-sm-2 col-2').attr('id', 'create-asg-variable-button').text('Create')
+            createBtn = $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: btnId}).text(text)
         }
 
-        container.append(createBtn)
-        $('#pcInputContainerLower').append(container)  
-    })
+        $('#pcInputContainerLower').append(
+            $('<div>', {class: 'd-flex justify-content-end col-sm-12 col-12'}).append(
+                createBtn
+            )
+        )  
+    }
 
     // String Assignment
-
     $(document).on('click', '#create-asg-string-button', function() {
         clearError()
         
+        let statement: Statement | undefined = undefined
+
         if($('.choose-action-type').find('option').filter(':selected').val() == 'length')
-            createStringAssignmentLength()
-        else 
-            createStringAssignmentSub()
+            statement = createStringAssignmentLength()
+        else
+            statement = createStringAssignmentSub()
+
+        if(statement != undefined) {
+            handleAdd(statement)
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
     })
 
-    function createStringAssignmentLength() {
+    function createStringAssignmentLength(): Statement | undefined {
         let firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val() as string
         let secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val() as string
         let firstVariable: Variable
@@ -1805,13 +1938,13 @@ $(document).ready(function() {
         if(firstValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
             $('.first-asg-string-value').find('select').addClass('input-error')
-            return
+            return undefined
         }
 
         if(secondValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
             $('.second-asg-string-value').find('select').addClass('input-error')
-            return
+            return undefined
         }
 
         firstVariable = findVariable(firstValue)
@@ -1820,15 +1953,10 @@ $(document).ready(function() {
         let statement = new AssignmentStatement(statementCount++, 1, 'length', firstVariable,
             undefined, undefined, undefined, secondVariable, undefined, undefined, undefined)
         
-        handleAdd(statement)
-        restructureStatement()
-        turnOffOptions()
-        clearSourceCode()
-        initInput('Program Input')
-        drawCanvas()
+        return statement
     }
 
-    function createStringAssignmentSub() {
+    function createStringAssignmentSub(): Statement | undefined {
         let firstValue = $('.first-asg-string-value').find('select').find('option').filter(':selected').val() as string
         let secondValue = $('.second-asg-string-value').find('select').find('option').filter(':selected').val() as string
         let firstVariable: Variable
@@ -1839,13 +1967,13 @@ $(document).ready(function() {
         if(firstValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
             $('.first-asg-string-value').find('select').addClass('input-error')
-            return
+            return undefined
         }
 
         if(secondValue == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
             $('.second-asg-string-value').find('select').addClass('input-error')
-            return
+            return undefined
         }
 
         firstVariable = findVariable(firstValue)
@@ -1855,45 +1983,41 @@ $(document).ready(function() {
         if(start == '') {
             createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer')
             $('.begin-idx-string').addClass('input-error')
-            return
+            return undefined
         }
         else if(parseInt(start) < 1) {
             createErrorMessage('Start position must be greater than 0', 'pcInputErrorContainer')
             $('.begin-idx-string').addClass('input-error')
-            return
+            return undefined
         }
         else if(parseInt(start) > secondVariable.value.length) {
             createErrorMessage('Start position must be less than String length', 'pcInputErrorContainer')
             $('.begin-idx-string').addClass('input-error')
-            return
+            return undefined
         }
         
         length = $('.length-idx-string').val() as string
         if(length == '') {
             createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer')
             $('.length-idx-string').addClass('input-error')
-            return
+            return undefined
         }
         else if(parseInt(length) < 1) {
             createErrorMessage('Length must be greater than 0', 'pcInputErrorContainer')
             $('.length-idx-string').addClass('input-error')
-            return
+            return undefined
         }
         else if(parseInt(start) + (parseInt(length)-1) > secondVariable.value.length) {
             createErrorMessage('String overflow', 'pcInputErrorContainer')
             $('.length-idx-string').addClass('input-error')
-            return
+            return undefined
         }
 
         let statement = new AssignmentStatement(statementCount++, 1, 'sub', firstVariable, 
             undefined, undefined, undefined, secondVariable, undefined, parseInt(start), parseInt(length))
 
-        handleAdd(statement)
-        restructureStatement()
-        turnOffOptions()
-        clearSourceCode()
-        initInput('Program Input')
-        drawCanvas()
+
+        return statement
     }
 
     $(document).on('change', '.choose-action-type', function() {
@@ -1996,7 +2120,6 @@ $(document).ready(function() {
     }
 
     // Arithmetic Assignment
-
     function createArithmeticAssignmentHeader() {
         let listVariable: Variable[] = getSelectedVariables('assignment')
 
@@ -2228,7 +2351,13 @@ $(document).ready(function() {
                 return
         }
 
-        createArithmeticStatement()
+        let assignmentStatement = createArithmeticStatement()
+        handleAdd(assignmentStatement)
+        restructureStatement()
+        turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
+        drawCanvas()
     })
 
     function validateArithmeticAssignmentInput(idx: number): boolean {
@@ -2369,12 +2498,7 @@ $(document).ready(function() {
         let assignmentStatement = new AssignmentStatement(statementCount++, 1, 'arithmetic', 
             targetVariable, listArithmetic, listOperator, listIsCustom, undefined, undefined, undefined, undefined)
     
-        handleAdd(assignmentStatement)
-        restructureStatement()
-        turnOffOptions()
-        clearSourceCode()
-        initInput('Program Input')
-        drawCanvas()
+        return assignmentStatement
     }
 
     function createArithmeticAssignment(idx: number): Arithmetic {
@@ -2432,7 +2556,6 @@ $(document).ready(function() {
     }
 
     // Assignment Variable
-
     function createVariableAssignmentInput() {
         let listVariable: Variable[] = getAllVariables()
 
@@ -2488,6 +2611,19 @@ $(document).ready(function() {
 
     $(document).on('click', '#create-asg-variable-button', function() {
         clearError()
+        let statement = createVariableAssignment()
+        
+        if(statement != undefined) {
+            handleAdd(statement)
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
+    })
+    
+    function createVariableAssignment(): Statement | undefined {
         let firstVariableName = $('#chosen-asg-variable').find('option').filter(':selected').val()
         let firstVariable: Variable
         let secondVariable: Variable
@@ -2497,7 +2633,7 @@ $(document).ready(function() {
         if(firstVariableName == '') {
             createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
             $('#chosen-asg-variable').addClass('input-error')
-            return
+            return undefined
         }
         firstVariable = findVariable(firstVariableName as string)
 
@@ -2507,7 +2643,7 @@ $(document).ready(function() {
             if(value == '') {
                 createErrorMessage('Input field cannot be empty', 'pcInputErrorContainer')
                 $('#chosen-asg-value').addClass('input-error')
-                return
+                return undefined
             }
 
             secondVariable = createVariableFromValue(value)          
@@ -2516,7 +2652,7 @@ $(document).ready(function() {
             if(!result.bool) {
                 $('#chosen-asg-value').addClass('input-error')
                 createErrorMessage(result.message, 'pcInputErrorContainer')
-                return
+                return undefined
             }
         }
         else {
@@ -2525,7 +2661,7 @@ $(document).ready(function() {
             if(value == '') {
                 createErrorMessage('Please choose a variable', 'pcInputErrorContainer')
                 $('#chosen-asg-value').addClass('input-error')
-                return
+                return undefined
             }
             secondVariable = findVariable(value)
         }
@@ -2535,19 +2671,15 @@ $(document).ready(function() {
             else {
                 $('#chosen-asg-value').addClass('input-error')
                 createErrorMessage('Could not assign other data type with String data type', 'pcInputErrorContainer')
-                return
+                return undefined
             }
         }
+
         let statement = new AssignmentStatement(statementCount++, 1, 'variable', 
             firstVariable, undefined, undefined, undefined, secondVariable, isCustom, undefined, undefined)
 
-        handleAdd(statement)
-        restructureStatement()
-        turnOffOptions()
-        clearSourceCode()
-        initInput('Program Input')
-        drawCanvas()
-    })
+        return statement
+    }
 
     // Canvas logic
     initializeCanvas()
@@ -2591,7 +2723,6 @@ $(document).ready(function() {
         }
     
         canvas.width = width;
-        // canvas.height = Math.round(width * aspect);
         canvas.height = height * 10
     }
 
@@ -2669,6 +2800,9 @@ $(document).ready(function() {
                     lastSelectedOption = returnClick.option.optionName
                 }
                 else if(returnClick.option.optionName == 'EDT') {
+                    $('html, body').animate({
+                        scrollTop: $('#accordionProgramInput').offset().top
+                    }, 300);
                     clipboard = returnClick.option.parent
                     lastSelectedOption = returnClick.option.optionName
                     handleEdit()
@@ -2761,23 +2895,36 @@ $(document).ready(function() {
             createEditInput()
         }
         else if(clipboard instanceof OutputStatement) {
-            initInput('Edit Output Statement')
             createEditOutput()
         }
         else if(clipboard instanceof IfStatement) {
-            
+            initInput('Edit If Statement')
+            createEditIfElse()
         } 
         else if(clipboard instanceof SwitchStatement) {
-            
+            initInput('Edit Switch Statement')
+            createSwitchSelection('update')
         }
         else if(clipboard instanceof ForStatement) {
-
+            createRepetitionInput('update', 'for')
         }
         else if(clipboard instanceof WhileStatement) {
+            if((clipboard as WhileStatement).isWhile)
+                createRepetitionInput('update', 'while')
+            else 
+                createRepetitionInput('update', 'do-while')
 
         }
         else if(clipboard instanceof AssignmentStatement) {
-            
+            if((clipboard as AssignmentStatement).type == 'variable') {
+                createAssignmentInput('update', 'variable')
+            }
+            else if((clipboard as AssignmentStatement).type == 'arithmetic') {
+                createAssignmentInput('update', 'arithmetic')
+            }
+            else {
+                createAssignmentInput('update', 'string')
+            }
         }
     }
 
@@ -3113,6 +3260,231 @@ $(document).ready(function() {
         drawCanvas()
     })
 
+    // Edit If-Else
+    function createEditIfElse(): void {
+        ifCount = 1 
+        ifToBeValidated = []
+        isElsed = false
+
+        initInput('Edit Selection Properties')
+        let ifOperations = (clipboard as IfStatement).ifOperations;
+        createIfSelection()
+        $('#pcInputContainerLower').append($('<div>', {class: 'd-flex justify-content-end p-2 col-sm-12 col-12'}).append(
+            $('<div>', {class: 'col-sm-10 col-10'}),
+            $('<button>', {class: 'btn btn-primary col-sm-2 col-2', id: 'updateIfStatementButton'}).text('Update')
+        ))
+
+        for(let i = 1; i < ifOperations.length; i++) {
+            if(ifOperations[i] instanceof Elif)
+                createAdditionalElif(false)
+            else
+                createElse(false)
+        }
+    }
+
+    // Update If-Else
+    $(document).on('click', '#updateIfStatementButton', function() {
+        clearError()
+        let ifStatements: Statement[] = []
+        let tempStatement: Statement | undefined = undefined
+        let proceed: boolean = true
+        
+        for(let i = 0; i < ifToBeValidated.length; i++) {
+            tempStatement = handleIfStatementValidation(ifToBeValidated[i])
+            if(tempStatement != undefined) {
+                ifStatements.push(tempStatement)
+                tempStatement = undefined
+            }
+            else {
+                proceed = false
+                break
+            }
+        }
+
+        if(proceed == true) {
+            let ifStatement = new IfStatement(1, statementCount++, undefined)
+            let oldIfOperations = (clipboard as IfStatement).ifOperations;
+            let tempChildStatement: Statement[] = []
+
+            if(isElsed)
+                ifStatements.push(new Else(1, statementCount))
+            
+            ifStatement.updateIfOperations(ifStatements)
+
+            if(returnClick.option.validateMainListStatement(listStatement, ifStatement, clipboard, false)) {
+                for(let i = 0; i < oldIfOperations.length; i++) {
+                    tempChildStatement = []
+
+                    if(oldIfOperations[i] instanceof If) {
+                        if((oldIfOperations[i] as If).childStatement != undefined) {
+                            for(let j = 0; j < (oldIfOperations[i] as If).childStatement.length; j++)
+                                tempChildStatement.push((oldIfOperations[i] as If).childStatement[j])
+                        }
+                    }
+                    else {
+                        if((oldIfOperations[i] as Else).childStatement != undefined) {
+                            for(let j = 0; j < (oldIfOperations[i] as Else).childStatement.length; j++)
+                                tempChildStatement.push((oldIfOperations[i] as Else).childStatement[j])
+                        }
+                    }
+                    ifStatements[i].updateChildStatement(tempChildStatement)
+                }
+                (clipboard as IfStatement).updateIfOperations(ifStatements);   
+            }
+            else
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
+    })
+
+    // Edit Switch Statement
+    
+
+    // Update Repetition Statement
+    $(document).on('click', '#update-loop-button', function() {
+        clearError()
+        let statement = createRepetitionStatement($(this).data('value'))
+        if(statement == undefined) 
+            return
+
+        // validate chosen variable has been declared
+        if(returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+            if($(this).data('value') == 'for') {
+                (clipboard as ForStatement).variable = (statement as ForStatement).variable;
+                (clipboard as ForStatement).isIncrement = (statement as ForStatement).isIncrement;
+                (clipboard as ForStatement).addValueBy = (statement as ForStatement).addValueBy;
+                (clipboard as ForStatement).condition = (statement as ForStatement).condition;
+            }
+            else {
+                (clipboard as WhileStatement).firstCondition = (statement as WhileStatement).firstCondition;
+                (clipboard as WhileStatement).logicalOperator = (statement as WhileStatement).logicalOperator;
+                (clipboard as WhileStatement).secondCondition = (statement as WhileStatement).secondCondition;
+            }
+        }
+        else
+            createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+            
+        finishAction()
+        restructureStatement()
+        turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
+        drawCanvas()
+    })
+
+    $(document).on('click', '#update-asg-arithmetic-button', function() {
+        clearError()
+        let temp: boolean = true
+        let value: string
+
+        value = $('.selected-target-variable-asg').find('option').filter(':selected').val() as string
+        if(value == '') {
+            createErrorMessage('Please select a variable', 'pcInputErrorContainer')
+            $('.selected-target-variable-asg').addClass('input-error')
+            return
+        }
+        
+        for(let i = 0; i < assignmentToBeValidated.length; i++) {
+            temp = validateArithmeticAssignmentInput(assignmentToBeValidated[i])
+            if(!temp)
+                return
+        }
+
+        let assignmentStatement = createArithmeticStatement()
+
+        if(returnClick.option.validateMainListStatement(listStatement, assignmentStatement, clipboard, false)) {
+            (clipboard as AssignmentStatement).targetVariable = (assignmentStatement as AssignmentStatement).targetVariable;
+            (clipboard as AssignmentStatement).type = (assignmentStatement as AssignmentStatement).type;
+            (clipboard as AssignmentStatement).listArithmetic = (assignmentStatement as AssignmentStatement).listArithmetic;
+            (clipboard as AssignmentStatement).listOperator = (assignmentStatement as AssignmentStatement).listOperator;
+            (clipboard as AssignmentStatement).listIsCustom = (assignmentStatement as AssignmentStatement).listIsCustom;
+            (clipboard as AssignmentStatement).variable = (assignmentStatement as AssignmentStatement).variable;
+            (clipboard as AssignmentStatement).isCustomValue = (assignmentStatement as AssignmentStatement).isCustomValue;
+            (clipboard as AssignmentStatement).start = (assignmentStatement as AssignmentStatement).start;
+            (clipboard as AssignmentStatement).length = (assignmentStatement as AssignmentStatement).length;
+        }
+        else
+            createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+        
+        finishAction()
+        restructureStatement()
+        turnOffOptions()
+        clearSourceCode()
+        initInput('Program Input')
+        drawCanvas()
+    })
+
+    $(document).on('click', '#update-asg-string-button', function() {
+        clearError()
+        
+        let statement: Statement | undefined = undefined
+
+        if($('.choose-action-type').find('option').filter(':selected').val() == 'length')
+            statement = createStringAssignmentLength()
+        else
+            statement = createStringAssignmentSub()
+
+        if(statement != undefined) {
+            if(returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                (clipboard as AssignmentStatement).targetVariable = (statement as AssignmentStatement).targetVariable;
+                (clipboard as AssignmentStatement).type = (statement as AssignmentStatement).type;
+                (clipboard as AssignmentStatement).listArithmetic = (statement as AssignmentStatement).listArithmetic;
+                (clipboard as AssignmentStatement).listOperator = (statement as AssignmentStatement).listOperator;
+                (clipboard as AssignmentStatement).listIsCustom = (statement as AssignmentStatement).listIsCustom;
+                (clipboard as AssignmentStatement).variable = (statement as AssignmentStatement).variable;
+                (clipboard as AssignmentStatement).isCustomValue = (statement as AssignmentStatement).isCustomValue;
+                (clipboard as AssignmentStatement).start = (statement as AssignmentStatement).start;
+                (clipboard as AssignmentStatement).length = (statement as AssignmentStatement).length;    
+            }
+            else {
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+            }
+
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
+    })
+
+    $(document).on('click', '#update-asg-variable-button', function() {
+        clearError()
+
+        let statement = createVariableAssignment()
+        
+        if(statement != undefined) {
+            if(returnClick.option.validateMainListStatement(listStatement, statement, clipboard, false)) {
+                (clipboard as AssignmentStatement).targetVariable = (statement as AssignmentStatement).targetVariable;
+                (clipboard as AssignmentStatement).type = (statement as AssignmentStatement).type;
+                (clipboard as AssignmentStatement).listArithmetic = (statement as AssignmentStatement).listArithmetic;
+                (clipboard as AssignmentStatement).listOperator = (statement as AssignmentStatement).listOperator;
+                (clipboard as AssignmentStatement).listIsCustom = (statement as AssignmentStatement).listIsCustom;
+                (clipboard as AssignmentStatement).variable = (statement as AssignmentStatement).variable;
+                (clipboard as AssignmentStatement).isCustomValue = (statement as AssignmentStatement).isCustomValue;
+                (clipboard as AssignmentStatement).start = (statement as AssignmentStatement).start;
+                (clipboard as AssignmentStatement).length = (statement as AssignmentStatement).length;    
+            }
+            else {
+                createErrorMessage('Could not use chosen variable!', 'bcErrorContainer')
+            }
+
+            finishAction()
+            restructureStatement()
+            turnOffOptions()
+            clearSourceCode()
+            initInput('Program Input')
+            drawCanvas()
+        }
+    })
+
     function handleDelete(): void {
         let returnPaste: ReturnPaste | undefined = undefined
 
@@ -3445,10 +3817,16 @@ $(document).ready(function() {
     let fontSize = 14
 
     $(document).on('click', '.change-font-size', function() {
-        if($(this).data('value') == 'plus')
+        if($(this).data('value') == 'plus') {
+            if(fontSize == 40)
+                return
             $('#source-code-container').css('font-size', ++fontSize + 'px')
-        else 
+        }
+        else {
+            if(fontSize == 1)
+                return
             $('#source-code-container').css('font-size', --fontSize + 'px')
+        }
 
         $('#font-size-input').val(fontSize)
     })
